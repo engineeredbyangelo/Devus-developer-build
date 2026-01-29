@@ -4,16 +4,19 @@ import { Sparkles } from "lucide-react";
 import { Category, Tag } from "@/lib/types";
 import { tools, searchTools } from "@/lib/data";
 import { Header } from "@/components/Header";
+import { LandingHero } from "@/components/LandingHero";
+import { NewThisWeek } from "@/components/NewThisWeek";
 import { SearchBar } from "@/components/SearchBar";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { TagFilter } from "@/components/TagFilter";
 import { ToolGrid } from "@/components/ToolGrid";
-import { ActivityTicker } from "@/components/ActivityTicker";
+import { AuthModal } from "@/components/AuthModal";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   const filteredTools = useMemo(() => {
     let result = searchQuery ? searchTools(searchQuery) : tools;
@@ -39,75 +42,84 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Subtle gradient background */}
-      <div className="fixed inset-0 bg-gradient-radial from-primary/5 via-transparent to-transparent pointer-events-none" />
-      
       <Header />
 
-      <main className="container py-8 md:py-12">
-        {/* Hero Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
-        >
-          <ActivityTicker />
-          
-          <h1 className="mt-8 text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-            Discover the best
-            <br />
-            <span className="text-primary glow-text">developer tools</span>
-          </h1>
-          
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            A curated collection of frameworks, libraries, and tools to supercharge your development workflow.
-          </p>
+      {/* Landing Hero */}
+      <LandingHero onGetStarted={() => setAuthModalOpen(true)} />
+
+      {/* New This Week Carousel */}
+      <NewThisWeek />
+
+      {/* Explore Section */}
+      <section id="explore" className="py-16 border-t border-border/30">
+        <div className="container">
+          {/* Section Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+              Explore the Collection
+            </h2>
+            <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
+              Browse 35+ carefully curated tools across 9 categories. 
+              Filter, search, and find exactly what you need.
+            </p>
+          </motion.div>
 
           {/* Search Bar */}
-          <div className="mt-8 max-w-xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="max-w-xl mx-auto mb-8"
+          >
             <SearchBar
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder="Search tools, frameworks, libraries..."
             />
-          </div>
-        </motion.div>
+          </motion.div>
 
-        {/* Filters */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="mb-8 space-y-4"
-        >
-          <CategoryFilter
-            selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
-          />
-          <TagFilter selectedTags={selectedTags} onToggleTag={handleToggleTag} />
-        </motion.div>
+          {/* Filters */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="mb-8 space-y-4"
+          >
+            <CategoryFilter
+              selectedCategory={selectedCategory}
+              onSelectCategory={setSelectedCategory}
+            />
+            <TagFilter selectedTags={selectedTags} onToggleTag={handleToggleTag} />
+          </motion.div>
 
-        {/* Results count */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="mb-6"
-        >
-          <p className="text-sm text-muted-foreground">
-            Showing <span className="text-foreground font-medium">{filteredTools.length}</span> tools
-            {selectedCategory && (
-              <span>
-                {" "}in <span className="text-primary">{selectedCategory}</span>
-              </span>
-            )}
-          </p>
-        </motion.div>
+          {/* Results count */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="mb-6"
+          >
+            <p className="text-sm text-muted-foreground">
+              Showing <span className="text-foreground font-medium">{filteredTools.length}</span> tools
+              {selectedCategory && (
+                <span>
+                  {" "}in <span className="text-primary">{selectedCategory}</span>
+                </span>
+              )}
+            </p>
+          </motion.div>
 
-        {/* Tool Grid */}
-        <ToolGrid tools={filteredTools} />
-      </main>
+          {/* Tool Grid */}
+          <ToolGrid tools={filteredTools} />
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="border-t border-border/50 py-8 mt-16">
@@ -123,6 +135,13 @@ const Index = () => {
           </p>
         </div>
       </footer>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        initialMode="signup"
+      />
     </div>
   );
 };
