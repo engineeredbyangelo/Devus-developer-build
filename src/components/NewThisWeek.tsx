@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
-import { Tool } from "@/lib/types";
 import { tools } from "@/lib/data";
-import { ToolCard } from "./ToolCard";
+import { NewThisWeekCard } from "./NewThisWeekCard";
 import { Button } from "@/components/ui/button";
 
 export function NewThisWeek() {
-  const newTools = tools.filter((tool) => tool.isNew).slice(0, 8);
+  const newTools = tools.filter((tool) => tool.isNew).slice(0, 9);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
 
@@ -34,13 +33,13 @@ export function NewThisWeek() {
   };
 
   return (
-    <section className="py-16 relative overflow-hidden">
+    <section className="py-20 relative overflow-hidden">
       {/* Section glow background */}
       <div className="absolute inset-0 bg-gradient-radial from-primary/10 via-transparent to-transparent pointer-events-none" />
 
       <div className="container relative">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-3">
             <motion.div
               className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center"
@@ -97,8 +96,8 @@ export function NewThisWeek() {
           </div>
         </div>
 
-        {/* Carousel */}
-        <div className="relative h-[320px] overflow-hidden">
+        {/* Carousel - Fixed height with proper spacing */}
+        <div className="relative min-h-[380px]">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={currentIndex}
@@ -106,17 +105,10 @@ export function NewThisWeek() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: direction > 0 ? -100 : 100 }}
               transition={{ duration: 0.4, ease: "easeInOut" }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 absolute inset-0"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
               {visibleTools.map((tool, i) => (
-                <motion.div
-                  key={tool.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                >
-                  <ToolCard tool={tool} index={i} />
-                </motion.div>
+                <NewThisWeekCard key={tool.id} tool={tool} index={i} />
               ))}
             </motion.div>
           </AnimatePresence>

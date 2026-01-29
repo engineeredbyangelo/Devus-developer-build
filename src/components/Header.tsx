@@ -1,16 +1,14 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Sparkles, Heart, PlusCircle, LayoutDashboard } from "lucide-react";
+import { Menu, X, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "./AuthModal";
 
+// Only Home link on landing page - other links are for authenticated users
 const navLinks = [
   { href: "/", label: "Home", icon: Sparkles },
-  { href: "/favorites", label: "Favorites", icon: Heart },
-  { href: "/submit", label: "Submit", icon: PlusCircle },
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
 ];
 
 export function Header() {
