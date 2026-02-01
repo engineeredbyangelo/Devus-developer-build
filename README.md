@@ -1,73 +1,49 @@
-# Welcome to your Lovable project
+# Devus
 
-## Project info
+**Discover the Best Developer Tools** 🚀  
+*Stop Scrolling. Start Building.*
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+Devus is a modern, curated discovery platform for developer tools, libraries, frameworks, and resources. It helps you cut through the noise of Twitter threads, Reddit posts, and scattered newsletters by providing a clean, focused space to explore high-signal tools across categories like Frontend, Backend, DevOps, AI/ML, and more.
 
-## How can I edit this code?
+**Live Demo**: [https://devus-development.lovable.app/](https://devus-development.lovable.app/)
 
-There are several ways of editing your application.
+> This is an active development build. Full features (favorites, submissions, personalized dashboard) are coming soon with user accounts.
 
-**Use Lovable**
+## Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+### Current (MVP)
+- 🗂️ **Curated Tool Catalog**: Hand-picked tools with detailed cards showing name, category, short description, popularity metrics (e.g., GitHub stars), open-source status, and direct links.
+- 🔍 **Category Filtering**: Browse by Frontend, Backend, DevOps, AI/ML, Database, Testing, Mobile, Security, Productivity, and more.
+- ✨ **New Tools Highlighting**: Dedicated "New This Week" section for freshly added tools.
+- 📄 **Tool Detail Views**: Click any tool for a focused, clean information view.
+- 📱 **Responsive & Clean UI**: Fast, frictionless browsing on desktop and mobile with a calming, modern design.
+- ⚖️ **Comparison Section**: Clear side-by-side view of how Devus improves on traditional discovery methods (noise-free, curated, quick comparisons).
 
-Changes made via Lovable will be committed automatically to this repo.
+## Tech Stack
 
-**Use your preferred IDE**
+- ⚡ **Vite**: Lightning-fast build tool and dev server.
+- ⚛️ **React**: Component-based UI library.
+- 🔒 **TypeScript**: Type safety and better developer experience.
+- 🎨 **Tailwind CSS**: Utility-first styling for rapid, responsive design.
+- 🧩 **shadcn/ui**: Beautiful, accessible, customizable components built on Radix UI and Tailwind.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Scope
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+This is a solo #buildinpublic project, but feedback and ideas are welcome!  
+Feel free to follow and reach out to me on X [@builtbyangelo](https://x.com/builtbyangelo).
 
-Follow these steps:
+## Roadmap & Upcoming Features
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Near-Term (In Progress)
+- 🔐 User authentication and personal dashboards
+- ❤️ Favorites and personal tool collections
+- 📝 Tool submission workflow (with contributor badges)
+- 🔍 Basic search functionality
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Next Up
+- ⚡ Realtime updates for new tools and upvotes
+- 🔔 Personalized recommendations and custom alerts
+- 📊 Activity dashboard with community reviews
+- ✨ Immersive animations, dark mode, and polish
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Thanks for checking out Devus! Follow the build journey on X for updates. 🚀
