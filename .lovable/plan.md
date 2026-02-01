@@ -1,121 +1,144 @@
 
-
-# Devus — Developer Tool Discovery Platform
+# Hero Redesign: Split Layout with Animated Tool Nexus
 
 ## Overview
-A stunning, immersive dashboard for discovering and curating developer tools. Dark mode with subtle glows, fluid animations, and a calming anti-scroll experience.
+Transform the hero section from a centered layout to a **split layout** with:
+- **Left side**: Title, description, CTAs, and feature highlights
+- **Right side**: Animated visualization of developer tools flowing into a central nexus
 
 ---
 
-## Core Pages & Features
+## Visual Concept
 
-### 1. Landing / Tool Feed
-- **Masonry grid** of tool cards with staggered fade-in animations
-- **Search bar** with live filtering (by name, description)
-- **Category filters**: Frontend, Backend, DevOps, AI/ML, Database, Testing, etc.
-- **Tag chips** for quick filtering (Open Source, Free, Paid, etc.)
-- **"New this week" indicator** with subtle pulse animation
-- **Activity ticker**: "12 new tools added today" (static for now, realtime-ready)
-
-### 2. Tool Cards
-- Tool logo/icon with soft glow on hover
-- Name, short description, primary category
-- Star count badge (GitHub-style)
-- Quick-action buttons: Upvote, Save to favorites
-- Smooth hover states: scale up + shadow bloom
-
-### 3. Tool Detail Page
-- Full-width hero with tool screenshot/preview
-- Rich description, pros/cons sections
-- Tags, categories, official links
-- "Similar Tools" recommendations
-- Upvote count with animated increment
-- Save to favorites toggle
-
-### 4. Authentication (UI-ready)
-- Sign in / Sign up modals
-- OAuth buttons (GitHub, Google) - styled but non-functional until backend
-- User dropdown with avatar
-
-### 5. User Dashboard
-- **Saved Tools**: Personal favorites collection
-- **Followed Categories**: Customize your feed
-- **Submission History**: Tools you've submitted
-
-### 6. Tool Submission Form
-- Name, URL, description, category, tags
-- Screenshot upload area
-- Preview before submit
-- Success confirmation with animation
+```text
++-----------------------------------------------------------+
+|  [Left Side - 50%]          |     [Right Side - 50%]      |
+|                             |                              |
+|  Activity Ticker            |     ○ React                  |
+|                             |         ↘                    |
+|  Discover the best          |    ○ Vue   → [NEXUS] ← ○ Node|
+|  developer tools            |         ↗       ↑            |
+|                             |     ○ Svelte    ○ Docker     |
+|  Curated collection...      |                              |
+|                             |     Orbital animation with   |
+|  [Get Started] [Explore]    |     glowing orbs flowing     |
+|                             |     toward center            |
+|  [Feature Cards x3]         |                              |
++-----------------------------------------------------------+
+```
 
 ---
 
-## Design System
+## Animation Design
 
-### Visual Identity
-- **Background**: Deep slate/charcoal (#0f0f14) with subtle gradient noise
-- **Accent colors**: Soft cyan/teal glow for interactive elements
-- **Cards**: Dark glass effect (backdrop blur + subtle border glow)
-- **Typography**: Clean sans-serif, high contrast white text
-- **Micro-interactions**: Spring animations on all interactions
+### Orbital Tool Orbs
+- **12-16 tool orbs** positioned in 3 orbital rings around the central nexus
+- Each orb displays a tool icon (React, Vue, Node, Docker, etc.)
+- Orbs rotate continuously with different speeds per ring
+- Soft cyan/white glow effect on each orb
 
-### Animation Philosophy
-- Cards fade + scale in on scroll (Framer Motion)
-- Hover: gentle lift + glow expansion
-- Button clicks: satisfying spring bounce
-- Page transitions: smooth crossfade
-- Reduced motion: respect prefers-reduced-motion
+### Flow Lines (Connection Beams)
+- Animated dashed/gradient lines from orbs toward the center
+- Pulsing glow effect on the lines
+- Creates visual "flow" of tools converging
 
----
+### Central Nexus
+- Glowing sphere at the center representing Devus
+- Pulsing animation (scale + glow intensity)
+- Subtle ring animations radiating outward
+- Devus "D" or spark icon in the center
 
-## Technical Architecture (Frontend)
-
-### Data Layer
-- Mock data service with 30+ sample tools
-- Category and tag definitions
-- User state (favorites, followed categories)
-- Structured for easy Supabase migration later
-
-### State Management
-- React Query for data fetching patterns
-- Local state for UI (modals, filters, search)
-
-### Components
-- Reusable ToolCard, CategoryBadge, GlowButton
-- Responsive grid system
-- Accessible modals and dropdowns
+### Hover Interactions
+- Orbs scale up slightly on hover
+- Connection beam brightens
+- Tool name tooltip appears
 
 ---
 
-## Sample Tool Categories
-- **Frontend**: React, Vue, Svelte, Tailwind
-- **Backend**: Node.js, Deno, tRPC, Prisma
-- **AI/ML**: LangChain, Ollama, Hugging Face
-- **DevOps**: Docker, K8s, Terraform
-- **Database**: Supabase, PlanetScale, Neon
-- **Testing**: Vitest, Playwright, Cypress
+## Technical Implementation
+
+### New Component: `HeroNexusAnimation.tsx`
+A dedicated component for the animated visualization:
+
+```text
+Structure:
+- Outer container (relative, aspect-square)
+- 3 orbital rings with different radii
+- Tool orbs positioned on rings using CSS transforms
+- SVG or CSS for connection lines
+- Central nexus element with animations
+```
+
+### Tool Icons to Display
+Using Lucide icons for consistent style:
+- React, Vue, Svelte (Code2)
+- Node.js, Deno (Server)
+- Docker (Container)
+- Supabase (Database)
+- Tailwind (Paintbrush)
+- TypeScript (FileCode)
+- Prisma (Database)
+- Vercel (Triangle)
+- GitHub (Github)
+
+### Framer Motion Animations
+- `animate` with `rotate: 360` for orbital motion
+- Staggered delays for each ring
+- Spring physics for hover interactions
+- `repeat: Infinity` for continuous motion
+
+### CSS Additions
+- New glow utilities for the orbs
+- Orbital ring positioning classes
+- Connection line gradient animations
 
 ---
 
-## What You'll Get
+## Updated LandingHero Layout
 
-1. **Fully interactive UI** with beautiful dark mode design
-2. **30+ sample dev tools** pre-populated across categories
-3. **Complete navigation** between feed, detail, and dashboard pages
-4. **Working search & filters** on the frontend
-5. **Upvote & favorites** functionality (local storage for now)
-6. **Submission form** with validation
-7. **Responsive design** for all screen sizes
-8. **Smooth Framer Motion animations** throughout
-9. **Backend-ready architecture** - swap mock services for real APIs easily
+```text
+<section>
+  <div className="container grid lg:grid-cols-2 gap-12">
+    
+    <!-- Left Column -->
+    <div className="flex flex-col justify-center">
+      <ActivityTicker />
+      <h1>Discover the best developer tools</h1>
+      <p>Curated collection...</p>
+      <div>[CTA Buttons]</div>
+      <div>[Feature Cards Grid]</div>
+    </div>
+    
+    <!-- Right Column -->
+    <div className="flex items-center justify-center">
+      <HeroNexusAnimation />
+    </div>
+    
+  </div>
+</section>
+```
 
 ---
 
-## Future Backend Integration Points
-When you add Supabase/Firebase later:
-- Replace mock data service → Supabase queries
-- Add realtime subscriptions for live updates
-- Connect auth flows to actual providers
-- Enable image uploads for submissions
-- Add row-level security for user data
+## Files to Create/Modify
 
+| File | Action | Description |
+|------|--------|-------------|
+| `src/components/HeroNexusAnimation.tsx` | Create | New animated nexus component |
+| `src/components/LandingHero.tsx` | Modify | Split layout, integrate animation |
+| `src/index.css` | Modify | Add orbital animation keyframes |
+
+---
+
+## Color Scheme (Blue/White)
+- **Orbs**: White/light gray with cyan glow border
+- **Connection lines**: Cyan gradient with opacity
+- **Nexus center**: Bright cyan glow with white core
+- **Background rings**: Subtle cyan/white dashed circles
+
+---
+
+## Responsive Behavior
+- **Desktop (lg+)**: Side-by-side layout, full animation
+- **Tablet (md)**: Stacked layout, smaller animation
+- **Mobile**: Animation hidden or simplified, text-only hero
