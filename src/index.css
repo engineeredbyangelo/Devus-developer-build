@@ -175,4 +175,24 @@
       box-shadow: 0 0 30px hsl(var(--glow) / 0.5);
     }
   }
+
+  /* Orb glow effect */
+  .orb-glow {
+    box-shadow: 0 0 10px hsl(var(--primary) / 0.2),
+                0 0 20px hsl(var(--primary) / 0.1),
+                inset 0 0 10px hsl(var(--primary) / 0.05);
+  }
+
+  .orb-glow:hover {
+    box-shadow: 0 0 15px hsl(var(--primary) / 0.4),
+                0 0 30px hsl(var(--primary) / 0.2),
+                inset 0 0 15px hsl(var(--primary) / 0.1);
+  }
+
+  /* Central nexus glow */
+  .nexus-glow {
+    box-shadow: 0 0 30px hsl(var(--primary) / 0.5),
+                0 0 60px hsl(var(--primary) / 0.3),
+                0 0 90px hsl(var(--primary) / 0.1);
+  }
 }
