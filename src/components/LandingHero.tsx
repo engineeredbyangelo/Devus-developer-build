@@ -10,14 +10,14 @@ interface LandingHeroProps {
 
 export function LandingHero({ onGetStarted }: LandingHeroProps) {
   return (
-    <section className="relative min-h-[90vh] flex items-center overflow-hidden">
+    <section className="relative min-h-[80vh] md:min-h-[90vh] flex items-center overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 bg-gradient-radial from-primary/10 via-transparent to-transparent" />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/5 rounded-full blur-3xl" />
+      <div className="absolute top-1/4 left-1/4 w-48 md:w-96 h-48 md:h-96 bg-primary/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-1/4 right-1/4 w-40 md:w-80 h-40 md:h-80 bg-accent/5 rounded-full blur-3xl" />
 
-      <div className="container relative z-10 py-20">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+      <div className="container relative z-10 py-12 md:py-16 lg:py-20">
+        <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center">
           {/* Left Column - Content */}
           <div className="flex flex-col">
             {/* Activity ticker */}
@@ -34,7 +34,7 @@ export function LandingHero({ onGetStarted }: LandingHeroProps) {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="mt-8 text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight"
+              className="mt-6 md:mt-8 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight"
             >
               Discover the best
               <br />
@@ -46,7 +46,7 @@ export function LandingHero({ onGetStarted }: LandingHeroProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="mt-6 text-lg md:text-xl text-muted-foreground max-w-xl"
+              className="mt-4 md:mt-6 text-base sm:text-lg md:text-xl text-muted-foreground max-w-xl"
             >
               A curated collection of frameworks, libraries, and tools to supercharge 
               your development workflow. Stop doom-scrolling, start building.
@@ -57,7 +57,7 @@ export function LandingHero({ onGetStarted }: LandingHeroProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="mt-10 flex flex-col sm:flex-row items-start gap-4"
+              className="mt-8 md:mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4"
             >
               <Button
                 size="lg"
@@ -85,7 +85,7 @@ export function LandingHero({ onGetStarted }: LandingHeroProps) {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4"
+              className="mt-8 md:mt-12 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4"
             >
               {[
                 { icon: Zap, label: "35+ Curated Tools", desc: "Hand-picked for quality" },
@@ -114,7 +114,7 @@ export function LandingHero({ onGetStarted }: LandingHeroProps) {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="hidden lg:flex items-center justify-center"
+            className="flex items-center justify-center order-first lg:order-last"
           >
             <HeroNexusAnimation />
           </motion.div>
