@@ -20,6 +20,13 @@ const comparisonData: ComparisonItem[] = [
   { feature: "Verified Reviews", devus: "full", twitter: "none", reddit: "partial", indiehacker: "partial" },
 ];
 
+const platforms = [
+  { key: "devus" as const, label: "Devus", highlight: true },
+  { key: "twitter" as const, label: "Twitter", highlight: false },
+  { key: "reddit" as const, label: "Reddit", highlight: false },
+  { key: "indiehacker" as const, label: "IndieHacker", highlight: false },
+];
+
 const StatusIcon = ({ status }: { status: "full" | "partial" | "none" }) => {
   if (status === "full") {
     return (
@@ -42,40 +49,77 @@ const StatusIcon = ({ status }: { status: "full" | "partial" | "none" }) => {
   );
 };
 
+// Mobile card for each feature
+function MobileFeatureCard({ item, index }: { item: ComparisonItem; index: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.05 }}
+      className="glass rounded-xl p-4"
+    >
+      <h3 className="font-medium text-sm mb-3 text-foreground">{item.feature}</h3>
+      <div className="space-y-2">
+        {platforms.map((platform) => (
+          <div
+            key={platform.key}
+            className={`flex items-center justify-between py-1.5 px-2 rounded-lg ${
+              platform.highlight ? "bg-primary/10" : ""
+            }`}
+          >
+            <span className={`text-sm ${platform.highlight ? "text-primary font-medium" : "text-muted-foreground"}`}>
+              {platform.label}
+            </span>
+            <StatusIcon status={item[platform.key]} />
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
 export function ComparisonChart() {
   return (
-    <section className="py-20 relative overflow-hidden">
+    <section className="py-16 md:py-20 relative overflow-hidden">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent pointer-events-none" />
       
-      <div className="container relative">
+      <div className="container relative px-4 md:px-6">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-12"
+          className="text-center mb-8 md:mb-12"
         >
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
             <Sparkles className="w-4 h-4" />
             Why Devus?
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight mb-4">
             Stop Scrolling. Start Building.
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
             Finding the right dev tool shouldn't mean hours on Twitter threads or Reddit rabbit holes. 
             See how Devus compares to traditional discovery methods.
           </p>
         </motion.div>
 
-        {/* Comparison Table */}
+        {/* Mobile Layout - Stacked Cards */}
+        <div className="lg:hidden space-y-4">
+          {comparisonData.map((item, index) => (
+            <MobileFeatureCard key={item.feature} item={item} index={index} />
+          ))}
+        </div>
+
+        {/* Desktop Layout - Table */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
-          className="glass rounded-2xl overflow-hidden"
+          className="hidden lg:block glass rounded-2xl overflow-hidden"
         >
           {/* Table Header */}
           <div className="grid grid-cols-5 gap-4 p-4 border-b border-border/50 bg-secondary/30">
@@ -124,7 +168,7 @@ export function ComparisonChart() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.3 }}
-          className="flex justify-center gap-6 mt-6 text-sm text-muted-foreground"
+          className="flex flex-wrap justify-center gap-4 md:gap-6 mt-6 text-sm text-muted-foreground"
         >
           <div className="flex items-center gap-2">
             <StatusIcon status="full" />

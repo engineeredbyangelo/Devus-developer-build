@@ -39,6 +39,11 @@ export interface Tool {
   cons?: string[];
   alternatives?: string[];
   createdAt: string;
+  // Developer-specific insights
+  useCases?: string[];
+  techStackFit?: string[];
+  learningCurve?: "low" | "medium" | "high";
+  communityActivity?: "low" | "moderate" | "active" | "very-active";
 }
 
 export interface User {

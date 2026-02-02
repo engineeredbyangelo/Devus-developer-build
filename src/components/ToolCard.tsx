@@ -1,24 +1,23 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import { ArrowUpRight, Heart, Star, ChevronUp } from "lucide-react";
+import { ExternalLink, Github, Star } from "lucide-react";
 import { Tool } from "@/lib/types";
 import { getCategoryInfo } from "@/lib/data";
-import { useFavorites, useUpvotes } from "@/hooks/use-tools";
-import { cn } from "@/lib/utils";
 import { CategoryBadge } from "./CategoryBadge";
 
 interface ToolCardProps {
   tool: Tool;
   index?: number;
+  onClick?: () => void;
 }
 
-export function ToolCard({ tool, index = 0 }: ToolCardProps) {
-  const { isFavorite, toggleFavorite } = useFavorites();
-  const { getUpvotes, toggleUpvote, hasUpvoted } = useUpvotes();
+export function ToolCard({ tool, index = 0, onClick }: ToolCardProps) {
   const categoryInfo = getCategoryInfo(tool.category);
-  const upvoteCount = getUpvotes(tool.id);
-  const favorited = isFavorite(tool.id);
-  const upvoted = hasUpvoted(tool.id);
+
+  const handleCardClick = () => {
+    if (onClick) {
+      onClick();
+    }
+  };
 
   return (
     <motion.div
@@ -30,7 +29,8 @@ export function ToolCard({ tool, index = 0 }: ToolCardProps) {
         ease: [0.25, 0.1, 0.25, 1],
       }}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className="group relative"
+      className="group relative h-full cursor-pointer"
+      onClick={handleCardClick}
     >
       <div className="glass glass-hover rounded-xl p-5 h-full flex flex-col">
         {/* Glow effect on hover */}
@@ -46,18 +46,16 @@ export function ToolCard({ tool, index = 0 }: ToolCardProps) {
         )}
 
         {/* Header */}
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3">
-            {/* Logo placeholder */}
-            <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-lg font-bold text-primary">
-              {tool.name.charAt(0)}
-            </div>
-            <div>
-              <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                {tool.name}
-              </h3>
-              <CategoryBadge category={tool.category} size="sm" />
-            </div>
+        <div className="flex items-start gap-3 mb-3">
+          {/* Logo placeholder */}
+          <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center text-lg font-bold text-primary shrink-0">
+            {tool.name.charAt(0)}
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+              {tool.name}
+            </h3>
+            <CategoryBadge category={tool.category} size="sm" />
           </div>
         </div>
 
@@ -76,7 +74,7 @@ export function ToolCard({ tool, index = 0 }: ToolCardProps) {
 
         {/* Tags */}
         <div className="flex flex-wrap gap-1.5 mb-4">
-          {tool.tags.slice(0, 3).map((tag) => (
+          {tool.tags.slice(0, 2).map((tag) => (
             <span
               key={tag}
               className="inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-secondary text-secondary-foreground"
@@ -86,55 +84,30 @@ export function ToolCard({ tool, index = 0 }: ToolCardProps) {
           ))}
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center justify-between pt-3 border-t border-border/50">
-          <div className="flex items-center gap-2">
-            {/* Upvote button */}
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleUpvote(tool.id);
-              }}
-              className={cn(
-                "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
-                upvoted
-                  ? "bg-primary/20 text-primary"
-                  : "bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <ChevronUp className={cn("w-4 h-4", upvoted && "fill-current")} />
-              <span>{upvoteCount}</span>
-            </motion.button>
-
-            {/* Favorite button */}
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleFavorite(tool.id);
-              }}
-              className={cn(
-                "p-1.5 rounded-lg transition-colors",
-                favorited
-                  ? "text-red-500"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Heart className={cn("w-4 h-4", favorited && "fill-current")} />
-            </motion.button>
-          </div>
-
-          {/* View link */}
-          <Link
-            to={`/tool/${tool.id}`}
-            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors"
+        {/* Actions - Link & GitHub */}
+        <div className="flex items-center gap-2 pt-3 border-t border-border/50 mt-auto">
+          <a
+            href={tool.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
           >
-            View
-            <ArrowUpRight className="w-3.5 h-3.5" />
-          </Link>
+            <ExternalLink className="w-4 h-4" />
+            Visit
+          </a>
+          {tool.githubUrl && (
+            <a
+              href={tool.githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Github className="w-4 h-4" />
+              GitHub
+            </a>
+          )}
         </div>
       </div>
     </motion.div>
