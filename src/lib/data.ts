@@ -42,6 +42,10 @@ export const tools: Tool[] = [
     cons: ["Learning curve for beginners", "Frequent updates"],
     alternatives: ["vue", "svelte", "solid"],
     createdAt: "2024-01-15",
+    useCases: ["Single-page applications", "Complex dashboards", "E-commerce platforms", "Real-time collaboration tools"],
+    techStackFit: ["Next.js", "Vite", "TypeScript", "Redux", "TanStack Query"],
+    learningCurve: "medium",
+    communityActivity: "very-active",
   },
   {
     id: "vue",
@@ -58,6 +62,10 @@ export const tools: Tool[] = [
     cons: ["Smaller ecosystem than React", "Less job opportunities"],
     alternatives: ["react", "svelte", "angular"],
     createdAt: "2024-01-10",
+    useCases: ["Progressive web apps", "Admin dashboards", "Content management systems", "Rapid prototyping"],
+    techStackFit: ["Nuxt.js", "Vite", "Pinia", "TypeScript", "Vuetify"],
+    learningCurve: "low",
+    communityActivity: "very-active",
   },
   {
     id: "svelte",
@@ -75,6 +83,10 @@ export const tools: Tool[] = [
     cons: ["Smaller ecosystem", "Fewer learning resources"],
     alternatives: ["react", "vue", "solid"],
     createdAt: "2024-02-01",
+    useCases: ["Performance-critical apps", "Interactive data visualizations", "Lightweight embeddable widgets", "Static sites with SvelteKit"],
+    techStackFit: ["SvelteKit", "TypeScript", "Vite", "TailwindCSS"],
+    learningCurve: "low",
+    communityActivity: "active",
   },
   {
     id: "tailwind",
@@ -91,6 +103,10 @@ export const tools: Tool[] = [
     cons: ["HTML can get verbose", "Learning utility classes"],
     alternatives: ["bootstrap", "chakra-ui"],
     createdAt: "2024-01-05",
+    useCases: ["Rapid UI prototyping", "Design system implementation", "Component libraries", "Landing pages"],
+    techStackFit: ["React", "Vue", "Next.js", "Vite", "shadcn/ui"],
+    learningCurve: "low",
+    communityActivity: "very-active",
   },
   {
     id: "framer-motion",
@@ -105,6 +121,10 @@ export const tools: Tool[] = [
     pros: ["Declarative API", "Spring physics", "Gesture support"],
     cons: ["Bundle size", "React only"],
     createdAt: "2024-01-20",
+    useCases: ["Page transitions", "Micro-interactions", "Gesture-based UIs", "Animated data visualizations"],
+    techStackFit: ["React", "Next.js", "Vite", "TypeScript"],
+    learningCurve: "medium",
+    communityActivity: "active",
   },
   {
     id: "shadcn-ui",
@@ -120,6 +140,10 @@ export const tools: Tool[] = [
     pros: ["Copy-paste components", "Highly customizable", "Great accessibility"],
     cons: ["Not a package", "Manual updates"],
     createdAt: "2024-02-10",
+    useCases: ["SaaS dashboards", "Admin panels", "Marketing sites", "Full-stack applications"],
+    techStackFit: ["React", "Next.js", "Tailwind CSS", "TypeScript", "Radix UI"],
+    learningCurve: "low",
+    communityActivity: "very-active",
   },
   // Backend
   {
