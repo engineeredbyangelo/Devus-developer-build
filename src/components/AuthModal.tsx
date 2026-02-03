@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Mail, Lock, Github, Chrome, ArrowRight, Eye, EyeOff, User } from "lucide-react";
+import { Mail, Lock, Github, Chrome, ArrowRight, Eye, EyeOff, User, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 type AuthMode = "signin" | "signup";
 
@@ -21,15 +23,73 @@ export function AuthModal({ isOpen, onClose, initialMode = "signin" }: AuthModal
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  
+  const { signIn, signUp, signInWithGoogle, signInWithGithub } = useAuth();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Reset form when modal opens/closes or mode changes
+  useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode);
+      setError(null);
+    }
+  }, [isOpen, initialMode]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate auth - will be connected to backend later
-    setTimeout(() => {
+    setError(null);
+
+    try {
+      if (mode === "signup") {
+        const { error } = await signUp(email, password, name);
+        if (error) {
+          setError(error.message);
+        } else {
+          toast({
+            title: "Check your email",
+            description: "We've sent you a confirmation link to verify your account.",
+          });
+          onClose();
+        }
+      } else {
+        const { error } = await signIn(email, password);
+        if (error) {
+          setError(error.message);
+        } else {
+          toast({
+            title: "Welcome back!",
+            description: "You've successfully signed in.",
+          });
+          onClose();
+        }
+      }
+    } finally {
       setIsLoading(false);
-      onClose();
-    }, 1500);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    setError(null);
+    const { error } = await signInWithGoogle();
+    if (error) {
+      setError(error.message);
+      setIsLoading(false);
+    }
+    // Don't close modal - OAuth will redirect
+  };
+
+  const handleGithubSignIn = async () => {
+    setIsLoading(true);
+    setError(null);
+    const { error } = await signInWithGithub();
+    if (error) {
+      setError(error.message);
+      setIsLoading(false);
+    }
+    // Don't close modal - OAuth will redirect
   };
 
   const toggleMode = () => {
@@ -37,6 +97,7 @@ export function AuthModal({ isOpen, onClose, initialMode = "signin" }: AuthModal
     setEmail("");
     setPassword("");
     setName("");
+    setError(null);
   };
 
   return (
@@ -58,12 +119,21 @@ export function AuthModal({ isOpen, onClose, initialMode = "signin" }: AuthModal
         </DialogHeader>
 
         <div className="p-6 relative">
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 flex items-center gap-2 text-sm text-destructive">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              {error}
+            </div>
+          )}
+
           {/* OAuth Buttons */}
           <div className="space-y-3 mb-6">
             <Button
               variant="outline"
               className="w-full h-11 gap-3 bg-secondary/50 hover:bg-secondary border-border"
               disabled={isLoading}
+              onClick={handleGithubSignIn}
             >
               <Github className="w-5 h-5" />
               Continue with GitHub
@@ -72,6 +142,7 @@ export function AuthModal({ isOpen, onClose, initialMode = "signin" }: AuthModal
               variant="outline"
               className="w-full h-11 gap-3 bg-secondary/50 hover:bg-secondary border-border"
               disabled={isLoading}
+              onClick={handleGoogleSignIn}
             >
               <Chrome className="w-5 h-5" />
               Continue with Google
@@ -133,6 +204,7 @@ export function AuthModal({ isOpen, onClose, initialMode = "signin" }: AuthModal
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10 h-11 bg-secondary/50 border-border focus:border-primary"
                   disabled={isLoading}
+                  required
                 />
               </div>
             </div>
@@ -151,6 +223,8 @@ export function AuthModal({ isOpen, onClose, initialMode = "signin" }: AuthModal
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10 pr-10 h-11 bg-secondary/50 border-border focus:border-primary"
                   disabled={isLoading}
+                  required
+                  minLength={6}
                 />
                 <button
                   type="button"

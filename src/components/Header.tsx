@@ -1,14 +1,28 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Sparkles } from "lucide-react";
+import { Menu, X, Sparkles, LogOut, Heart, LayoutDashboard, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "./AuthModal";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Only Home link on landing page - other links are for authenticated users
 const navLinks = [
   { href: "/", label: "Home", icon: Sparkles },
+];
+
+const authNavLinks = [
+  { href: "/favorites", label: "Favorites", icon: Heart },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
 ];
 
 export function Header() {
@@ -18,10 +32,28 @@ export function Header() {
     mode: "signin",
   });
   const location = useLocation();
+  const { user, profile, signOut, isLoading } = useAuth();
 
   const openSignIn = () => setAuthModal({ open: true, mode: "signin" });
   const openSignUp = () => setAuthModal({ open: true, mode: "signup" });
   const closeAuth = () => setAuthModal({ ...authModal, open: false });
+
+  const handleSignOut = async () => {
+    await signOut();
+    setIsMenuOpen(false);
+  };
+
+  const getInitials = (name?: string | null, email?: string | null) => {
+    if (name) {
+      return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+    }
+    if (email) {
+      return email[0].toUpperCase();
+    }
+    return "U";
+  };
+
+  const displayName = profile?.full_name || user?.email?.split("@")[0] || "User";
 
   return (
     <>
@@ -69,21 +101,87 @@ export function Header() {
                 </Link>
               );
             })}
+            
+            {/* Authenticated nav links */}
+            {user && authNavLinks.map((link) => {
+              const Icon = link.icon;
+              const isActive = location.pathname === link.href;
+
+              return (
+                <Link key={link.href} to={link.href}>
+                  <motion.div
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                      isActive
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                    )}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {link.label}
+                  </motion.div>
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Desktop Auth */}
           <div className="hidden md:flex items-center gap-3">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-muted-foreground"
-              onClick={openSignIn}
-            >
-              Sign In
-            </Button>
-            <Button size="sm" className="glow-sm" onClick={openSignUp}>
-              Get Started
-            </Button>
+            {isLoading ? (
+              <div className="w-8 h-8 rounded-full bg-secondary animate-pulse" />
+            ) : user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-2 px-2">
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={profile?.avatar_url || undefined} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                        {getInitials(profile?.full_name, user.email)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-medium max-w-[100px] truncate">
+                      {displayName}
+                    </span>
+                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem asChild>
+                    <Link to="/favorites" className="flex items-center gap-2">
+                      <Heart className="w-4 h-4" />
+                      Favorites
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/dashboard" className="flex items-center gap-2">
+                      <LayoutDashboard className="w-4 h-4" />
+                      Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-muted-foreground"
+                  onClick={openSignIn}
+                >
+                  Sign In
+                </Button>
+                <Button size="sm" className="glow-sm" onClick={openSignUp}>
+                  Get Started
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -135,26 +233,67 @@ export function Header() {
                     </Link>
                   );
                 })}
+                
+                {/* Authenticated mobile nav links */}
+                {user && authNavLinks.map((link) => {
+                  const Icon = link.icon;
+                  const isActive = location.pathname === link.href;
+
+                  return (
+                    <Link
+                      key={link.href}
+                      to={link.href}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <motion.div
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium",
+                          isActive
+                            ? "bg-primary/10 text-primary"
+                            : "text-muted-foreground"
+                        )}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <Icon className="w-5 h-5" />
+                        {link.label}
+                      </motion.div>
+                    </Link>
+                  );
+                })}
+
                 <div className="flex gap-2 mt-4 px-4">
-                  <Button 
-                    variant="outline" 
-                    className="flex-1"
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      openSignIn();
-                    }}
-                  >
-                    Sign In
-                  </Button>
-                  <Button 
-                    className="flex-1"
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      openSignUp();
-                    }}
-                  >
-                    Get Started
-                  </Button>
+                  {user ? (
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={handleSignOut}
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  ) : (
+                    <>
+                      <Button 
+                        variant="outline" 
+                        className="flex-1"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          openSignIn();
+                        }}
+                      >
+                        Sign In
+                      </Button>
+                      <Button 
+                        className="flex-1"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          openSignUp();
+                        }}
+                      >
+                        Get Started
+                      </Button>
+                    </>
+                  )}
                 </div>
               </nav>
             </motion.div>
