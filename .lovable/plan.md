@@ -1,194 +1,208 @@
 
-# Full Dashboard Implementation & Tool Data Completion
+
+# OAuth "Coming Soon" Tags & AI-Powered Tool Discovery
 
 ## Overview
-This plan builds out the full Intelligence Hub (Dashboard) for authenticated users and ensures every tool card displays complete, consistent information.
+This plan covers two main features:
+1. **Coming Soon Tags**: Add visual badges to Google and GitHub OAuth buttons indicating they're not yet configured
+2. **AI Tool Discovery**: Integrate Lovable AI to enable real-time discovery of new developer tools that can be added to the dashboard
 
 ---
 
-## Part 1: Dashboard - Full Product Experience
+## Part 1: Coming Soon Tags for OAuth Buttons
 
 ### Current State
-The Dashboard page exists but shows only:
-- Favorites tab (works but relies on localStorage)
-- Categories tab (static toggles)
-- Submissions tab (placeholder)
+The Google and GitHub OAuth buttons in `AuthModal.tsx` call `signInWithGoogle` and `signInWithGithub`, but these providers aren't configured yet in the backend.
 
-### Target State
-Transform the Dashboard into a fully-featured Intelligence Hub:
+### Solution
+- Add a "Coming Soon" badge to both OAuth buttons
+- Disable the buttons to prevent clicks
+- Update styling to indicate inactive state
+- Keep email/password authentication fully functional
 
-1. **Explore Tab (New - Primary Tab)**
-   - Full tool grid with ALL tools (not limited to 6 like demo)
-   - Search functionality
-   - Category filtering
-   - Tag filtering
-   - Tool modal with complete info (same as demo modal)
+### File Changes
+| File | Action |
+|------|--------|
+| `src/components/AuthModal.tsx` | Modify - Add badges and disable OAuth buttons |
 
-2. **Favorites Tab (Enhanced)**
-   - Connect to Supabase profile.favorites instead of localStorage
-   - Add/remove favorites persisted to database
-   - Empty state with "Explore" CTA
-
-3. **Categories Tab (Enhanced)**
-   - Connect to Supabase profile.followed_categories
-   - Show tools from followed categories
-   - Persist preferences to database
-
-4. **Submissions Tab (Keep as placeholder)**
-   - Future feature for user-submitted tools
-
-### Authentication Guard
-- Dashboard requires authentication
-- Redirect to home with auth modal if not logged in
-
----
-
-## Part 2: Complete Tool Data
-
-### Tools Missing Developer Fields
-The following 25 tools need complete data:
-
-| Category | Tools |
-|----------|-------|
-| Backend | nodejs, deno, bun, trpc, hono, fastify |
-| AI/ML | langchain, ollama, huggingface, vercel-ai, openai-api |
-| Database | supabase, prisma, drizzle, planetscale, neon, turso |
-| DevOps | docker, kubernetes, terraform, github-actions, railway |
-| Testing | vitest, playwright, cypress |
-| Productivity | cursor, linear, raycast, warp |
-
-### Fields to Add for Each Tool
-```typescript
-useCases: string[]           // 3-4 specific use cases
-techStackFit: string[]       // 4-6 compatible technologies
-learningCurve: "low" | "medium" | "high"
-communityActivity: "low" | "moderate" | "active" | "very-active"
-longDescription?: string     // Extended description (where missing)
+### Implementation
+```text
++------------------------------------------+
+|  [GitHub icon] Continue with GitHub      |
+|                         [Coming Soon]    |
++------------------------------------------+
+|  [Chrome icon] Continue with Google      |
+|                         [Coming Soon]    |
++------------------------------------------+
 ```
 
 ---
 
-## Part 3: Favorites Integration with Database
+## Part 2: AI-Powered Real-Time Tool Discovery
 
-### Current Implementation
-- Favorites stored in localStorage via `useFavorites` hook
-- Not synced with user profile
+### Architecture Overview
 
-### New Implementation
-- Create `useFavoritesDb` hook that:
-  - Reads from Supabase `profiles.favorites`
-  - Updates database on add/remove
-  - Falls back to localStorage for unauthenticated users
-  - Syncs localStorage to database on login
+```text
+User Dashboard                Edge Function               Lovable AI
+    |                              |                          |
+    |-- "Discover Tools" --------->|                          |
+    |                              |-- Search query --------->|
+    |                              |<-- Structured tools -----|
+    |<-- New tool cards -----------|                          |
+    |                              |                          |
+    v                              v                          v
++----------------+     +-------------------+     +------------------+
+|  AI Discovery  |     | discover-tools    |     | Gemini 3 Flash   |
+|  Component     | --> | Edge Function     | --> | (Tool Calling)   |
++----------------+     +-------------------+     +------------------+
+```
 
----
+### Database Changes
+Create a `discovered_tools` table to cache AI-discovered tools:
+- `id` (uuid, primary key)
+- `name`, `description`, `long_description`
+- `category`, `tags`, `url`, `github_url`
+- `use_cases`, `tech_stack_fit`, `learning_curve`, `community_activity`
+- `ai_generated` (boolean, default true)
+- `approved` (boolean, default false) - for moderation
+- `discovered_by` (uuid, FK to auth.users)
+- `created_at`, `updated_at`
 
-## File Changes
+RLS Policies:
+- Authenticated users can insert discovered tools
+- All users can read approved tools
+- Only tool discoverers can update their submissions
 
-| File | Action | Description |
-|------|--------|-------------|
-| `src/pages/Dashboard.tsx` | Major Rewrite | Add Explore tab, integrate Supabase, add auth guard |
-| `src/lib/data.ts` | Modify | Add missing developer fields to 25 tools |
-| `src/hooks/use-tools.ts` | Modify | Add Supabase-backed favorites hook |
-| `src/components/DashboardToolGrid.tsx` | Create | Tool grid with modal integration for dashboard |
+### New Files to Create
+
+| File | Purpose |
+|------|---------|
+| `supabase/functions/discover-tools/index.ts` | Edge function using Lovable AI for tool discovery |
+| `src/components/AIToolDiscovery.tsx` | UI component for AI discovery feature in dashboard |
+| `src/hooks/use-discovered-tools.ts` | Hook for managing discovered tools state |
+
+### Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/pages/Dashboard.tsx` | Add AI Discovery section/tab |
+| `supabase/config.toml` | Register new edge function |
 
 ---
 
 ## Technical Implementation
 
-### Dashboard Structure
+### Edge Function: discover-tools
 
+The edge function will:
+1. Accept a search query or category for tool discovery
+2. Call Lovable AI (Gemini 3 Flash) with tool calling to get structured output
+3. Return tools in the exact format matching the existing Tool type
+4. Support both general discovery and category-specific searches
+
+**Tool Calling Schema:**
+```typescript
+{
+  type: "function",
+  function: {
+    name: "discover_developer_tools",
+    description: "Discover and return developer tools matching the query",
+    parameters: {
+      type: "object",
+      properties: {
+        tools: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+              description: { type: "string" },
+              longDescription: { type: "string" },
+              category: { type: "string", enum: ["frontend", "backend", "devops", "ai-ml", "database", "testing", "mobile", "security", "productivity"] },
+              tags: { type: "array", items: { type: "string" } },
+              url: { type: "string" },
+              githubUrl: { type: "string" },
+              useCases: { type: "array", items: { type: "string" } },
+              techStackFit: { type: "array", items: { type: "string" } },
+              learningCurve: { type: "string", enum: ["low", "medium", "high"] },
+              communityActivity: { type: "string", enum: ["low", "moderate", "active", "very-active"] }
+            },
+            required: ["name", "description", "category", "url"]
+          }
+        }
+      },
+      required: ["tools"]
+    }
+  }
+}
+```
+
+### AI Discovery Component
+
+Features:
+- Search input for specific tool queries
+- Category dropdown for focused discovery
+- "Discover" button to trigger AI search
+- Results display as tool cards (matching existing design)
+- "Add to Collection" button to save to database
+- Loading and error states
+
+### Dashboard Integration
+
+Add new "Discover" tab in Dashboard:
 ```text
-Dashboard Layout:
-+------------------+--------------------------------+
-|   Sidebar        |   Main Content Area            |
-|                  |                                |
-| [User Card]      | [Tab: Explore]                 |
-|                  |   - Search bar                 |
-| [Explore] (new)  |   - Category filter            |
-| [Favorites]      |   - Full tool grid (ALL tools) |
-| [Categories]     |   - Tool modal on click        |
-| [Submissions]    |                                |
-|                  | [Tab: Favorites]               |
-| [Settings]       |   - User's saved tools         |
-| [Sign Out]       |   - Synced with database       |
-+------------------+--------------------------------+
+[Explore] [Favorites] [Categories] [Discover ✨] [Submissions]
 ```
 
-### Authentication Guard Pattern
-```typescript
-// At top of Dashboard component
-const { user, isLoading } = useAuth();
-const navigate = useNavigate();
-
-useEffect(() => {
-  if (!isLoading && !user) {
-    navigate("/", { state: { openAuth: true } });
-  }
-}, [user, isLoading, navigate]);
-
-if (isLoading) return <LoadingSpinner />;
-if (!user) return null;
-```
-
-### Favorites Sync with Database
-```typescript
-const { profile, refreshProfile } = useAuth();
-
-const addFavorite = async (toolId: string) => {
-  if (!user) {
-    // Use localStorage for unauthenticated
-    localStorageAdd(toolId);
-    return;
-  }
-  
-  const newFavorites = [...(profile?.favorites || []), toolId];
-  await supabase
-    .from("profiles")
-    .update({ favorites: newFavorites })
-    .eq("id", user.id);
-  
-  await refreshProfile();
-};
-```
+The Discover tab will show:
+- AI search interface
+- Recently discovered tools by community
+- Quick category discovery buttons
 
 ---
 
-## Tool Data Additions (Examples)
+## File Summary
 
-### Node.js (Backend)
-```typescript
-useCases: ["REST API servers", "Real-time applications", "Microservices", "CLI tools"],
-techStackFit: ["Express", "Fastify", "TypeScript", "MongoDB", "PostgreSQL", "Docker"],
-learningCurve: "medium",
-communityActivity: "very-active",
-longDescription: "Node.js is a JavaScript runtime built on Chrome's V8 JavaScript engine. It allows developers to use JavaScript for server-side scripting, enabling full-stack development with a single language."
-```
-
-### Supabase (Database)
-```typescript
-useCases: ["Backend as a Service", "Real-time applications", "Authentication systems", "Serverless APIs"],
-techStackFit: ["React", "Next.js", "Vue", "PostgreSQL", "TypeScript", "Edge Functions"],
-learningCurve: "low",
-communityActivity: "very-active",
-longDescription: "Supabase is an open source Firebase alternative providing all the backend services you need to build a product. Start with a Postgres database, add authentication, instant APIs, edge functions, realtime subscriptions, and storage."
-```
-
-### Vitest (Testing)
-```typescript
-useCases: ["Unit testing", "Component testing", "Integration testing", "Snapshot testing"],
-techStackFit: ["Vite", "React", "Vue", "TypeScript", "Vitest UI", "Testing Library"],
-learningCurve: "low",
-communityActivity: "very-active",
-longDescription: "Vitest is a blazing fast unit test framework powered by Vite. It provides Jest-compatible APIs with first-class TypeScript support and instant watch mode for rapid development."
-```
+| File | Action | Description |
+|------|--------|-------------|
+| `src/components/AuthModal.tsx` | Modify | Add "Coming Soon" badges to OAuth buttons |
+| `supabase/functions/discover-tools/index.ts` | Create | AI-powered tool discovery edge function |
+| `src/components/AIToolDiscovery.tsx` | Create | UI for AI tool discovery |
+| `src/hooks/use-discovered-tools.ts` | Create | Hook for discovered tools management |
+| `src/pages/Dashboard.tsx` | Modify | Add Discover tab |
+| `supabase/config.toml` | Modify | Register edge function |
+| Database Migration | Create | `discovered_tools` table |
 
 ---
 
-## Summary
+## User Experience Flow
 
-1. **Dashboard Enhancement**: Add "Explore" as primary tab showing all tools with search/filter
-2. **Data Completion**: Add developer fields to all 25 incomplete tools
-3. **Database Integration**: Connect favorites to Supabase profiles
-4. **Auth Protection**: Guard dashboard route, redirect unauthenticated users
-5. **Consistency**: Same tool modal experience across demo and dashboard
+1. **Authenticated user** navigates to Dashboard
+2. Clicks **"Discover"** tab
+3. Enters search query like "code review tools" or selects a category
+4. AI returns 3-5 relevant tools with complete metadata
+5. User can:
+   - View tool details in the same modal format
+   - Add tools to favorites
+   - Submit tools for community approval
+6. Approved tools appear in the main Explore tab
+
+---
+
+## Error Handling
+
+- **Rate limits (429)**: Show friendly message, suggest retry later
+- **Payment required (402)**: Inform user to add credits
+- **AI failures**: Graceful fallback with manual submission link
+- **Invalid responses**: Validate tool structure before display
+
+---
+
+## Next Steps After Implementation
+
+1. Test the "Coming Soon" badges appear correctly on OAuth buttons
+2. Verify email authentication still works without issues
+3. Test AI discovery with various queries
+4. Validate discovered tools match the Tool type schema
+5. Check that favorites work with AI-discovered tools
+
