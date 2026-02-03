@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      discovered_tools: {
+        Row: {
+          ai_generated: boolean | null
+          approved: boolean | null
+          category: string
+          community_activity: string | null
+          created_at: string
+          description: string
+          discovered_by: string | null
+          github_url: string | null
+          id: string
+          learning_curve: string | null
+          logo_url: string | null
+          long_description: string | null
+          name: string
+          screenshot_url: string | null
+          tags: string[] | null
+          tech_stack_fit: string[] | null
+          updated_at: string
+          url: string
+          use_cases: string[] | null
+        }
+        Insert: {
+          ai_generated?: boolean | null
+          approved?: boolean | null
+          category: string
+          community_activity?: string | null
+          created_at?: string
+          description: string
+          discovered_by?: string | null
+          github_url?: string | null
+          id?: string
+          learning_curve?: string | null
+          logo_url?: string | null
+          long_description?: string | null
+          name: string
+          screenshot_url?: string | null
+          tags?: string[] | null
+          tech_stack_fit?: string[] | null
+          updated_at?: string
+          url: string
+          use_cases?: string[] | null
+        }
+        Update: {
+          ai_generated?: boolean | null
+          approved?: boolean | null
+          category?: string
+          community_activity?: string | null
+          created_at?: string
+          description?: string
+          discovered_by?: string | null
+          github_url?: string | null
+          id?: string
+          learning_curve?: string | null
+          logo_url?: string | null
+          long_description?: string | null
+          name?: string
+          screenshot_url?: string | null
+          tags?: string[] | null
+          tech_stack_fit?: string[] | null
+          updated_at?: string
+          url?: string
+          use_cases?: string[] | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

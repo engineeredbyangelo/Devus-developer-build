@@ -12,9 +12,11 @@ import {
   Compass,
   Search,
   Loader2,
+  Sparkles,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { DashboardToolGrid } from "@/components/DashboardToolGrid";
+import { AIToolDiscovery } from "@/components/AIToolDiscovery";
 import { useFavoritesDb, useFollowedCategoriesDb } from "@/hooks/use-tools";
 import { useAuth } from "@/hooks/useAuth";
 import { categories, tools } from "@/lib/data";
@@ -26,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { TagFilter } from "@/components/TagFilter";
 
-type Tab = "explore" | "favorites" | "categories" | "submissions";
+type Tab = "explore" | "favorites" | "categories" | "discover" | "submissions";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -81,6 +83,7 @@ const Dashboard = () => {
     { id: "explore" as Tab, label: "Explore", icon: Compass, count: tools.length },
     { id: "favorites" as Tab, label: "Favorites", icon: Heart, count: favoriteTools.length },
     { id: "categories" as Tab, label: "Categories", icon: Folder, count: followedCategories.length },
+    { id: "discover" as Tab, label: "Discover", icon: Sparkles, count: null },
     { id: "submissions" as Tab, label: "Submissions", icon: Clock, count: 0 },
   ];
 
@@ -141,16 +144,23 @@ const Dashboard = () => {
                         <Icon className="w-4 h-4" />
                         {tab.label}
                       </div>
-                      <span
-                        className={cn(
-                          "px-2 py-0.5 rounded-full text-xs",
-                          isActive
-                            ? "bg-primary/20"
-                            : "bg-secondary"
-                        )}
-                      >
-                        {tab.count}
-                      </span>
+                      {tab.count !== null && (
+                        <span
+                          className={cn(
+                            "px-2 py-0.5 rounded-full text-xs",
+                            isActive
+                              ? "bg-primary/20"
+                              : "bg-secondary"
+                          )}
+                        >
+                          {tab.count}
+                        </span>
+                      )}
+                      {tab.id === "discover" && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] bg-gradient-to-r from-primary/20 to-accent/20 text-primary">
+                          AI
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -335,6 +345,19 @@ const Dashboard = () => {
                     />
                   </div>
                 )}
+              </motion.div>
+            )}
+
+            {activeTab === "discover" && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                key="discover"
+              >
+                <AIToolDiscovery
+                  onAddToFavorites={toggleFavorite}
+                  isFavorite={isFavorite}
+                />
               </motion.div>
             )}
 

@@ -131,21 +131,25 @@ export function AuthModal({ isOpen, onClose, initialMode = "signin" }: AuthModal
           <div className="space-y-3 mb-6">
             <Button
               variant="outline"
-              className="w-full h-11 gap-3 bg-secondary/50 hover:bg-secondary border-border"
-              disabled={isLoading}
-              onClick={handleGithubSignIn}
+              className="w-full h-11 gap-3 bg-secondary/30 border-border opacity-60 cursor-not-allowed relative"
+              disabled
             >
               <Github className="w-5 h-5" />
               Continue with GitHub
+              <span className="absolute right-3 px-2 py-0.5 text-[10px] font-medium bg-muted text-muted-foreground rounded-full">
+                Coming Soon
+              </span>
             </Button>
             <Button
               variant="outline"
-              className="w-full h-11 gap-3 bg-secondary/50 hover:bg-secondary border-border"
-              disabled={isLoading}
-              onClick={handleGoogleSignIn}
+              className="w-full h-11 gap-3 bg-secondary/30 border-border opacity-60 cursor-not-allowed relative"
+              disabled
             >
               <Chrome className="w-5 h-5" />
               Continue with Google
+              <span className="absolute right-3 px-2 py-0.5 text-[10px] font-medium bg-muted text-muted-foreground rounded-full">
+                Coming Soon
+              </span>
             </Button>
           </div>
 
