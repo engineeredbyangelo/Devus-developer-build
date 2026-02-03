@@ -68,6 +68,7 @@ export function useNewTools() {
 const FAVORITES_KEY = "devus-favorites";
 const UPVOTES_KEY = "devus-upvotes";
 
+// Legacy localStorage-based favorites (for unauthenticated users)
 export function useFavorites() {
   const [favorites, setFavorites] = useState<string[]>(() => {
     const stored = localStorage.getItem(FAVORITES_KEY);
@@ -108,6 +109,125 @@ export function useFavorites() {
     removeFavorite,
     toggleFavorite,
     isFavorite,
+  };
+}
+
+// Supabase-backed favorites for authenticated users
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+
+export function useFavoritesDb() {
+  const { user, profile, refreshProfile } = useAuth();
+  
+  // Fallback to localStorage for unauthenticated
+  const [localFavorites, setLocalFavorites] = useState<string[]>(() => {
+    const stored = localStorage.getItem(FAVORITES_KEY);
+    return stored ? JSON.parse(stored) : [];
+  });
+
+  // Sync localStorage to profile on login
+  useEffect(() => {
+    if (user && profile && localFavorites.length > 0) {
+      const profileFavorites = profile.favorites || [];
+      const mergedFavorites = [...new Set([...profileFavorites, ...localFavorites])];
+      
+      if (mergedFavorites.length > profileFavorites.length) {
+        supabase
+          .from("profiles")
+          .update({ favorites: mergedFavorites })
+          .eq("id", user.id)
+          .then(() => {
+            refreshProfile();
+            localStorage.setItem(FAVORITES_KEY, JSON.stringify([]));
+            setLocalFavorites([]);
+          });
+      }
+    }
+  }, [user, profile]);
+
+  const favorites = user ? (profile?.favorites || []) : localFavorites;
+  const favoriteTools = tools.filter((tool) => favorites.includes(tool.id));
+
+  const toggleFavorite = useCallback(async (toolId: string) => {
+    if (!user) {
+      // Use localStorage for unauthenticated
+      setLocalFavorites((prev) => {
+        const newFavorites = prev.includes(toolId)
+          ? prev.filter((id) => id !== toolId)
+          : [...prev, toolId];
+        localStorage.setItem(FAVORITES_KEY, JSON.stringify(newFavorites));
+        return newFavorites;
+      });
+      return;
+    }
+
+    const currentFavorites = profile?.favorites || [];
+    const newFavorites = currentFavorites.includes(toolId)
+      ? currentFavorites.filter((id) => id !== toolId)
+      : [...currentFavorites, toolId];
+
+    await supabase
+      .from("profiles")
+      .update({ favorites: newFavorites })
+      .eq("id", user.id);
+
+    await refreshProfile();
+  }, [user, profile, refreshProfile]);
+
+  const isFavorite = useCallback(
+    (toolId: string) => favorites.includes(toolId),
+    [favorites]
+  );
+
+  return {
+    favorites,
+    favoriteTools,
+    toggleFavorite,
+    isFavorite,
+  };
+}
+
+// Supabase-backed followed categories
+export function useFollowedCategoriesDb() {
+  const { user, profile, refreshProfile } = useAuth();
+  
+  const [localCategories, setLocalCategories] = useState<string[]>([]);
+
+  const followedCategories = user 
+    ? (profile?.followed_categories || []) 
+    : localCategories;
+  
+  const categoryTools = tools.filter((tool) => 
+    followedCategories.includes(tool.category)
+  );
+
+  const toggleCategory = useCallback(async (categoryId: string) => {
+    if (!user) {
+      setLocalCategories((prev) =>
+        prev.includes(categoryId)
+          ? prev.filter((id) => id !== categoryId)
+          : [...prev, categoryId]
+      );
+      return;
+    }
+
+    const currentCategories = profile?.followed_categories || [];
+    const newCategories = currentCategories.includes(categoryId)
+      ? currentCategories.filter((id) => id !== categoryId)
+      : [...currentCategories, categoryId];
+
+    await supabase
+      .from("profiles")
+      .update({ followed_categories: newCategories })
+      .eq("id", user.id);
+
+    await refreshProfile();
+  }, [user, profile, refreshProfile]);
+
+  return {
+    followedCategories,
+    categoryTools,
+    toggleCategory,
   };
 }
 
