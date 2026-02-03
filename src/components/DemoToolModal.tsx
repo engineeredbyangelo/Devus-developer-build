@@ -59,15 +59,17 @@ export function DemoToolModal({ tool, isOpen, onClose }: DemoToolModalProps) {
             className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
           />
           
-          {/* Modal */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: "spring", duration: 0.5 }}
-            className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-2xl md:w-full md:max-h-[85vh] z-50 overflow-hidden"
-          >
-            <div className="glass rounded-2xl overflow-hidden h-full flex flex-col">
+          {/* Modal Wrapper - Flexbox centered with scroll */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", duration: 0.5 }}
+              className="w-full max-w-2xl my-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="glass rounded-2xl overflow-hidden max-h-[85vh] flex flex-col">
               {/* Header */}
               <div className="p-4 md:p-6 border-b border-border/50 flex items-start justify-between">
                 <div className="flex items-center gap-4">
@@ -228,6 +230,7 @@ export function DemoToolModal({ tool, isOpen, onClose }: DemoToolModalProps) {
               </div>
             </div>
           </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>
