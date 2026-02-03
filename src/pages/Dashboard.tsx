@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Heart,
@@ -9,46 +9,88 @@ import {
   Settings,
   LogOut,
   ChevronRight,
+  Compass,
+  Search,
+  Loader2,
 } from "lucide-react";
 import { Header } from "@/components/Header";
-import { ToolGrid } from "@/components/ToolGrid";
-import { useFavorites } from "@/hooks/use-tools";
-import { categories } from "@/lib/data";
-import { Category } from "@/lib/types";
+import { DashboardToolGrid } from "@/components/DashboardToolGrid";
+import { useFavoritesDb, useFollowedCategoriesDb } from "@/hooks/use-tools";
+import { useAuth } from "@/hooks/useAuth";
+import { categories, tools } from "@/lib/data";
+import { Category, Tag, Tool } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { CategoryFilter } from "@/components/CategoryFilter";
+import { TagFilter } from "@/components/TagFilter";
 
-type Tab = "favorites" | "categories" | "submissions";
+type Tab = "explore" | "favorites" | "categories" | "submissions";
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState<Tab>("favorites");
-  const { favoriteTools } = useFavorites();
-  const [followedCategories, setFollowedCategories] = useState<Category[]>([
-    "frontend",
-    "ai-ml",
-  ]);
+  const navigate = useNavigate();
+  const { user, profile, isLoading: authLoading, signOut } = useAuth();
+  const [activeTab, setActiveTab] = useState<Tab>("explore");
+  const { favoriteTools, isFavorite, toggleFavorite } = useFavoritesDb();
+  const { followedCategories, toggleCategory, categoryTools } = useFollowedCategoriesDb();
+  
+  // Explore tab state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
 
-  const toggleCategory = (category: Category) => {
-    setFollowedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category]
+  // Auth guard - redirect if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/", { state: { openAuth: true } });
+    }
+  }, [user, authLoading, navigate]);
+
+  // Show loading state while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated
+  if (!user) {
+    return null;
+  }
+
+  // Filter tools for Explore tab
+  const filteredTools = tools.filter((tool) => {
+    const matchesSearch = !searchQuery || 
+      tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      tool.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = !selectedCategory || tool.category === selectedCategory;
+    const matchesTags = selectedTags.length === 0 || selectedTags.some(tag => tool.tags.includes(tag));
+    return matchesSearch && matchesCategory && matchesTags;
+  });
+
+  const toggleTag = (tag: Tag) => {
+    setSelectedTags(prev =>
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
     );
   };
 
   const tabs = [
+    { id: "explore" as Tab, label: "Explore", icon: Compass, count: tools.length },
     { id: "favorites" as Tab, label: "Favorites", icon: Heart, count: favoriteTools.length },
     { id: "categories" as Tab, label: "Categories", icon: Folder, count: followedCategories.length },
     { id: "submissions" as Tab, label: "Submissions", icon: Clock, count: 0 },
   ];
 
-  // Mock user
-  const user = {
-    name: "Developer",
-    email: "dev@example.com",
-    avatar: "",
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
   };
+
+  const userName = profile?.full_name || user.email?.split("@")[0] || "Developer";
+  const userEmail = user.email || "";
 
   return (
     <div className="min-h-screen bg-background">
@@ -68,14 +110,14 @@ const Dashboard = () => {
             <div className="glass rounded-xl p-6">
               <div className="flex items-center gap-4 mb-6">
                 <Avatar className="w-12 h-12">
-                  <AvatarImage src={user.avatar} />
+                  <AvatarImage src={profile?.avatar_url || ""} />
                   <AvatarFallback className="bg-primary text-primary-foreground">
-                    {user.name.charAt(0)}
+                    {userName.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <div>
-                  <h3 className="font-semibold">{user.name}</h3>
-                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                <div className="min-w-0">
+                  <h3 className="font-semibold truncate">{userName}</h3>
+                  <p className="text-sm text-muted-foreground truncate">{userEmail}</p>
                 </div>
               </div>
 
@@ -119,7 +161,10 @@ const Dashboard = () => {
                   <Settings className="w-4 h-4" />
                   Settings
                 </button>
-                <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
+                <button 
+                  onClick={handleSignOut}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+                >
                   <LogOut className="w-4 h-4" />
                   Sign Out
                 </button>
@@ -138,14 +183,58 @@ const Dashboard = () => {
                 <LayoutDashboard className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">Dashboard</h1>
+                <h1 className="text-2xl font-bold">Intelligence Hub</h1>
                 <p className="text-sm text-muted-foreground">
-                  Manage your saved tools and preferences
+                  Discover, compare, and track developer tools
                 </p>
               </div>
             </div>
 
             {/* Tab Content */}
+            {activeTab === "explore" && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                key="explore"
+                className="space-y-6"
+              >
+                {/* Search and Filters */}
+                <div className="glass rounded-xl p-4 space-y-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search tools..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 bg-background/50"
+                    />
+                  </div>
+                  <div className="flex flex-wrap gap-4">
+                    <CategoryFilter
+                      selectedCategory={selectedCategory}
+                      onSelectCategory={setSelectedCategory}
+                    />
+                    <TagFilter
+                      selectedTags={selectedTags}
+                      onToggleTag={toggleTag}
+                    />
+                  </div>
+                </div>
+
+                {/* Results count */}
+                <p className="text-sm text-muted-foreground">
+                  {filteredTools.length} tool{filteredTools.length !== 1 ? "s" : ""} found
+                </p>
+
+                {/* Tool Grid */}
+                <DashboardToolGrid
+                  tools={filteredTools}
+                  isFavorite={isFavorite}
+                  onToggleFavorite={toggleFavorite}
+                />
+              </motion.div>
+            )}
+
             {activeTab === "favorites" && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -156,15 +245,22 @@ const Dashboard = () => {
                 {favoriteTools.length === 0 ? (
                   <div className="glass rounded-xl p-12 text-center">
                     <Heart className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground mb-2">
                       No favorites yet. Start exploring!
                     </p>
-                    <Link to="/">
-                      <Button className="mt-4">Discover Tools</Button>
-                    </Link>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Click the heart icon on any tool to save it here.
+                    </p>
+                    <Button onClick={() => setActiveTab("explore")}>
+                      Explore Tools
+                    </Button>
                   </div>
                 ) : (
-                  <ToolGrid tools={favoriteTools} />
+                  <DashboardToolGrid
+                    tools={favoriteTools}
+                    isFavorite={isFavorite}
+                    onToggleFavorite={toggleFavorite}
+                  />
                 )}
               </motion.div>
             )}
@@ -174,54 +270,71 @@ const Dashboard = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 key="categories"
+                className="space-y-6"
               >
-                <h2 className="text-lg font-semibold mb-4">Followed Categories</h2>
-                <p className="text-sm text-muted-foreground mb-6">
-                  Get notified about new tools in these categories
-                </p>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {categories.map((category) => {
-                    const isFollowed = followedCategories.includes(category.id);
+                <div>
+                  <h2 className="text-lg font-semibold mb-2">Followed Categories</h2>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Get notified about new tools in these categories
+                  </p>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {categories.map((category) => {
+                      const isFollowed = followedCategories.includes(category.id);
 
-                    return (
-                      <motion.button
-                        key={category.id}
-                        onClick={() => toggleCategory(category.id)}
-                        className={cn(
-                          "glass glass-hover rounded-xl p-4 text-left transition-all",
-                          isFollowed && "border-primary/50 bg-primary/5"
-                        )}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="font-medium">{category.name}</h3>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {category.description}
-                            </p>
+                      return (
+                        <motion.button
+                          key={category.id}
+                          onClick={() => toggleCategory(category.id)}
+                          className={cn(
+                            "glass glass-hover rounded-xl p-4 text-left transition-all",
+                            isFollowed && "border-primary/50 bg-primary/5"
+                          )}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h3 className="font-medium">{category.name}</h3>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                {category.description}
+                              </p>
+                            </div>
+                            <div
+                              className={cn(
+                                "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors",
+                                isFollowed
+                                  ? "border-primary bg-primary"
+                                  : "border-muted-foreground"
+                              )}
+                            >
+                              {isFollowed && (
+                                <motion.div
+                                  initial={{ scale: 0 }}
+                                  animate={{ scale: 1 }}
+                                >
+                                  <ChevronRight className="w-4 h-4 text-primary-foreground" />
+                                </motion.div>
+                              )}
+                            </div>
                           </div>
-                          <div
-                            className={cn(
-                              "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors",
-                              isFollowed
-                                ? "border-primary bg-primary"
-                                : "border-muted-foreground"
-                            )}
-                          >
-                            {isFollowed && (
-                              <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                              >
-                                <ChevronRight className="w-4 h-4 text-primary-foreground" />
-                              </motion.div>
-                            )}
-                          </div>
-                        </div>
-                      </motion.button>
-                    );
-                  })}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
                 </div>
+
+                {/* Show tools from followed categories */}
+                {followedCategories.length > 0 && categoryTools.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">
+                      Tools from Followed Categories
+                    </h3>
+                    <DashboardToolGrid
+                      tools={categoryTools}
+                      isFavorite={isFavorite}
+                      onToggleFavorite={toggleFavorite}
+                    />
+                  </div>
+                )}
               </motion.div>
             )}
 
