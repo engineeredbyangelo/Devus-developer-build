@@ -14,9 +14,10 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialMode?: AuthMode;
+  onSignInSuccess?: (userName: string) => void;
 }
 
-export function AuthModal({ isOpen, onClose, initialMode = "signin" }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose, initialMode = "signin", onSignInSuccess }: AuthModalProps) {
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,11 +59,11 @@ export function AuthModal({ isOpen, onClose, initialMode = "signin" }: AuthModal
         if (error) {
           setError(error.message);
         } else {
-          toast({
-            title: "Welcome back!",
-            description: "You've successfully signed in.",
-          });
           onClose();
+          // Trigger welcome animation with the user's name
+          if (onSignInSuccess) {
+            onSignInSuccess(name || email.split("@")[0]);
+          }
         }
       }
     } finally {
@@ -102,7 +103,7 @@ export function AuthModal({ isOpen, onClose, initialMode = "signin" }: AuthModal
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md p-0 gap-0 bg-card border-border overflow-hidden">
+      <DialogContent className="sm:max-w-md p-0 gap-0 bg-card border-border max-h-[90vh] overflow-y-auto">
         {/* Glow effect */}
         <div className="absolute inset-0 bg-gradient-radial from-primary/5 via-transparent to-transparent pointer-events-none" />
 
