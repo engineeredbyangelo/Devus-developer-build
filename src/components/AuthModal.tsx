@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 type AuthMode = "signin" | "signup";
 
@@ -59,10 +60,18 @@ export function AuthModal({ isOpen, onClose, initialMode = "signin", onSignInSuc
         if (error) {
           setError(error.message);
         } else {
+          // Fetch profile to get actual name before triggering welcome
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("full_name")
+            .eq("id", (await supabase.auth.getUser()).data.user?.id)
+            .single();
+          
           onClose();
-          // Trigger welcome animation with the user's name
+          // Trigger welcome animation with user's actual name from profile
           if (onSignInSuccess) {
-            onSignInSuccess(name || email.split("@")[0]);
+            const userName = profileData?.full_name || email.split("@")[0];
+            onSignInSuccess(userName);
           }
         }
       }

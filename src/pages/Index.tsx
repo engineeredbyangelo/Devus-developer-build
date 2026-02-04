@@ -9,21 +9,20 @@ import { DemoPreview } from "@/components/DemoPreview";
 import { BenefitsSection } from "@/components/BenefitsSection";
 import { AuthModal } from "@/components/AuthModal";
 import { WelcomeAnimation } from "@/components/WelcomeAnimation";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [showWelcome, setShowWelcome] = useState(false);
-  const [welcomeUserName, setWelcomeUserName] = useState("");
+  const { showWelcome, welcomeUserName, completeWelcome, triggerWelcome } = useAuth();
 
   const openSignUp = () => setAuthModalOpen(true);
 
   const handleSignInSuccess = (userName: string) => {
-    setWelcomeUserName(userName);
-    setShowWelcome(true);
+    triggerWelcome(userName);
   };
 
   const handleWelcomeComplete = () => {
-    setShowWelcome(false);
+    completeWelcome();
   };
 
   return (
