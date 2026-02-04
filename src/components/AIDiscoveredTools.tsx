@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
-import { Sparkles, ExternalLink, Github, Loader2, X, Zap } from "lucide-react";
+import { Sparkles, Loader2, X, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DiscoveredTool } from "@/hooks/use-ai-search";
-import { cn } from "@/lib/utils";
+import { ToolCard } from "./ToolCard";
+import { Tool, Category, Tag } from "@/lib/types";
 
 interface AIDiscoveredToolsProps {
   tools: DiscoveredTool[];
@@ -11,6 +12,22 @@ interface AIDiscoveredToolsProps {
   hasActiveFilters: boolean;
   onDiscover: () => void;
   onClear: () => void;
+}
+
+// Convert DiscoveredTool to Tool format for consistent display
+function toToolFormat(discovered: DiscoveredTool): Tool {
+  return {
+    id: discovered.id,
+    name: discovered.name,
+    description: discovered.description,
+    category: discovered.category as Category,
+    tags: discovered.tags as Tag[],
+    url: discovered.url,
+    githubUrl: discovered.githubUrl,
+    upvotes: 0,
+    createdAt: new Date().toISOString(),
+    isNew: true, // Mark as AI-discovered
+  };
 }
 
 export function AIDiscoveredTools({
@@ -54,13 +71,13 @@ export function AIDiscoveredTools({
       >
         <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-3" />
         <p className="text-sm text-muted-foreground">
-          Searching the web for developer tools...
+          Searching GitHub, ProductHunt & more for developer tools...
         </p>
       </motion.div>
     );
   }
 
-  // Show results
+  // Show results using ToolCard component
   if (tools.length > 0) {
     return (
       <motion.div
@@ -81,59 +98,17 @@ export function AIDiscoveredTools({
         
         {searchQuery && (
           <p className="text-xs text-muted-foreground">
-            Search: "{searchQuery}"
+            Found on GitHub, ProductHunt, npm & more
           </p>
         )}
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {tools.map((tool, index) => (
-            <motion.div
+            <ToolCard
               key={tool.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className={cn(
-                "glass glass-hover rounded-xl p-4 border border-primary/10",
-                "group relative"
-              )}
-            >
-              <div className="absolute top-2 right-2">
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
-                  AI
-                </span>
-              </div>
-
-              <h4 className="font-medium text-sm mb-2 pr-8 line-clamp-1">
-                {tool.name}
-              </h4>
-              
-              <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
-                {tool.description}
-              </p>
-
-              <div className="flex items-center gap-2">
-                <a
-                  href={tool.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-primary hover:underline flex items-center gap-1"
-                >
-                  <ExternalLink className="w-3 h-3" />
-                  Visit
-                </a>
-                {tool.githubUrl && (
-                  <a
-                    href={tool.githubUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
-                  >
-                    <Github className="w-3 h-3" />
-                    GitHub
-                  </a>
-                )}
-              </div>
-            </motion.div>
+              tool={toToolFormat(tool)}
+              index={index}
+            />
           ))}
         </div>
 
