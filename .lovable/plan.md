@@ -1,169 +1,168 @@
 
 
-# Dashboard UX & AI-Powered Intelligence Hub
+# Fix AI Tool Discovery to Find Actual Tools, Not Articles
 
-## Overview
-This plan addresses two key improvements:
-1. **Remove duplicate navigation in Header** when users are on the Dashboard - since the dashboard already has its own sidebar navigation with Favorites, Categories, etc.
-2. **Add Perplexity-powered real-time tool discovery** when users combine filters (e.g., DevOps + Open Source), making the Intelligence Hub truly "intelligent"
+## Problem
+The current AI-powered search returns **articles and listicles** about developer tools:
+- "7 Open-Source Tools Backend Developers Should Master" (medium.com)
+- "25 Essential Backend Development Tools for 2026" (roadmap.sh)
+- "Top 10 Developer Tooling for 2025" (aviator.co/blog)
 
----
+Instead of **actual tools**:
+- "Cursor" → cursor.com
+- "Docker" → docker.com
+- "Vercel" → vercel.com
+- "OpenAI Codex" → openai.com/codex
 
-## Part 1: Clean Up Header Navigation on Dashboard
+## Root Causes
 
-### Current Problem
-When users are on `/dashboard`, the Header shows:
-- **Main nav**: Home, Favorites, Dashboard 
-- **Dropdown menu**: Favorites, Dashboard, Sign Out
-
-But the Dashboard sidebar already has:
-- Explore, Favorites, Categories, Submissions tabs
-- Settings and Sign Out buttons
-
-This creates redundant navigation (e.g., "Favorites" appears twice).
-
-### Solution
-Conditionally hide the authenticated nav links (Favorites, Dashboard) when the user is already on the `/dashboard` route. Keep only "Home" in the header when on Dashboard.
-
-### Files to Modify
-
-| File | Action | Description |
-|------|--------|-------------|
-| `src/components/Header.tsx` | Modify | Hide `authNavLinks` when `location.pathname === "/dashboard"` |
-
-### Implementation
-```typescript
-// In Header.tsx, check if on dashboard
-const isDashboard = location.pathname === "/dashboard";
-
-// Only show authNavLinks when NOT on dashboard
-{user && !isDashboard && authNavLinks.map((link) => {
-  // ... existing code
-})}
-```
-
-Also update the dropdown menu to hide redundant links when on dashboard.
+1. **Search query structure** attracts listicle articles
+2. **No filtering** of blog/article domains (medium.com, dev.to, blog sites)
+3. **No GitHub prioritization** - Many dev tools live on GitHub
+4. **Different card format** - Discovered tools don't match ToolCard styling
 
 ---
 
-## Part 2: AI-Powered Real-Time Tool Discovery
+## Solution
 
-### Concept
-When users combine filters in the Explore tab (e.g., "DevOps" + "Open Source" + "Self-Hosted"), the Intelligence Hub will:
-1. Show the curated tools matching those filters (current behavior)
-2. **NEW**: If filters are active, offer to discover additional real-time tools using Perplexity
-3. Display AI-discovered tools in a separate "Discovered" section below the curated results
+### 1. Improve Search Query Strategy
 
-### User Flow
-```text
-1. User selects: DevOps + Open Source + Self-Hosted
-2. Dashboard shows: 3 curated tools matching filters
-3. NEW: "Discover More" button appears
-4. User clicks button
-5. Perplexity searches: "best open source self-hosted DevOps tools 2024"
-6. Results display in "AI-Discovered Tools" section with metadata
-7. User can save discovered tools to their favorites
+Change the edge function to:
+- Target specific tool homepages and GitHub repos
+- Add site filters to prioritize tool sources
+- Exclude common article/blog domains
+
+| Current Query | Improved Query |
+|---------------|----------------|
+| `best backend freemium developer tools 2025` | `site:github.com OR site:producthunt.com backend developer tool` |
+
+### 2. Filter Out Article Domains
+
+Expand the skip patterns in the edge function to exclude:
+
+```typescript
+const skipPatterns = [
+  // Social
+  'linkedin.com', 'twitter.com', 'facebook.com', 'youtube.com',
+  // Article/Blog sites
+  'medium.com', 'dev.to', 'hashnode.com', 'substack.com',
+  'blog.', '/blog/', 'news.', 'reddit.com',
+  // Listicle aggregators  
+  'roadmap.sh', 'awesome-', 'best-of-',
+  // Generic comparison sites
+  'g2.com', 'capterra.com', 'alternativeto.com',
+];
 ```
 
-### Connector Setup
-Perplexity is available as a connector. We'll need to:
-1. Connect the Perplexity connector to the project
-2. Create an edge function to call Perplexity's search API
-3. Build a frontend component to display AI-discovered tools
+### 3. Prioritize Quality Tool Sources
 
-### Files to Create/Modify
+Add site filters to target actual tool homepages:
 
-| File | Action | Description |
-|------|--------|-------------|
-| `supabase/functions/search-tools/index.ts` | Create | Edge function that calls Perplexity API |
-| `src/hooks/use-ai-search.ts` | Create | Hook to manage AI search state and calls |
-| `src/components/AIDiscoveredTools.tsx` | Create | Component to display AI-discovered tools |
-| `src/pages/Dashboard.tsx` | Modify | Integrate AI discovery into Explore tab |
-
-### Edge Function Logic
 ```typescript
-// supabase/functions/search-tools/index.ts
-// When filters are active, build a search query like:
-// "best [open-source] [self-hosted] [DevOps] developer tools 2024"
-
-// Use Perplexity's search API to get real-time results
-// Parse results into Tool-like structure with:
-// - name, description, url, githubUrl (if found)
-// - category (inferred from filter)
-// - tags (from active filters)
+// Build query with site preferences
+const siteFilters = 'site:github.com OR site:producthunt.com';
+const finalQuery = `${siteFilters} ${category} ${tags.join(' ')} developer tool`;
 ```
 
-### Response Structure
-AI-discovered tools will follow a simplified version of the Tool type:
+### 4. Better Tool Name Extraction
+
+Parse tool names more intelligently:
+
 ```typescript
-interface DiscoveredTool {
-  id: string;           // Generated UUID
-  name: string;
-  description: string;
-  url: string;
-  githubUrl?: string;
-  category: Category;   // From active filter
-  tags: Tag[];          // From active filters
-  source: "perplexity"; // Mark as AI-discovered
-  citations: string[];  // Perplexity provides source URLs
+// Extract clean tool name from GitHub: "user/repo-name" → "Repo Name"
+// Extract from Product Hunt: "ToolName - Tagline" → "ToolName"
+function extractToolName(url: string, title: string): string {
+  if (url.includes('github.com')) {
+    const repoMatch = url.match(/github\.com\/[\w-]+\/([\w-]+)/);
+    if (repoMatch) {
+      return repoMatch[1].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+  }
+  return title.split(' - ')[0].split(' | ')[0].split(':')[0].trim();
 }
 ```
 
-### UI Design
-```text
-+------------------------------------------+
-| Search: [____________]                    |
-|                                           |
-| Category: [DevOps (selected)]             |
-| Tags: [Open Source] [Self-Hosted]         |
-+------------------------------------------+
-| 3 curated tools found                     |
-|                                           |
-| [Tool Card] [Tool Card] [Tool Card]       |
-+------------------------------------------+
-| ✨ Discover More Tools                    |
-| [Discover with AI] button                 |
-+------------------------------------------+
-| AI-Discovered (5 results)                 |
-| Powered by Perplexity Search              |
-|                                           |
-| [Discovered Tool] [Discovered Tool] ...   |
-+------------------------------------------+
+### 5. Use Same ToolCard Component for AI Results
+
+Update `AIDiscoveredTools.tsx` to reuse the `ToolCard` component with a converted data structure:
+
+```typescript
+// Convert DiscoveredTool to Tool format for consistent display
+const toolForCard: Tool = {
+  id: discoveredTool.id,
+  name: discoveredTool.name,
+  description: discoveredTool.description,
+  category: discoveredTool.category as Category,
+  tags: discoveredTool.tags as Tag[],
+  url: discoveredTool.url,
+  githubUrl: discoveredTool.githubUrl,
+  upvotes: 0,
+  createdAt: new Date().toISOString(),
+  isNew: true, // Mark as new since it's AI-discovered
+};
 ```
 
 ---
 
-## Part 3: Delete Standalone Favorites Page (Yes do this)
-
-Since the Dashboard now handles Favorites in its sidebar, the standalone `/favorites` page and `/favorites` route in Header could be removed to avoid confusion. However, I'll leave this optional - let me know if you'd like to remove it entirely.
-
----
-
-## Implementation Order
-
-1. **First**: Connect Perplexity connector (requires your approval)
-2. **Second**: Remove duplicate nav items in Header when on Dashboard
-3. **Third**: Create the `search-tools` edge function 
-4. **Fourth**: Create the AI search hook and UI components
-5. **Fifth**: Integrate into Dashboard's Explore tab
-
----
-
-## File Changes Summary
+## File Changes
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/components/Header.tsx` | Modify | Hide nav links when on `/dashboard` |
-| `supabase/functions/search-tools/index.ts` | Create | Perplexity-powered tool search |
-| `src/hooks/use-ai-search.ts` | Create | AI search state management |
-| `src/components/AIDiscoveredTools.tsx` | Create | Display AI-discovered tools |
-| `src/pages/Dashboard.tsx` | Modify | Add "Discover More" feature to Explore tab |
+| `supabase/functions/search-tools/index.ts` | Modify | Add site filters, expand skip patterns, improve name extraction |
+| `src/components/AIDiscoveredTools.tsx` | Modify | Use ToolCard component instead of custom simplified cards |
+
+---
+
+## Edge Function Changes (Detailed)
+
+```typescript
+// Domains to skip - articles, blogs, listicles
+const skipDomains = [
+  // Social media
+  'linkedin.com', 'twitter.com', 'x.com', 'facebook.com', 'youtube.com',
+  // Blog/article platforms
+  'medium.com', 'dev.to', 'hashnode.dev', 'substack.com', 'wordpress.com',
+  // News/content sites
+  'reddit.com', 'news.ycombinator.com', 'techcrunch.com', 'wired.com',
+  // Aggregator/comparison sites  
+  'g2.com', 'capterra.com', 'alternativeto.com', 'slant.co',
+  'trustradius.com', 'getapp.com',
+  // Listicle/blog patterns in URL
+  '/blog/', '/articles/', '/news/', '/best-', '/top-',
+];
+
+// Quality tool sources to prioritize
+const prioritySites = [
+  'github.com',
+  'producthunt.com', 
+  'npmjs.com',
+  'pypi.org',
+];
+
+// Build query targeting actual tools, not articles about tools
+const siteQuery = prioritySites.map(s => `site:${s}`).join(' OR ');
+const filterParts = [category, ...tags].filter(Boolean).join(' ');
+const finalQuery = `(${siteQuery}) ${filterParts} tool`;
+```
+
+---
+
+## Expected Results
+
+**Before**: Returns articles like "10 Best DevOps Tools for 2025"
+
+**After**: Returns actual tools like:
+- "Terraform" → github.com/hashicorp/terraform
+- "Docker" → github.com/docker/docker
+- "K3s" → github.com/k3s-io/k3s
+- "Coolify" → producthunt.com/posts/coolify
 
 ---
 
 ## Summary
 
-1. **Clean Header**: Remove duplicate nav links (Favorites, Dashboard) when user is on the Dashboard page
-2. **AI Intelligence**: Add Perplexity-powered real-time tool discovery when filters are active, expanding beyond the curated 35 tools
-3. **Persistent Curation**: Curated tools in `data.ts` remain the primary source; AI discovery supplements them with real-time data
+1. **Refine search query** - Target GitHub and ProductHunt instead of generic web search
+2. **Filter aggressively** - Block all blog, article, and comparison sites
+3. **Extract clean names** - Parse repo names from GitHub URLs properly
+4. **Consistent display** - Use the same ToolCard component for AI results
 
