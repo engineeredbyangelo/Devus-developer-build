@@ -15,7 +15,9 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { DashboardToolGrid } from "@/components/DashboardToolGrid";
+import { AIDiscoveredTools } from "@/components/AIDiscoveredTools";
 import { useFavoritesDb, useFollowedCategoriesDb } from "@/hooks/use-tools";
+import { useAISearch } from "@/hooks/use-ai-search";
 import { useAuth } from "@/hooks/useAuth";
 import { categories, tools } from "@/lib/data";
 import { Category, Tag } from "@/lib/types";
@@ -39,6 +41,16 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+  
+  // AI Search hook
+  const {
+    discoveredTools,
+    isSearching,
+    searchQuery: aiSearchQuery,
+    hasActiveFilters,
+    discoverTools,
+    clearResults,
+  } = useAISearch(selectedCategory, selectedTags);
 
   // Auth guard - redirect if not logged in
   useEffect(() => {
@@ -75,6 +87,18 @@ const Dashboard = () => {
     setSelectedTags(prev =>
       prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
     );
+    // Clear AI results when filters change
+    clearResults();
+  };
+  
+  const handleCategoryChange = (category: Category | null) => {
+    setSelectedCategory(category);
+    // Clear AI results when filters change
+    clearResults();
+  };
+
+  const handleDiscover = () => {
+    discoverTools(selectedCategory, selectedTags, searchQuery || undefined);
   };
 
   const tabs = [
@@ -214,7 +238,7 @@ const Dashboard = () => {
                   <div className="flex flex-wrap gap-4">
                     <CategoryFilter
                       selectedCategory={selectedCategory}
-                      onSelectCategory={setSelectedCategory}
+                      onSelectCategory={handleCategoryChange}
                     />
                     <TagFilter
                       selectedTags={selectedTags}
@@ -233,6 +257,16 @@ const Dashboard = () => {
                   tools={filteredTools}
                   isFavorite={isFavorite}
                   onToggleFavorite={toggleFavorite}
+                />
+
+                {/* AI Discovery Section */}
+                <AIDiscoveredTools
+                  tools={discoveredTools}
+                  isSearching={isSearching}
+                  searchQuery={aiSearchQuery}
+                  hasActiveFilters={hasActiveFilters}
+                  onDiscover={handleDiscover}
+                  onClear={clearResults}
                 />
               </motion.div>
             )}

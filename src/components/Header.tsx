@@ -33,6 +33,9 @@ export function Header() {
   });
   const location = useLocation();
   const { user, profile, signOut, isLoading, triggerWelcome } = useAuth();
+  
+  // Hide duplicate nav links when on dashboard (dashboard has its own sidebar)
+  const isDashboard = location.pathname === "/dashboard";
 
   const openSignIn = () => setAuthModal({ open: true, mode: "signin" });
   const openSignUp = () => setAuthModal({ open: true, mode: "signup" });
@@ -102,8 +105,8 @@ export function Header() {
               );
             })}
             
-            {/* Authenticated nav links */}
-            {user && authNavLinks.map((link) => {
+            {/* Authenticated nav links - hidden on dashboard since sidebar handles these */}
+            {user && !isDashboard && authNavLinks.map((link) => {
               const Icon = link.icon;
               const isActive = location.pathname === link.href;
 
@@ -148,19 +151,17 @@ export function Header() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem asChild>
-                    <Link to="/favorites" className="flex items-center gap-2">
-                      <Heart className="w-4 h-4" />
-                      Favorites
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/dashboard" className="flex items-center gap-2">
-                      <LayoutDashboard className="w-4 h-4" />
-                      Dashboard
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
+                  {!isDashboard && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link to="/dashboard" className="flex items-center gap-2">
+                          <LayoutDashboard className="w-4 h-4" />
+                          Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
                   <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
                     <LogOut className="w-4 h-4 mr-2" />
                     Sign Out
@@ -234,8 +235,8 @@ export function Header() {
                   );
                 })}
                 
-                {/* Authenticated mobile nav links */}
-                {user && authNavLinks.map((link) => {
+                {/* Authenticated mobile nav links - hidden on dashboard */}
+                {user && !isDashboard && authNavLinks.map((link) => {
                   const Icon = link.icon;
                   const isActive = location.pathname === link.href;
 
