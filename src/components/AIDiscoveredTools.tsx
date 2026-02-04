@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Sparkles, Loader2, X, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DiscoveredTool } from "@/hooks/use-ai-search";
 import { ToolCard } from "./ToolCard";
+import { DemoToolModal } from "./DemoToolModal";
 import { Tool, Category, Tag } from "@/lib/types";
 
 interface AIDiscoveredToolsProps {
@@ -38,6 +40,8 @@ export function AIDiscoveredTools({
   onDiscover,
   onClear,
 }: AIDiscoveredToolsProps) {
+  const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
+
   // Show discover button when filters are active
   if (hasActiveFilters && tools.length === 0 && !isSearching) {
     return (
@@ -77,45 +81,57 @@ export function AIDiscoveredTools({
     );
   }
 
-  // Show results using ToolCard component
+  // Show results using ToolCard component with modal support
   if (tools.length > 0) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="space-y-4"
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <h3 className="font-semibold">AI-Discovered ({tools.length})</h3>
+      <>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-4"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <h3 className="font-semibold">AI-Discovered ({tools.length})</h3>
+            </div>
+            <Button variant="ghost" size="sm" onClick={onClear}>
+              <X className="w-4 h-4 mr-1" />
+              Clear
+            </Button>
           </div>
-          <Button variant="ghost" size="sm" onClick={onClear}>
-            <X className="w-4 h-4 mr-1" />
-            Clear
-          </Button>
-        </div>
-        
-        {searchQuery && (
-          <p className="text-xs text-muted-foreground">
-            Found on GitHub, ProductHunt, npm & more
+          
+          {searchQuery && (
+            <p className="text-xs text-muted-foreground">
+              Found on GitHub, ProductHunt, npm & more
+            </p>
+          )}
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {tools.map((tool, index) => {
+              const toolForCard = toToolFormat(tool);
+              return (
+                <ToolCard
+                  key={tool.id}
+                  tool={toolForCard}
+                  index={index}
+                  onClick={() => setSelectedTool(toolForCard)}
+                />
+              );
+            })}
+          </div>
+
+          <p className="text-xs text-muted-foreground text-center pt-2">
+            Powered by Firecrawl • Real-time web search
           </p>
-        )}
+        </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tools.map((tool, index) => (
-            <ToolCard
-              key={tool.id}
-              tool={toToolFormat(tool)}
-              index={index}
-            />
-          ))}
-        </div>
-
-        <p className="text-xs text-muted-foreground text-center pt-2">
-          Powered by Firecrawl • Real-time web search
-        </p>
-      </motion.div>
+        <DemoToolModal
+          tool={selectedTool}
+          isOpen={!!selectedTool}
+          onClose={() => setSelectedTool(null)}
+        />
+      </>
     );
   }
 

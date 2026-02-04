@@ -140,9 +140,11 @@ Deno.serve(async (req) => {
       filterParts.push(searchQuery);
     }
     
-    // Target actual tools, not articles about tools
+    // Target actual developer/programming tools, not articles
     const filterString = filterParts.join(' ');
-    const finalQuery = `(${siteQuery}) ${filterString} developer tool`;
+    // More specific query focused on coding/programming tools
+    const toolTerms = 'developer tool OR programming tool OR coding tool OR CLI OR SDK OR framework OR library';
+    const finalQuery = `(${siteQuery}) ${filterString} (${toolTerms}) -"best tools" -"top tools" -"list of"`;
     console.log('Searching for:', finalQuery);
 
     // Use Firecrawl's search API
