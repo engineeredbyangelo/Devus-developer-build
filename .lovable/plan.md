@@ -1,252 +1,122 @@
 
+# Fix Welcome Animation After Sign-In
 
-# Devus UX Improvements & AI Curation Tool
+## Problem Identified
 
-## Overview
-This plan addresses four key improvements:
-1. Remove the broad AI discovery feature and add more developer tools to the stack of 35 tools already there. (Goal is to push for 50+ new developer tools) Perplexity can help add real time tools/data (while the info cards stays consistent 
-2. Add a new "Features" section between "Why Devus" and "Demo" sections
-3. Fix mobile sign-in card scrollability
-4. Add welcome animation + redirect to dashboard after sign-in
+There are **two AuthModal instances** in the app:
+1. **Index.tsx AuthModal** - Has `onSignInSuccess` callback ✅
+2. **Header.tsx AuthModal** - Missing `onSignInSuccess` callback ❌
 
----
+When users sign in from the Header (which is the primary way users sign in), the welcome animation doesn't trigger because the Header's AuthModal doesn't have the callback connected.
 
-## Part 1: Replace AI Discovery with Curator AI Assistant
-
-### What Changes
-
-**Remove:**
-- The "Discover" tab from the dashboard sidebar
-- The `AIToolDiscovery` component
-- The `discover-tools` edge function
-- The `use-discovered-tools` hook
-- The `discovered_tools` database table (optional - can keep for future use)
-
-**Do NOT do This part below - Refer to overview:**
-- A simple curator interface (admin-only or internal use) where you can:
-  - Ask AI to suggest tools to add to the curated 35-tool list
-  - AI returns suggestions with full metadata matching the Tool type
-  - You review and manually add approved tools to `data.ts`
-
-This is a more focused approach - the AI helps curate, but the final list stays manually controlled in code.
-
-### Files to Modify/Remove
-
-| File | Action |
-|------|--------|
-| `src/pages/Dashboard.tsx` | Remove "Discover" tab and AIToolDiscovery import |
-| `src/components/AIToolDiscovery.tsx` | Delete file |
-| `src/hooks/use-discovered-tools.ts` | Delete file |
-| `supabase/functions/discover-tools/` | Delete folder |
+Additionally, for sign-in (not sign-up), the `name` field is empty since it's only filled during registration, so the welcome message shows the email prefix instead of the user's actual name.
 
 ---
 
-## Part 2: New Features Section for Homepage
+## Solution
 
-### Design Concept
-A minimal, on-brand section showcasing Devus features with direct links to tools' websites and GitHub repos. Uses the existing glassmorphism design system.
+### Approach: Centralize Welcome Animation Logic
 
-### Section Layout
+Move the welcome animation trigger to the `AuthContext` so it works regardless of which AuthModal instance is used.
 
-```text
-+---------------------------------------------------------------+
-|                                                               |
-|                    [Zap icon] Core Features                   |
-|                                                               |
-|           What makes Devus your go-to developer hub           |
-|                                                               |
-+---------------------------------------------------------------+
-|                                                               |
-|  +-------------------+  +-------------------+  +-------------+|
-|  | [Link icon]       |  | [Github icon]     |  | [Filter]    ||
-|  | Direct Links      |  | GitHub Access     |  | Smart       ||
-|  | Jump straight to  |  | Explore source    |  | Filtering   ||
-|  | any tool's site   |  | code instantly    |  | Find tools  ||
-|  |                   |  |                   |  | by category ||
-|  +-------------------+  +-------------------+  +-------------+|
-|                                                               |
-|  +-------------------+  +-------------------+  +-------------+|
-|  | [Star icon]       |  | [CheckCircle]     |  | [Lightbulb] ||
-|  | Community Rated   |  | Verified Info     |  | Use Cases   ||
-|  | See what devs     |  | Accurate pros,    |  | See real    ||
-|  | love most         |  | cons & details    |  | examples    ||
-|  +-------------------+  +-------------------+  +-------------+|
-|                                                               |
-+---------------------------------------------------------------+
-```
-
-### Responsive Behavior
-- **Desktop (lg+)**: 3-column grid
-- **Tablet (md)**: 2-column grid
-- **Mobile (sm)**: 1-column stacked cards
-
-### New File
-| File | Action |
-|------|--------|
-| `src/components/FeaturesSection.tsx` | Create new component |
-| `src/pages/Index.tsx` | Import and add between ComparisonChart and DemoPreview |
-
----
-
-## Part 3: Fix Mobile Sign-in Card Scrollability
-
-### Problem
-On mobile, when the keyboard opens, the auth card gets pushed up and hidden. Users can't see the email/password fields.
-
-### Solution
-Update the Dialog content to:
-1. Add `max-h-[90vh]` to limit height
-2. Add `overflow-y-auto` for scrolling when content overflows
-3. Ensure proper padding at bottom for keyboard clearance
-
-### File to Modify
-| File | Action |
-|------|--------|
-| `src/components/AuthModal.tsx` | Update DialogContent classes for mobile scrollability |
-
-### Changes
-```typescript
-// Current
-<DialogContent className="sm:max-w-md p-0 gap-0 bg-card border-border overflow-hidden">
-
-// Updated
-<DialogContent className="sm:max-w-md p-0 gap-0 bg-card border-border max-h-[90vh] overflow-y-auto">
-```
-
----
-
-## Part 4: Welcome Animation + Dashboard Redirect
-
-### Current Flow
-1. User signs in
-2. Toast appears: "Welcome back!"
-3. User stays on homepage
-
-### New Flow
-1. User signs in successfully
-2. Modal closes
-3. Full-screen welcome animation appears (1.5-2 seconds)
-4. Auto-redirect to `/dashboard`
-
-### Animation Design
-```text
-+----------------------------------------+
-|                                        |
-|                                        |
-|       [Sparkles icon animating]        |
-|                                        |
-|          Welcome, {name}!              |
-|                                        |
-|    Taking you to your dashboard...     |
-|         [Loading indicator]            |
-|                                        |
-|                                        |
-+----------------------------------------+
-```
-
-### Implementation
-1. Create a `WelcomeAnimation` component with Framer Motion animations
-2. Add state in `AuthModal` or `AuthContext` to trigger animation on successful sign-in
-3. After animation completes, navigate to `/dashboard`
-
-### Files to Modify/Create
-
-| File | Action |
-|------|--------|
-| `src/components/WelcomeAnimation.tsx` | Create new animated overlay component |
-| `src/components/AuthModal.tsx` | Trigger welcome animation on successful sign-in |
-| `src/pages/Index.tsx` | Render WelcomeAnimation when triggered |
-
----
-
-## Technical Details
-
-### FeaturesSection Component Structure
-
-```typescript
-// Feature card data structure
-const features = [
-  {
-    icon: ExternalLink,
-    title: "Direct Links",
-    description: "Jump straight to any tool's official website with one click",
-  },
-  {
-    icon: Github,
-    title: "GitHub Access", 
-    description: "Explore source code and contribute to open-source projects",
-  },
-  {
-    icon: Filter,
-    title: "Smart Filtering",
-    description: "Find tools by category, tags, or tech stack compatibility",
-  },
-  {
-    icon: Star,
-    title: "Community Rated",
-    description: "See upvotes and discover what developers love most",
-  },
-  {
-    icon: CheckCircle,
-    title: "Verified Details",
-    description: "Accurate pros, cons, and learning curve for each tool",
-  },
-  {
-    icon: Lightbulb,
-    title: "Real Use Cases",
-    description: "Understand exactly when and how to use each tool",
-  },
-];
-```
-
-### Welcome Animation Timing
-
-```typescript
-// Animation sequence
-1. Fade in overlay (0.3s)
-2. Scale up icon with spring (0.5s)
-3. Fade in text (0.3s, staggered)
-4. Hold visible (1s)
-5. Fade out and redirect (0.4s)
-// Total: ~2.5 seconds
-```
-
-### Index.tsx Section Order (After Changes)
-
-```typescript
-<Header />
-<LandingHero />
-<NewThisWeek />
-<ComparisonChart />      // "Why Devus"
-<FeaturesSection />      // NEW - Features elaboration
-<DemoPreview />          // "Experience the Demo"
-<BenefitsSection />      // "Unlock Everything"
-<Footer />
-<AuthModal />
-<WelcomeAnimation />     // NEW - Overlay when triggered
-```
-
----
-
-## File Changes Summary
+### Changes Required
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/components/FeaturesSection.tsx` | Create | New minimal features section |
-| `src/components/WelcomeAnimation.tsx` | Create | Animated welcome overlay |
-| `src/pages/Index.tsx` | Modify | Add FeaturesSection, integrate WelcomeAnimation |
-| `src/components/AuthModal.tsx` | Modify | Add scrollability, trigger welcome on sign-in |
-| `src/pages/Dashboard.tsx` | Modify | Remove Discover tab |
-| `src/components/AIToolDiscovery.tsx` | Delete | Remove AI discovery component |
-| `src/hooks/use-discovered-tools.ts` | Delete | Remove discovery hook |
-| `supabase/functions/discover-tools/` | Delete | Remove edge function |
+| `src/contexts/AuthContext.tsx` | Modify | Add welcome animation state and callback to context |
+| `src/components/Header.tsx` | Modify | Add `onSignInSuccess` to Header's AuthModal + use centralized state |
+| `src/pages/Index.tsx` | Modify | Use welcome state from context instead of local state |
+| `src/components/WelcomeAnimation.tsx` | Modify | Optionally fetch user's actual name from profile |
 
 ---
 
-## Summary
+## Implementation Details
 
-1. **Clean up AI Discovery**: Remove the broad discovery feature from dashboard (the edge function and components)
-2. **New Features Section**: Minimal, responsive section between "Why Devus" and "Demo" that highlights direct links, GitHub access, filtering, etc.
-3. **Mobile Auth Fix**: Make the sign-in card scrollable so users can see input fields when keyboard is open
-4. **Welcome Flow**: Add animated welcome screen after sign-in that redirects to dashboard
+### 1. Update AuthContext
 
+Add welcome animation state to the auth context so any component can trigger/listen:
+
+```typescript
+// Add to AuthContext
+interface AuthContextType {
+  // ...existing fields
+  showWelcome: boolean;
+  welcomeUserName: string;
+  triggerWelcome: (name: string) => void;
+  completeWelcome: () => void;
+}
+```
+
+### 2. Update Header.tsx
+
+Pass the `onSignInSuccess` callback to the Header's AuthModal:
+
+```typescript
+<AuthModal
+  isOpen={authModal.open}
+  onClose={closeAuth}
+  initialMode={authModal.mode}
+  onSignInSuccess={(userName) => {
+    triggerWelcome(userName);
+  }}
+/>
+```
+
+### 3. Update Index.tsx
+
+Instead of local state, use the context's welcome state:
+
+```typescript
+const { showWelcome, welcomeUserName, completeWelcome } = useAuth();
+
+// Remove local useState for showWelcome/welcomeUserName
+// Keep the handleSignInSuccess for the modal, but have it use context
+```
+
+### 4. Better Name Handling in AuthModal
+
+For sign-in, fetch the user's profile name after successful authentication:
+
+```typescript
+// In handleSubmit for sign-in
+const { error, data } = await signIn(email, password);
+if (!error && data?.user) {
+  onClose();
+  // Use profile name or email prefix
+  const userName = profile?.full_name || email.split("@")[0];
+  onSignInSuccess?.(userName);
+}
+```
+
+---
+
+## Alternative Simpler Fix
+
+If you prefer minimal changes, we can simply:
+
+1. Add `onSignInSuccess` to the Header's AuthModal
+2. Have Header render the WelcomeAnimation component when triggered
+3. Share state via a simple callback
+
+This keeps changes localized but means WelcomeAnimation could render from multiple places.
+
+---
+
+## Recommended Approach
+
+**Centralize in AuthContext** - This is cleaner because:
+- Single source of truth for welcome state
+- Works regardless of which component triggers sign-in
+- Can access profile data to get the actual user name
+- WelcomeAnimation only needs to render in one place (App.tsx or Index.tsx)
+
+---
+
+## File Summary
+
+| File | Changes |
+|------|---------|
+| `src/contexts/AuthContext.tsx` | Add `showWelcome`, `welcomeUserName`, `triggerWelcome`, `completeWelcome` to context |
+| `src/components/Header.tsx` | Pass `onSignInSuccess` callback to AuthModal, use context trigger |
+| `src/pages/Index.tsx` | Use welcome state from AuthContext, remove local state |
+| `src/App.tsx` | Move WelcomeAnimation to App level so it works on all routes |
