@@ -1,208 +1,252 @@
 
 
-# OAuth "Coming Soon" Tags & AI-Powered Tool Discovery
+# Devus UX Improvements & AI Curation Tool
 
 ## Overview
-This plan covers two main features:
-1. **Coming Soon Tags**: Add visual badges to Google and GitHub OAuth buttons indicating they're not yet configured
-2. **AI Tool Discovery**: Integrate Lovable AI to enable real-time discovery of new developer tools that can be added to the dashboard
+This plan addresses four key improvements:
+1. Remove the broad AI discovery feature and add more developer tools to the stack of 35 tools already there. (Goal is to push for 50+ new developer tools) Perplexity can help add real time tools/data (while the info cards stays consistent 
+2. Add a new "Features" section between "Why Devus" and "Demo" sections
+3. Fix mobile sign-in card scrollability
+4. Add welcome animation + redirect to dashboard after sign-in
 
 ---
 
-## Part 1: Coming Soon Tags for OAuth Buttons
+## Part 1: Replace AI Discovery with Curator AI Assistant
 
-### Current State
-The Google and GitHub OAuth buttons in `AuthModal.tsx` call `signInWithGoogle` and `signInWithGithub`, but these providers aren't configured yet in the backend.
+### What Changes
 
-### Solution
-- Add a "Coming Soon" badge to both OAuth buttons
-- Disable the buttons to prevent clicks
-- Update styling to indicate inactive state
-- Keep email/password authentication fully functional
+**Remove:**
+- The "Discover" tab from the dashboard sidebar
+- The `AIToolDiscovery` component
+- The `discover-tools` edge function
+- The `use-discovered-tools` hook
+- The `discovered_tools` database table (optional - can keep for future use)
 
-### File Changes
+**Do NOT do This part below - Refer to overview:**
+- A simple curator interface (admin-only or internal use) where you can:
+  - Ask AI to suggest tools to add to the curated 35-tool list
+  - AI returns suggestions with full metadata matching the Tool type
+  - You review and manually add approved tools to `data.ts`
+
+This is a more focused approach - the AI helps curate, but the final list stays manually controlled in code.
+
+### Files to Modify/Remove
+
 | File | Action |
 |------|--------|
-| `src/components/AuthModal.tsx` | Modify - Add badges and disable OAuth buttons |
+| `src/pages/Dashboard.tsx` | Remove "Discover" tab and AIToolDiscovery import |
+| `src/components/AIToolDiscovery.tsx` | Delete file |
+| `src/hooks/use-discovered-tools.ts` | Delete file |
+| `supabase/functions/discover-tools/` | Delete folder |
+
+---
+
+## Part 2: New Features Section for Homepage
+
+### Design Concept
+A minimal, on-brand section showcasing Devus features with direct links to tools' websites and GitHub repos. Uses the existing glassmorphism design system.
+
+### Section Layout
+
+```text
++---------------------------------------------------------------+
+|                                                               |
+|                    [Zap icon] Core Features                   |
+|                                                               |
+|           What makes Devus your go-to developer hub           |
+|                                                               |
++---------------------------------------------------------------+
+|                                                               |
+|  +-------------------+  +-------------------+  +-------------+|
+|  | [Link icon]       |  | [Github icon]     |  | [Filter]    ||
+|  | Direct Links      |  | GitHub Access     |  | Smart       ||
+|  | Jump straight to  |  | Explore source    |  | Filtering   ||
+|  | any tool's site   |  | code instantly    |  | Find tools  ||
+|  |                   |  |                   |  | by category ||
+|  +-------------------+  +-------------------+  +-------------+|
+|                                                               |
+|  +-------------------+  +-------------------+  +-------------+|
+|  | [Star icon]       |  | [CheckCircle]     |  | [Lightbulb] ||
+|  | Community Rated   |  | Verified Info     |  | Use Cases   ||
+|  | See what devs     |  | Accurate pros,    |  | See real    ||
+|  | love most         |  | cons & details    |  | examples    ||
+|  +-------------------+  +-------------------+  +-------------+|
+|                                                               |
++---------------------------------------------------------------+
+```
+
+### Responsive Behavior
+- **Desktop (lg+)**: 3-column grid
+- **Tablet (md)**: 2-column grid
+- **Mobile (sm)**: 1-column stacked cards
+
+### New File
+| File | Action |
+|------|--------|
+| `src/components/FeaturesSection.tsx` | Create new component |
+| `src/pages/Index.tsx` | Import and add between ComparisonChart and DemoPreview |
+
+---
+
+## Part 3: Fix Mobile Sign-in Card Scrollability
+
+### Problem
+On mobile, when the keyboard opens, the auth card gets pushed up and hidden. Users can't see the email/password fields.
+
+### Solution
+Update the Dialog content to:
+1. Add `max-h-[90vh]` to limit height
+2. Add `overflow-y-auto` for scrolling when content overflows
+3. Ensure proper padding at bottom for keyboard clearance
+
+### File to Modify
+| File | Action |
+|------|--------|
+| `src/components/AuthModal.tsx` | Update DialogContent classes for mobile scrollability |
+
+### Changes
+```typescript
+// Current
+<DialogContent className="sm:max-w-md p-0 gap-0 bg-card border-border overflow-hidden">
+
+// Updated
+<DialogContent className="sm:max-w-md p-0 gap-0 bg-card border-border max-h-[90vh] overflow-y-auto">
+```
+
+---
+
+## Part 4: Welcome Animation + Dashboard Redirect
+
+### Current Flow
+1. User signs in
+2. Toast appears: "Welcome back!"
+3. User stays on homepage
+
+### New Flow
+1. User signs in successfully
+2. Modal closes
+3. Full-screen welcome animation appears (1.5-2 seconds)
+4. Auto-redirect to `/dashboard`
+
+### Animation Design
+```text
++----------------------------------------+
+|                                        |
+|                                        |
+|       [Sparkles icon animating]        |
+|                                        |
+|          Welcome, {name}!              |
+|                                        |
+|    Taking you to your dashboard...     |
+|         [Loading indicator]            |
+|                                        |
+|                                        |
++----------------------------------------+
+```
 
 ### Implementation
-```text
-+------------------------------------------+
-|  [GitHub icon] Continue with GitHub      |
-|                         [Coming Soon]    |
-+------------------------------------------+
-|  [Chrome icon] Continue with Google      |
-|                         [Coming Soon]    |
-+------------------------------------------+
-```
+1. Create a `WelcomeAnimation` component with Framer Motion animations
+2. Add state in `AuthModal` or `AuthContext` to trigger animation on successful sign-in
+3. After animation completes, navigate to `/dashboard`
+
+### Files to Modify/Create
+
+| File | Action |
+|------|--------|
+| `src/components/WelcomeAnimation.tsx` | Create new animated overlay component |
+| `src/components/AuthModal.tsx` | Trigger welcome animation on successful sign-in |
+| `src/pages/Index.tsx` | Render WelcomeAnimation when triggered |
 
 ---
 
-## Part 2: AI-Powered Real-Time Tool Discovery
+## Technical Details
 
-### Architecture Overview
+### FeaturesSection Component Structure
 
-```text
-User Dashboard                Edge Function               Lovable AI
-    |                              |                          |
-    |-- "Discover Tools" --------->|                          |
-    |                              |-- Search query --------->|
-    |                              |<-- Structured tools -----|
-    |<-- New tool cards -----------|                          |
-    |                              |                          |
-    v                              v                          v
-+----------------+     +-------------------+     +------------------+
-|  AI Discovery  |     | discover-tools    |     | Gemini 3 Flash   |
-|  Component     | --> | Edge Function     | --> | (Tool Calling)   |
-+----------------+     +-------------------+     +------------------+
-```
-
-### Database Changes
-Create a `discovered_tools` table to cache AI-discovered tools:
-- `id` (uuid, primary key)
-- `name`, `description`, `long_description`
-- `category`, `tags`, `url`, `github_url`
-- `use_cases`, `tech_stack_fit`, `learning_curve`, `community_activity`
-- `ai_generated` (boolean, default true)
-- `approved` (boolean, default false) - for moderation
-- `discovered_by` (uuid, FK to auth.users)
-- `created_at`, `updated_at`
-
-RLS Policies:
-- Authenticated users can insert discovered tools
-- All users can read approved tools
-- Only tool discoverers can update their submissions
-
-### New Files to Create
-
-| File | Purpose |
-|------|---------|
-| `supabase/functions/discover-tools/index.ts` | Edge function using Lovable AI for tool discovery |
-| `src/components/AIToolDiscovery.tsx` | UI component for AI discovery feature in dashboard |
-| `src/hooks/use-discovered-tools.ts` | Hook for managing discovered tools state |
-
-### Files to Modify
-
-| File | Changes |
-|------|---------|
-| `src/pages/Dashboard.tsx` | Add AI Discovery section/tab |
-| `supabase/config.toml` | Register new edge function |
-
----
-
-## Technical Implementation
-
-### Edge Function: discover-tools
-
-The edge function will:
-1. Accept a search query or category for tool discovery
-2. Call Lovable AI (Gemini 3 Flash) with tool calling to get structured output
-3. Return tools in the exact format matching the existing Tool type
-4. Support both general discovery and category-specific searches
-
-**Tool Calling Schema:**
 ```typescript
-{
-  type: "function",
-  function: {
-    name: "discover_developer_tools",
-    description: "Discover and return developer tools matching the query",
-    parameters: {
-      type: "object",
-      properties: {
-        tools: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              name: { type: "string" },
-              description: { type: "string" },
-              longDescription: { type: "string" },
-              category: { type: "string", enum: ["frontend", "backend", "devops", "ai-ml", "database", "testing", "mobile", "security", "productivity"] },
-              tags: { type: "array", items: { type: "string" } },
-              url: { type: "string" },
-              githubUrl: { type: "string" },
-              useCases: { type: "array", items: { type: "string" } },
-              techStackFit: { type: "array", items: { type: "string" } },
-              learningCurve: { type: "string", enum: ["low", "medium", "high"] },
-              communityActivity: { type: "string", enum: ["low", "moderate", "active", "very-active"] }
-            },
-            required: ["name", "description", "category", "url"]
-          }
-        }
-      },
-      required: ["tools"]
-    }
-  }
-}
+// Feature card data structure
+const features = [
+  {
+    icon: ExternalLink,
+    title: "Direct Links",
+    description: "Jump straight to any tool's official website with one click",
+  },
+  {
+    icon: Github,
+    title: "GitHub Access", 
+    description: "Explore source code and contribute to open-source projects",
+  },
+  {
+    icon: Filter,
+    title: "Smart Filtering",
+    description: "Find tools by category, tags, or tech stack compatibility",
+  },
+  {
+    icon: Star,
+    title: "Community Rated",
+    description: "See upvotes and discover what developers love most",
+  },
+  {
+    icon: CheckCircle,
+    title: "Verified Details",
+    description: "Accurate pros, cons, and learning curve for each tool",
+  },
+  {
+    icon: Lightbulb,
+    title: "Real Use Cases",
+    description: "Understand exactly when and how to use each tool",
+  },
+];
 ```
 
-### AI Discovery Component
+### Welcome Animation Timing
 
-Features:
-- Search input for specific tool queries
-- Category dropdown for focused discovery
-- "Discover" button to trigger AI search
-- Results display as tool cards (matching existing design)
-- "Add to Collection" button to save to database
-- Loading and error states
-
-### Dashboard Integration
-
-Add new "Discover" tab in Dashboard:
-```text
-[Explore] [Favorites] [Categories] [Discover ✨] [Submissions]
+```typescript
+// Animation sequence
+1. Fade in overlay (0.3s)
+2. Scale up icon with spring (0.5s)
+3. Fade in text (0.3s, staggered)
+4. Hold visible (1s)
+5. Fade out and redirect (0.4s)
+// Total: ~2.5 seconds
 ```
 
-The Discover tab will show:
-- AI search interface
-- Recently discovered tools by community
-- Quick category discovery buttons
+### Index.tsx Section Order (After Changes)
+
+```typescript
+<Header />
+<LandingHero />
+<NewThisWeek />
+<ComparisonChart />      // "Why Devus"
+<FeaturesSection />      // NEW - Features elaboration
+<DemoPreview />          // "Experience the Demo"
+<BenefitsSection />      // "Unlock Everything"
+<Footer />
+<AuthModal />
+<WelcomeAnimation />     // NEW - Overlay when triggered
+```
 
 ---
 
-## File Summary
+## File Changes Summary
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/components/AuthModal.tsx` | Modify | Add "Coming Soon" badges to OAuth buttons |
-| `supabase/functions/discover-tools/index.ts` | Create | AI-powered tool discovery edge function |
-| `src/components/AIToolDiscovery.tsx` | Create | UI for AI tool discovery |
-| `src/hooks/use-discovered-tools.ts` | Create | Hook for discovered tools management |
-| `src/pages/Dashboard.tsx` | Modify | Add Discover tab |
-| `supabase/config.toml` | Modify | Register edge function |
-| Database Migration | Create | `discovered_tools` table |
+| `src/components/FeaturesSection.tsx` | Create | New minimal features section |
+| `src/components/WelcomeAnimation.tsx` | Create | Animated welcome overlay |
+| `src/pages/Index.tsx` | Modify | Add FeaturesSection, integrate WelcomeAnimation |
+| `src/components/AuthModal.tsx` | Modify | Add scrollability, trigger welcome on sign-in |
+| `src/pages/Dashboard.tsx` | Modify | Remove Discover tab |
+| `src/components/AIToolDiscovery.tsx` | Delete | Remove AI discovery component |
+| `src/hooks/use-discovered-tools.ts` | Delete | Remove discovery hook |
+| `supabase/functions/discover-tools/` | Delete | Remove edge function |
 
 ---
 
-## User Experience Flow
+## Summary
 
-1. **Authenticated user** navigates to Dashboard
-2. Clicks **"Discover"** tab
-3. Enters search query like "code review tools" or selects a category
-4. AI returns 3-5 relevant tools with complete metadata
-5. User can:
-   - View tool details in the same modal format
-   - Add tools to favorites
-   - Submit tools for community approval
-6. Approved tools appear in the main Explore tab
-
----
-
-## Error Handling
-
-- **Rate limits (429)**: Show friendly message, suggest retry later
-- **Payment required (402)**: Inform user to add credits
-- **AI failures**: Graceful fallback with manual submission link
-- **Invalid responses**: Validate tool structure before display
-
----
-
-## Next Steps After Implementation
-
-1. Test the "Coming Soon" badges appear correctly on OAuth buttons
-2. Verify email authentication still works without issues
-3. Test AI discovery with various queries
-4. Validate discovered tools match the Tool type schema
-5. Check that favorites work with AI-discovered tools
+1. **Clean up AI Discovery**: Remove the broad discovery feature from dashboard (the edge function and components)
+2. **New Features Section**: Minimal, responsive section between "Why Devus" and "Demo" that highlights direct links, GitHub access, filtering, etc.
+3. **Mobile Auth Fix**: Make the sign-in card scrollable so users can see input fields when keyboard is open
+4. **Welcome Flow**: Add animated welcome screen after sign-in that redirects to dashboard
 
