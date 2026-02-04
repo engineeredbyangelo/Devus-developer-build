@@ -6,6 +6,7 @@ import {
   Star,
   CheckCircle,
   Lightbulb,
+  Sparkles,
   Zap,
   LucideIcon,
 } from "lucide-react";
@@ -14,9 +15,16 @@ interface Feature {
   icon: LucideIcon;
   title: string;
   description: string;
+  highlight?: boolean;
 }
 
 const features: Feature[] = [
+  {
+    icon: Sparkles,
+    title: "AI-Powered Discovery",
+    description: "Find tools across GitHub, ProductHunt & npm in real-time with intelligent search",
+    highlight: true,
+  },
   {
     icon: ExternalLink,
     title: "Direct Links",
@@ -41,11 +49,6 @@ const features: Feature[] = [
     icon: CheckCircle,
     title: "Verified Details",
     description: "Accurate pros, cons, and learning curve for each tool",
-  },
-  {
-    icon: Lightbulb,
-    title: "Real Use Cases",
-    description: "Understand exactly when and how to use each tool",
   },
 ];
 
@@ -88,7 +91,7 @@ export function FeaturesSection() {
             <span className="text-sm font-medium text-primary">Core Features</span>
           </div>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            What makes Devus your go-to developer hub
+            Why Developers Choose Devus
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Everything you need to discover, compare, and track the best developer tools
@@ -109,12 +112,25 @@ export function FeaturesSection() {
               <motion.div
                 key={feature.title}
                 variants={itemVariants}
-                className="glass glass-hover rounded-xl p-6 group"
+                className={`glass glass-hover rounded-xl p-6 group ${
+                  feature.highlight ? "border border-primary/30 bg-primary/5" : ""
+                }`}
               >
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 transition-colors ${
+                  feature.highlight 
+                    ? "bg-primary/20 group-hover:bg-primary/30" 
+                    : "bg-primary/10 group-hover:bg-primary/20"
+                }`}>
                   <Icon className="w-6 h-6 text-primary" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
+                <h3 className="text-lg font-semibold mb-2">
+                  {feature.title}
+                  {feature.highlight && (
+                    <span className="ml-2 text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                      New
+                    </span>
+                  )}
+                </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {feature.description}
                 </p>
