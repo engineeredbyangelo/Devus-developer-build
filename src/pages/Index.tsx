@@ -4,14 +4,27 @@ import { Header } from "@/components/Header";
 import { LandingHero } from "@/components/LandingHero";
 import { NewThisWeek } from "@/components/NewThisWeek";
 import { ComparisonChart } from "@/components/ComparisonChart";
+import { FeaturesSection } from "@/components/FeaturesSection";
 import { DemoPreview } from "@/components/DemoPreview";
 import { BenefitsSection } from "@/components/BenefitsSection";
 import { AuthModal } from "@/components/AuthModal";
+import { WelcomeAnimation } from "@/components/WelcomeAnimation";
 
 const Index = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [welcomeUserName, setWelcomeUserName] = useState("");
 
   const openSignUp = () => setAuthModalOpen(true);
+
+  const handleSignInSuccess = (userName: string) => {
+    setWelcomeUserName(userName);
+    setShowWelcome(true);
+  };
+
+  const handleWelcomeComplete = () => {
+    setShowWelcome(false);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -25,6 +38,9 @@ const Index = () => {
 
       {/* Comparison Chart - Devus vs Twitter/Reddit/IndieHacker */}
       <ComparisonChart />
+
+      {/* Features Section - Core features elaboration */}
+      <FeaturesSection />
 
       {/* Demo Preview - Limited sample for testing */}
       <DemoPreview onSignUp={openSignUp} />
@@ -52,6 +68,14 @@ const Index = () => {
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
         initialMode="signup"
+        onSignInSuccess={handleSignInSuccess}
+      />
+
+      {/* Welcome Animation */}
+      <WelcomeAnimation
+        isVisible={showWelcome}
+        userName={welcomeUserName}
+        onComplete={handleWelcomeComplete}
       />
     </div>
   );
