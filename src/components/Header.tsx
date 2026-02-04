@@ -32,7 +32,7 @@ export function Header() {
     mode: "signin",
   });
   const location = useLocation();
-  const { user, profile, signOut, isLoading } = useAuth();
+  const { user, profile, signOut, isLoading, triggerWelcome } = useAuth();
 
   const openSignIn = () => setAuthModal({ open: true, mode: "signin" });
   const openSignUp = () => setAuthModal({ open: true, mode: "signup" });
@@ -306,6 +306,7 @@ export function Header() {
         isOpen={authModal.open}
         onClose={closeAuth}
         initialMode={authModal.mode}
+        onSignInSuccess={(userName) => triggerWelcome(userName)}
       />
     </>
   );

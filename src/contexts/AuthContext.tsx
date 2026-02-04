@@ -22,6 +22,11 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<{ error: AuthError | null }>;
   signInWithGithub: () => Promise<{ error: AuthError | null }>;
   refreshProfile: () => Promise<void>;
+  // Welcome animation state
+  showWelcome: boolean;
+  welcomeUserName: string;
+  triggerWelcome: (name: string) => void;
+  completeWelcome: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,6 +36,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [welcomeUserName, setWelcomeUserName] = useState("");
 
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -138,6 +145,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error };
   };
 
+  const triggerWelcome = (name: string) => {
+    setWelcomeUserName(name);
+    setShowWelcome(true);
+  };
+
+  const completeWelcome = () => {
+    setShowWelcome(false);
+    setWelcomeUserName("");
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -151,6 +168,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signInWithGoogle,
         signInWithGithub,
         refreshProfile,
+        showWelcome,
+        welcomeUserName,
+        triggerWelcome,
+        completeWelcome,
       }}
     >
       {children}
