@@ -1,168 +1,258 @@
 
+# Redesign Core Features & Improve Comparison Chart UI
 
-# Fix AI Tool Discovery to Find Actual Tools, Not Articles
-
-## Problem
-The current AI-powered search returns **articles and listicles** about developer tools:
-- "7 Open-Source Tools Backend Developers Should Master" (medium.com)
-- "25 Essential Backend Development Tools for 2026" (roadmap.sh)
-- "Top 10 Developer Tooling for 2025" (aviator.co/blog)
-
-Instead of **actual tools**:
-- "Cursor" → cursor.com
-- "Docker" → docker.com
-- "Vercel" → vercel.com
-- "OpenAI Codex" → openai.com/codex
-
-## Root Causes
-
-1. **Search query structure** attracts listicle articles
-2. **No filtering** of blog/article domains (medium.com, dev.to, blog sites)
-3. **No GitHub prioritization** - Many dev tools live on GitHub
-4. **Different card format** - Discovered tools don't match ToolCard styling
+## Overview
+This plan transforms the landing page with two major improvements:
+1. **Redesigned Core Features Section** - Focus on 4 key features with alternating text/visual layout
+2. **Enhanced Comparison Chart** - Improved readability with better visual hierarchy
+3. **Section Reordering** - Core Features moves above Comparison Chart
 
 ---
 
-## Solution
+## Section 1: Core Features Redesign
 
-### 1. Improve Search Query Strategy
+### Current State
+- 6 features in a 3-column grid layout
+- Small icons with text cards
+- All features look similar
 
-Change the edge function to:
-- Target specific tool homepages and GitHub repos
-- Add site filters to prioritize tool sources
-- Exclude common article/blog domains
+### New Design
+- **4 focused features**: AI-Powered Discovery, Direct Links, GitHub Access, Smart Filtering
+- **Staggered alternating layout**: text left + visual right, then text right + visual left
+- Each feature gets a dedicated visual illustration/animation
 
-| Current Query | Improved Query |
-|---------------|----------------|
-| `best backend freemium developer tools 2025` | `site:github.com OR site:producthunt.com backend developer tool` |
+### Visual Layout Pattern
 
-### 2. Filter Out Article Domains
+```text
++--------------------------------------------------+
+|  [Core Features Badge]                           |
+|  Why Developers Choose Devus                     |
++--------------------------------------------------+
 
-Expand the skip patterns in the edge function to exclude:
++--------------------------------------------------+
+| Feature 1: AI-Powered Discovery                  |
+|                                                  |
+|  [Text on LEFT]        |     [Visual on RIGHT]  |
+|  - Title               |     - Animated icon    |
+|  - Description         |       with glow effect |
+|  - Key benefit         |     - Floating orbs    |
++--------------------------------------------------+
 
-```typescript
-const skipPatterns = [
-  // Social
-  'linkedin.com', 'twitter.com', 'facebook.com', 'youtube.com',
-  // Article/Blog sites
-  'medium.com', 'dev.to', 'hashnode.com', 'substack.com',
-  'blog.', '/blog/', 'news.', 'reddit.com',
-  // Listicle aggregators  
-  'roadmap.sh', 'awesome-', 'best-of-',
-  // Generic comparison sites
-  'g2.com', 'capterra.com', 'alternativeto.com',
-];
++--------------------------------------------------+
+| Feature 2: Direct Links                          |
+|                                                  |
+|  [Visual on LEFT]      |     [Text on RIGHT]    |
+|  - Link icon with      |     - Title            |
+|    connecting lines    |     - Description      |
+|                        |     - Key benefit      |
++--------------------------------------------------+
+
++--------------------------------------------------+
+| Feature 3: GitHub Access                         |
+|                                                  |
+|  [Text on LEFT]        |     [Visual on RIGHT]  |
+|  - Title               |     - GitHub icon      |
+|  - Description         |       with code lines  |
+|  - Key benefit         |                        |
++--------------------------------------------------+
+
++--------------------------------------------------+
+| Feature 4: Smart Filtering                       |
+|                                                  |
+|  [Visual on LEFT]      |     [Text on RIGHT]    |
+|  - Filter icons with   |     - Title            |
+|    category badges     |     - Description      |
+|                        |     - Key benefit      |
++--------------------------------------------------+
 ```
 
-### 3. Prioritize Quality Tool Sources
+### Mobile Adaptation
+- Single column layout
+- Visual stacks above text for each feature
+- Reduced visual complexity (smaller icons, no floating effects)
 
-Add site filters to target actual tool homepages:
+---
 
-```typescript
-// Build query with site preferences
-const siteFilters = 'site:github.com OR site:producthunt.com';
-const finalQuery = `${siteFilters} ${category} ${tags.join(' ')} developer tool`;
-```
+## Section 2: Comparison Chart Improvements
 
-### 4. Better Tool Name Extraction
+### Current Issues
+- Table layout can feel dense on desktop
+- Mobile cards lack visual hierarchy
+- Devus column doesn't stand out enough
 
-Parse tool names more intelligently:
+### New Design Improvements
 
-```typescript
-// Extract clean tool name from GitHub: "user/repo-name" → "Repo Name"
-// Extract from Product Hunt: "ToolName - Tagline" → "ToolName"
-function extractToolName(url: string, title: string): string {
-  if (url.includes('github.com')) {
-    const repoMatch = url.match(/github\.com\/[\w-]+\/([\w-]+)/);
-    if (repoMatch) {
-      return repoMatch[1].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-    }
-  }
-  return title.split(' - ')[0].split(' | ')[0].split(':')[0].trim();
-}
-```
+**Desktop:**
+- Sticky Devus column with stronger highlight (gradient background)
+- Row hover effects with subtle glow
+- Feature icons in the feature name column for visual scanning
+- Larger status icons with text labels on hover
+- Alternating row backgrounds for readability
 
-### 5. Use Same ToolCard Component for AI Results
+**Mobile:**
+- Card-based layout with Devus prominently featured at top of each card
+- Visual score indicator (e.g., 8/8 checkmarks for Devus)
+- Expandable details on tap
+- Horizontal scroll hint for comparison on smaller screens
 
-Update `AIDiscoveredTools.tsx` to reuse the `ToolCard` component with a converted data structure:
+### Visual Improvements
 
-```typescript
-// Convert DiscoveredTool to Tool format for consistent display
-const toolForCard: Tool = {
-  id: discoveredTool.id,
-  name: discoveredTool.name,
-  description: discoveredTool.description,
-  category: discoveredTool.category as Category,
-  tags: discoveredTool.tags as Tag[],
-  url: discoveredTool.url,
-  githubUrl: discoveredTool.githubUrl,
-  upvotes: 0,
-  createdAt: new Date().toISOString(),
-  isNew: true, // Mark as new since it's AI-discovered
-};
+```text
+Desktop View:
++------------------------------------------------------------------+
+|         |  [DEVUS GLOW]  |  Twitter  |  Reddit  |  IndieHacker  |
+|         |  Highlighted   |           |          |               |
++---------+----------------+-----------+----------+---------------+
+| Feature |      [CHECK]   |    [X]    |   [~]    |      [~]      |
+|  icon   |   with glow    |  dimmed   |  dimmed  |    dimmed     |
++---------+----------------+-----------+----------+---------------+
+
+Mobile View:
++----------------------------------+
+|  [Feature Name]                  |
+|  --------------------------------|
+|  [DEVUS BADGE] [CHECK] Full     |
+|  --------------------------------|
+|  Twitter         [X]  None      |
+|  Reddit          [~]  Partial   |
+|  IndieHacker     [~]  Partial   |
++----------------------------------+
 ```
 
 ---
 
-## File Changes
+## Implementation Details
+
+### File Changes
 
 | File | Action | Description |
 |------|--------|-------------|
-| `supabase/functions/search-tools/index.ts` | Modify | Add site filters, expand skip patterns, improve name extraction |
-| `src/components/AIDiscoveredTools.tsx` | Modify | Use ToolCard component instead of custom simplified cards |
+| `src/components/FeaturesSection.tsx` | Major Rewrite | New alternating layout with 4 focused features and visuals |
+| `src/components/ComparisonChart.tsx` | Update | Enhanced styling, sticky column, better mobile cards |
+| `src/pages/Index.tsx` | Update | Swap order of FeaturesSection and ComparisonChart |
 
 ---
 
-## Edge Function Changes (Detailed)
+### FeaturesSection.tsx Changes
+
+1. **Reduce to 4 features:**
+   - AI-Powered Discovery (with Sparkles icon + floating particles visual)
+   - Direct Links (with ExternalLink icon + connection lines visual)
+   - GitHub Access (with Github icon + code brackets visual)
+   - Smart Filtering (with Filter icon + category tags visual)
+
+2. **New component structure:**
+   ```typescript
+   interface FeatureItem {
+     icon: LucideIcon;
+     title: string;
+     description: string;
+     benefits: string[];
+     visual: 'ai' | 'links' | 'github' | 'filter';
+   }
+   
+   // Alternating row component
+   function FeatureRow({ feature, index }: { feature: FeatureItem; index: number }) {
+     const isReversed = index % 2 === 1; // Alternate sides
+     return (
+       <motion.div className={`grid md:grid-cols-2 gap-8 ${isReversed ? 'md:flex-row-reverse' : ''}`}>
+         {/* Text content */}
+         {/* Visual illustration */}
+       </motion.div>
+     );
+   }
+   ```
+
+3. **Custom visuals for each feature:**
+   - **AI Discovery**: Pulsing sparkles with floating tool icons
+   - **Direct Links**: Link icon with animated connection lines
+   - **GitHub**: GitHub logo with animated code brackets
+   - **Smart Filtering**: Filter icon with floating category badges
+
+4. **Animation timing:**
+   - Each row animates in as user scrolls to it
+   - Stagger delay between text and visual (text first, then visual)
+
+---
+
+### ComparisonChart.tsx Changes
+
+1. **Devus column highlighting:**
+   - Add gradient background to Devus column
+   - Larger Devus badge with glow effect
+   - Status icons in Devus column are slightly larger
+
+2. **Desktop table improvements:**
+   - Add small icons next to feature names
+   - Alternating row backgrounds (subtle)
+   - Hover state with border highlight
+
+3. **Mobile card improvements:**
+   - Devus result shown first and prominently
+   - Summary score at top of each card (e.g., "Devus: Full Support")
+   - Other platforms shown in compact format below
+
+4. **Legend improvements:**
+   - Add descriptive text under each status type
+   - Position legend at top on mobile
+
+---
+
+### Index.tsx Changes
+
+Swap the section order:
 
 ```typescript
-// Domains to skip - articles, blogs, listicles
-const skipDomains = [
-  // Social media
-  'linkedin.com', 'twitter.com', 'x.com', 'facebook.com', 'youtube.com',
-  // Blog/article platforms
-  'medium.com', 'dev.to', 'hashnode.dev', 'substack.com', 'wordpress.com',
-  // News/content sites
-  'reddit.com', 'news.ycombinator.com', 'techcrunch.com', 'wired.com',
-  // Aggregator/comparison sites  
-  'g2.com', 'capterra.com', 'alternativeto.com', 'slant.co',
-  'trustradius.com', 'getapp.com',
-  // Listicle/blog patterns in URL
-  '/blog/', '/articles/', '/news/', '/best-', '/top-',
-];
+{/* Core Features - Moved above comparison */}
+<FeaturesSection />
 
-// Quality tool sources to prioritize
-const prioritySites = [
-  'github.com',
-  'producthunt.com', 
-  'npmjs.com',
-  'pypi.org',
-];
-
-// Build query targeting actual tools, not articles about tools
-const siteQuery = prioritySites.map(s => `site:${s}`).join(' OR ');
-const filterParts = [category, ...tags].filter(Boolean).join(' ');
-const finalQuery = `(${siteQuery}) ${filterParts} tool`;
+{/* Comparison Chart - Now below features */}
+<ComparisonChart />
 ```
 
 ---
 
-## Expected Results
+## Mobile-First Responsive Design
 
-**Before**: Returns articles like "10 Best DevOps Tools for 2025"
+### Breakpoints
+- **Mobile (< 768px)**: Single column, stacked layout, reduced animations
+- **Tablet (768px - 1024px)**: Two-column for features, compact table for comparison
+- **Desktop (> 1024px)**: Full alternating layout, enhanced visuals
 
-**After**: Returns actual tools like:
-- "Terraform" → github.com/hashicorp/terraform
-- "Docker" → github.com/docker/docker
-- "K3s" → github.com/k3s-io/k3s
-- "Coolify" → producthunt.com/posts/coolify
+### Mobile Feature Cards
+```text
++----------------------------------+
+|        [Visual Icon]             |
+|           Animated               |
++----------------------------------+
+|  AI-Powered Discovery            |
+|  Find tools across GitHub,       |
+|  ProductHunt & npm in real-time  |
+|                                  |
+|  - Intelligent search            |
+|  - Real-time results             |
++----------------------------------+
+```
+
+---
+
+## Animation Details
+
+### Feature Rows
+- Entry: Fade in + slide from side (opposite to visual position)
+- Visual: Scale in with subtle bounce
+- On viewport enter with 0.2s stagger
+
+### Comparison Chart
+- Table rows: Slide in from left with stagger
+- Devus column: Subtle pulse glow animation
+- Status icons: Pop-in effect
 
 ---
 
 ## Summary
 
-1. **Refine search query** - Target GitHub and ProductHunt instead of generic web search
-2. **Filter aggressively** - Block all blog, article, and comparison sites
-3. **Extract clean names** - Parse repo names from GitHub URLs properly
-4. **Consistent display** - Use the same ToolCard component for AI results
-
+1. **FeaturesSection** redesigned with 4 focused features in alternating left/right layout with custom visuals
+2. **ComparisonChart** enhanced with better Devus highlighting, improved readability, and mobile-optimized cards
+3. **Section order** swapped so Core Features appears before the Comparison Chart
+4. **Mobile adaptations** ensure readability and reduced complexity on smaller screens
