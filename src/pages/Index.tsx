@@ -3,8 +3,8 @@ import { Sparkles } from "lucide-react";
 import { Header } from "@/components/Header";
 import { LandingHero } from "@/components/LandingHero";
 import { NewThisWeek } from "@/components/NewThisWeek";
-import { ComparisonChart } from "@/components/ComparisonChart";
 import { FeaturesSection } from "@/components/FeaturesSection";
+ import { ComparisonChart } from "@/components/ComparisonChart";
 import { DemoPreview } from "@/components/DemoPreview";
 import { BenefitsSection } from "@/components/BenefitsSection";
 import { AuthModal } from "@/components/AuthModal";
@@ -35,12 +35,12 @@ const Index = () => {
       {/* New This Week Carousel */}
       <NewThisWeek />
 
-      {/* Comparison Chart - Devus vs Twitter/Reddit/IndieHacker */}
-      <ComparisonChart />
-
       {/* Features Section - Core features elaboration */}
       <FeaturesSection />
 
+       {/* Comparison Chart - Devus vs Twitter/Reddit/IndieHacker */}
+       <ComparisonChart />
+ 
       {/* Demo Preview - Limited sample for testing */}
       <DemoPreview onSignUp={openSignUp} />
 
