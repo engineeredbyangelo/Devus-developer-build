@@ -301,15 +301,16 @@
            transition={{ duration: 0.5, delay: 0.2 }}
            className={`space-y-4 ${isReversed && !isMobile ? "md:[direction:ltr]" : ""}`}
          >
-           {/* Icon badge */}
-           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20">
-             <Icon className="w-4 h-4 text-primary" />
-             <span className="text-sm font-medium text-primary">Feature {index + 1}</span>
-           </div>
+            {/* Title with icon */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                <Icon className="w-5 h-5 text-primary" />
+              </div>
+              <h3 className="text-2xl md:text-3xl font-bold tracking-tight">
+                {feature.title}
+              </h3>
+            </div>
  
-           <h3 className="text-2xl md:text-3xl font-bold tracking-tight">
-             {feature.title}
-           </h3>
  
            <p className="text-muted-foreground leading-relaxed">
              {feature.description}
@@ -367,9 +368,9 @@
              <Zap className="w-4 h-4 text-primary" />
              <span className="text-sm font-medium text-primary">Core Features</span>
            </div>
-           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-             Why Developers Choose Devus
-           </h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Why Developers Choose <span className="text-foreground">Dev</span><span className="text-primary glow-text">us</span>
+            </h2>
            <p className="text-muted-foreground max-w-2xl mx-auto">
              Everything you need to discover, compare, and track the best developer tools
            </p>
