@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Lightbulb, Layers, TrendingUp, Search, Target, Zap, GitBranch } from "lucide-react";
+import { Lightbulb, Layers, TrendingUp, GitBranch } from "lucide-react";
 
 interface WhyCard {
   id: string;
@@ -28,28 +28,12 @@ const cards: WhyCard[] = [
     statLabel: "Executives prioritizing consolidation",
   },
   {
-    id: "discover",
-    icon: Search,
-    title: "Discover What Matters",
-    description: "We aggregate tools from GitHub, ProductHunt, npm, and more—surfacing the best options so you don't have to hunt across platforms.",
-  },
-  {
-    id: "curate",
-    icon: Target,
-    title: "Curated, Not Cluttered",
-    description: "Our AI-powered curation filters out the noise. Get recommendations based on your tech stack, use case, and community activity.",
-  },
-  {
-    id: "streamline",
-    icon: Zap,
-    title: "Streamline Your Stack",
-    description: "Compare tools side-by-side, access direct links and GitHub repos, and make informed decisions faster than ever.",
-  },
-  {
     id: "augment",
     icon: GitBranch,
     title: "Augment, Don't Replace",
     description: "We're not here to replace your favorites—we help you find complementary tools that fill gaps and enhance your existing workflow.",
+    stat: "69%",
+    statLabel: "Developers augmenting their stack yearly",
   },
 ];
 
