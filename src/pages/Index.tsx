@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Sparkles } from "lucide-react";
 import { Header } from "@/components/Header";
 import { LandingHero } from "@/components/LandingHero";
-import { NewThisWeek } from "@/components/NewThisWeek";
+import { WhyDevusSection } from "@/components/WhyDevusSection";
 import { FeaturesSection } from "@/components/FeaturesSection";
  import { ComparisonChart } from "@/components/ComparisonChart";
 import { DemoPreview } from "@/components/DemoPreview";
@@ -32,8 +32,8 @@ const Index = () => {
       {/* Landing Hero */}
       <LandingHero onGetStarted={openSignUp} />
 
-      {/* New This Week Carousel */}
-      <NewThisWeek />
+      {/* Why Devus Section */}
+      <WhyDevusSection />
 
       {/* Features Section - Core features elaboration */}
       <FeaturesSection />
