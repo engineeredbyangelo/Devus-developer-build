@@ -1,258 +1,317 @@
 
-# Redesign Core Features & Improve Comparison Chart UI
+
+# Dashboard Redesign with "Tools of the Week" Feature
 
 ## Overview
-This plan transforms the landing page with two major improvements:
-1. **Redesigned Core Features Section** - Focus on 4 key features with alternating text/visual layout
-2. **Enhanced Comparison Chart** - Improved readability with better visual hierarchy
-3. **Section Reordering** - Core Features moves above Comparison Chart
+
+This plan transforms the user dashboard into a more intuitive experience with a prominent "Tools of the Week" section at the top, powered by Firecrawl's real-time discovery. Users will land directly on this curated weekly selection after the welcome animation.
 
 ---
 
-## Section 1: Core Features Redesign
-
-### Current State
-- 6 features in a 3-column grid layout
-- Small icons with text cards
-- All features look similar
-
-### New Design
-- **4 focused features**: AI-Powered Discovery, Direct Links, GitHub Access, Smart Filtering
-- **Staggered alternating layout**: text left + visual right, then text right + visual left
-- Each feature gets a dedicated visual illustration/animation
-
-### Visual Layout Pattern
+## Architecture Overview
 
 ```text
-+--------------------------------------------------+
-|  [Core Features Badge]                           |
-|  Why Developers Choose Devus                     |
-+--------------------------------------------------+
-
-+--------------------------------------------------+
-| Feature 1: AI-Powered Discovery                  |
-|                                                  |
-|  [Text on LEFT]        |     [Visual on RIGHT]  |
-|  - Title               |     - Animated icon    |
-|  - Description         |       with glow effect |
-|  - Key benefit         |     - Floating orbs    |
-+--------------------------------------------------+
-
-+--------------------------------------------------+
-| Feature 2: Direct Links                          |
-|                                                  |
-|  [Visual on LEFT]      |     [Text on RIGHT]    |
-|  - Link icon with      |     - Title            |
-|    connecting lines    |     - Description      |
-|                        |     - Key benefit      |
-+--------------------------------------------------+
-
-+--------------------------------------------------+
-| Feature 3: GitHub Access                         |
-|                                                  |
-|  [Text on LEFT]        |     [Visual on RIGHT]  |
-|  - Title               |     - GitHub icon      |
-|  - Description         |       with code lines  |
-|  - Key benefit         |                        |
-+--------------------------------------------------+
-
-+--------------------------------------------------+
-| Feature 4: Smart Filtering                       |
-|                                                  |
-|  [Visual on LEFT]      |     [Text on RIGHT]    |
-|  - Filter icons with   |     - Title            |
-|    category badges     |     - Description      |
-|                        |     - Key benefit      |
-+--------------------------------------------------+
++----------------------------------------------------------+
+|                     DASHBOARD LAYOUT                      |
++----------------------------------------------------------+
+|  HEADER (existing)                                        |
++----------------------------------------------------------+
+|                                                          |
+|  +----------------------------------------------------+  |
+|  |           TOOLS OF THE WEEK (Hero Section)         |  |
+|  |  Week of [Current Date] - Updated every Monday     |  |
+|  |                                                    |  |
+|  |  [8-10 Featured Tool Cards - Firecrawl Powered]    |  |
+|  |  Full context: useCases, techStackFit, community   |  |
+|  +----------------------------------------------------+  |
+|                                                          |
+|  +----------------+  +--------------------------------+  |
+|  |   SIDEBAR      |  |       MAIN CONTENT             |  |
+|  |   (Compact)    |  |                                |  |
+|  |                |  |  [Explore / Favorites / etc]   |  |
+|  |   - Quick Nav  |  |                                |  |
+|  |   - Profile    |  |                                |  |
+|  +----------------+  +--------------------------------+  |
+|                                                          |
++----------------------------------------------------------+
 ```
-
-### Mobile Adaptation
-- Single column layout
-- Visual stacks above text for each feature
-- Reduced visual complexity (smaller icons, no floating effects)
 
 ---
 
-## Section 2: Comparison Chart Improvements
+## Key Features
 
-### Current Issues
-- Table layout can feel dense on desktop
-- Mobile cards lack visual hierarchy
-- Devus column doesn't stand out enough
+### 1. Tools of the Week Section
 
-### New Design Improvements
+- **Auto-refreshes weekly** (cached, updates every Monday)
+- **8-10 tools** discovered via Firecrawl from GitHub, Product Hunt, npm
+- **Rich context for each tool**:
+  - Use cases (what problems it solves)
+  - Tech stack compatibility (what it works well with)
+  - Community status ("Still in development", "Active", etc.)
+  - Learning curve indicator
+- **Full-width hero placement** at the top of the dashboard
 
-**Desktop:**
-- Sticky Devus column with stronger highlight (gradient background)
-- Row hover effects with subtle glow
-- Feature icons in the feature name column for visual scanning
-- Larger status icons with text labels on hover
-- Alternating row backgrounds for readability
+### 2. Enhanced Tool Discovery via Firecrawl
 
-**Mobile:**
-- Card-based layout with Devus prominently featured at top of each card
-- Visual score indicator (e.g., 8/8 checkmarks for Devus)
-- Expandable details on tap
-- Horizontal scroll hint for comparison on smaller screens
+The edge function will be enhanced to:
+- Return richer tool data including use cases and tech stack fit
+- Use AI/LLM to extract structured information from scraped pages
+- Cache results for the week to avoid repeated API calls
+- Target trending/new tools specifically
 
-### Visual Improvements
+### 3. Redesigned Dashboard Layout
 
-```text
-Desktop View:
-+------------------------------------------------------------------+
-|         |  [DEVUS GLOW]  |  Twitter  |  Reddit  |  IndieHacker  |
-|         |  Highlighted   |           |          |               |
-+---------+----------------+-----------+----------+---------------+
-| Feature |      [CHECK]   |    [X]    |   [~]    |      [~]      |
-|  icon   |   with glow    |  dimmed   |  dimmed  |    dimmed     |
-+---------+----------------+-----------+----------+---------------+
-
-Mobile View:
-+----------------------------------+
-|  [Feature Name]                  |
-|  --------------------------------|
-|  [DEVUS BADGE] [CHECK] Full     |
-|  --------------------------------|
-|  Twitter         [X]  None      |
-|  Reddit          [~]  Partial   |
-|  IndieHacker     [~]  Partial   |
-+----------------------------------+
-```
+**Before**: Sidebar + Explore tab as default view
+**After**: 
+- Tools of the Week hero section (full width)
+- Compact sidebar below
+- Cleaner tab navigation
+- "Your Hub" branding for personal space
 
 ---
 
 ## Implementation Details
 
-### File Changes
+### New Files
 
-| File | Action | Description |
-|------|--------|-------------|
-| `src/components/FeaturesSection.tsx` | Major Rewrite | New alternating layout with 4 focused features and visuals |
-| `src/components/ComparisonChart.tsx` | Update | Enhanced styling, sticky column, better mobile cards |
-| `src/pages/Index.tsx` | Update | Swap order of FeaturesSection and ComparisonChart |
+| File | Purpose |
+|------|---------|
+| `src/components/ToolsOfTheWeek.tsx` | Hero section displaying weekly featured tools |
+| `src/hooks/use-weekly-tools.ts` | Hook to fetch/cache weekly tool discoveries |
+| `supabase/functions/weekly-tools/index.ts` | Edge function for weekly tool discovery with rich context |
+
+### Modified Files
+
+| File | Changes |
+|------|---------|
+| `src/pages/Dashboard.tsx` | Add ToolsOfTheWeek at top, redesign layout |
+| `src/components/WelcomeAnimation.tsx` | Ensure smooth scroll to dashboard top |
+| `src/components/ToolCard.tsx` | Add support for displaying community/learning curve badges |
+| `supabase/functions/search-tools/index.ts` | Enhance to extract richer tool metadata |
 
 ---
 
-### FeaturesSection.tsx Changes
+## Data Flow
 
-1. **Reduce to 4 features:**
-   - AI-Powered Discovery (with Sparkles icon + floating particles visual)
-   - Direct Links (with ExternalLink icon + connection lines visual)
-   - GitHub Access (with Github icon + code brackets visual)
-   - Smart Filtering (with Filter icon + category tags visual)
+```text
+User Signs In
+      |
+      v
+Welcome Animation (2.5s)
+      |
+      v
+Navigate to /dashboard (scroll to top)
+      |
+      v
+Dashboard loads ToolsOfTheWeek
+      |
+      v
+use-weekly-tools hook checks:
+   - Is cached data < 7 days old? -> Use cache
+   - Otherwise -> Call weekly-tools edge function
+      |
+      v
+Edge Function:
+   1. Search Firecrawl for trending dev tools
+   2. Scrape each result for rich metadata
+   3. Use Lovable AI to extract structured data:
+      - useCases[]
+      - techStackFit[]
+      - learningCurve
+      - communityActivity
+   4. Return 8-10 tools with full context
+      |
+      v
+Display in ToolsOfTheWeek grid
+```
 
-2. **New component structure:**
-   ```typescript
-   interface FeatureItem {
-     icon: LucideIcon;
-     title: string;
-     description: string;
-     benefits: string[];
-     visual: 'ai' | 'links' | 'github' | 'filter';
-   }
-   
-   // Alternating row component
-   function FeatureRow({ feature, index }: { feature: FeatureItem; index: number }) {
-     const isReversed = index % 2 === 1; // Alternate sides
-     return (
-       <motion.div className={`grid md:grid-cols-2 gap-8 ${isReversed ? 'md:flex-row-reverse' : ''}`}>
-         {/* Text content */}
-         {/* Visual illustration */}
-       </motion.div>
-     );
+---
+
+## Tools of the Week Component Design
+
+```text
++------------------------------------------------------------------+
+|  [Sparkles Icon]  TOOLS OF THE WEEK                              |
+|  Week of February 3, 2026                                        |
+|  Fresh developer tools discovered across GitHub, ProductHunt & npm|
++------------------------------------------------------------------+
+|                                                                  |
+|  +----------------+  +----------------+  +----------------+      |
+|  |  [Tool Card]   |  |  [Tool Card]   |  |  [Tool Card]   |      |
+|  |  Name          |  |  Name          |  |  Name          |      |
+|  |  Description   |  |  Description   |  |  Description   |      |
+|  |                |  |                |  |                |      |
+|  |  Use Cases:    |  |  Use Cases:    |  |  Use Cases:    |      |
+|  |  - Case 1      |  |  - Case 1      |  |  - Case 1      |      |
+|  |  - Case 2      |  |  - Case 2      |  |  - Case 2      |      |
+|  |                |  |                |  |                |      |
+|  |  Works with:   |  |  Works with:   |  |  Works with:   |      |
+|  |  [React] [TS]  |  |  [Node] [API]  |  |  [Docker]      |      |
+|  |                |  |                |  |                |      |
+|  |  [Still Bldg]  |  |  [Active]      |  |  [Very Active] |      |
+|  |  [Easy Learn]  |  |  [Moderate]    |  |  [Easy Learn]  |      |
+|  +----------------+  +----------------+  +----------------+      |
+|                                                                  |
+|  +----------------+  +----------------+  +----------------+  ... |
+|  |  [Tool Card]   |  |  [Tool Card]   |  |  [Tool Card]   |      |
+|  +----------------+  +----------------+  +----------------+      |
+|                                                                  |
++------------------------------------------------------------------+
+```
+
+### Mobile Layout
+
+- 1 column grid
+- Swipeable carousel option
+- Condensed card format
+
+---
+
+## Enhanced Edge Function Logic
+
+The `weekly-tools` edge function will:
+
+1. **Build a trending-focused query**:
+   ```
+   (site:github.com OR site:producthunt.com) 
+   new developer tool 2026 trending
+   ```
+
+2. **Scrape each result** for markdown content
+
+3. **Use Lovable AI** (google/gemini-2.5-flash) to extract:
+   ```json
+   {
+     "name": "Tool Name",
+     "description": "What it does",
+     "useCases": ["Building APIs", "Rapid prototyping"],
+     "techStackFit": ["React", "TypeScript", "Node.js"],
+     "learningCurve": "low",
+     "communityActivity": "active | still-building"
    }
    ```
 
-3. **Custom visuals for each feature:**
-   - **AI Discovery**: Pulsing sparkles with floating tool icons
-   - **Direct Links**: Link icon with animated connection lines
-   - **GitHub**: GitHub logo with animated code brackets
-   - **Smart Filtering**: Filter icon with floating category badges
-
-4. **Animation timing:**
-   - Each row animates in as user scrolls to it
-   - Stagger delay between text and visual (text first, then visual)
+4. **Handle "still building" cases**:
+   - New tools with < 1000 stars: "Still in development"
+   - Explicitly mentioned in README: "Beta" or "Alpha"
+   - No recent releases: "Early stage"
 
 ---
 
-### ComparisonChart.tsx Changes
+## Dashboard Layout Redesign
 
-1. **Devus column highlighting:**
-   - Add gradient background to Devus column
-   - Larger Devus badge with glow effect
-   - Status icons in Devus column are slightly larger
+### New Structure
 
-2. **Desktop table improvements:**
-   - Add small icons next to feature names
-   - Alternating row backgrounds (subtle)
-   - Hover state with border highlight
+```tsx
+<Dashboard>
+  <Header />
+  
+  {/* HERO: Tools of the Week - Full Width */}
+  <ToolsOfTheWeek />
+  
+  {/* MAIN CONTENT: Sidebar + Content */}
+  <div className="grid lg:grid-cols-[280px,1fr]">
+    <Sidebar>
+      {/* Compact user info */}
+      {/* Quick nav: Explore, Favorites, Categories, Submissions */}
+    </Sidebar>
+    
+    <Content>
+      {/* Tab content based on selection */}
+    </Content>
+  </div>
+</Dashboard>
+```
 
-3. **Mobile card improvements:**
-   - Devus result shown first and prominently
-   - Summary score at top of each card (e.g., "Devus: Full Support")
-   - Other platforms shown in compact format below
+### Visual Improvements
 
-4. **Legend improvements:**
-   - Add descriptive text under each status type
-   - Position legend at top on mobile
+- **Glassmorphism cards** for Tools of the Week
+- **Gradient header** for the hero section
+- **Staggered animations** for tool cards
+- **Quick action buttons** on each card (favorite, visit, GitHub)
 
 ---
 
-### Index.tsx Changes
+## Caching Strategy
 
-Swap the section order:
+To avoid calling Firecrawl on every dashboard load:
 
-```typescript
-{/* Core Features - Moved above comparison */}
-<FeaturesSection />
+1. **Database table**: `weekly_tools_cache`
+   - `id`, `week_start_date`, `tools_data` (JSONB), `created_at`
 
-{/* Comparison Chart - Now below features */}
-<ComparisonChart />
+2. **Hook logic**:
+   ```typescript
+   // Check if we have valid cache for current week
+   const weekStart = getStartOfWeek(new Date());
+   const cached = await supabase
+     .from('weekly_tools_cache')
+     .select('tools_data')
+     .eq('week_start_date', weekStart)
+     .single();
+   
+   if (cached.data) {
+     return cached.data.tools_data;
+   }
+   
+   // Otherwise fetch fresh and cache
+   const fresh = await fetchWeeklyTools();
+   await supabase
+     .from('weekly_tools_cache')
+     .upsert({ week_start_date: weekStart, tools_data: fresh });
+   return fresh;
+   ```
+
+---
+
+## Post-Login Flow Update
+
+Currently the `WelcomeAnimation` navigates to `/dashboard`. We will:
+
+1. Keep the navigation as-is
+2. Ensure the dashboard scrolls to top on mount
+3. The `ToolsOfTheWeek` section is the first thing users see
+
+```tsx
+// In Dashboard.tsx
+useEffect(() => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}, []);
 ```
 
 ---
 
-## Mobile-First Responsive Design
+## Summary of Changes
 
-### Breakpoints
-- **Mobile (< 768px)**: Single column, stacked layout, reduced animations
-- **Tablet (768px - 1024px)**: Two-column for features, compact table for comparison
-- **Desktop (> 1024px)**: Full alternating layout, enhanced visuals
+1. **Create `ToolsOfTheWeek` component** - Hero section with weekly curated tools
+2. **Create `use-weekly-tools` hook** - Manages fetching and caching
+3. **Create `weekly-tools` edge function** - Firecrawl + Lovable AI for rich metadata
+4. **Create `weekly_tools_cache` table** - Database caching for weekly results
+5. **Enhance `ToolCard`** - Display community status and learning curve badges
+6. **Redesign `Dashboard`** - Tools of the Week hero at top, cleaner layout
+7. **Update scroll behavior** - Ensure users land at top after welcome animation
 
-### Mobile Feature Cards
-```text
-+----------------------------------+
-|        [Visual Icon]             |
-|           Animated               |
-+----------------------------------+
-|  AI-Powered Discovery            |
-|  Find tools across GitHub,       |
-|  ProductHunt & npm in real-time  |
-|                                  |
-|  - Intelligent search            |
-|  - Real-time results             |
-+----------------------------------+
+---
+
+## Database Migration
+
+```sql
+CREATE TABLE weekly_tools_cache (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  week_start_date DATE UNIQUE NOT NULL,
+  tools_data JSONB NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Allow read access for authenticated users
+ALTER TABLE weekly_tools_cache ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can read weekly tools cache"
+  ON weekly_tools_cache FOR SELECT
+  USING (true);
+
+CREATE POLICY "Service role can insert/update cache"
+  ON weekly_tools_cache FOR ALL
+  USING (auth.role() = 'service_role');
 ```
 
----
-
-## Animation Details
-
-### Feature Rows
-- Entry: Fade in + slide from side (opposite to visual position)
-- Visual: Scale in with subtle bounce
-- On viewport enter with 0.2s stagger
-
-### Comparison Chart
-- Table rows: Slide in from left with stagger
-- Devus column: Subtle pulse glow animation
-- Status icons: Pop-in effect
-
----
-
-## Summary
-
-1. **FeaturesSection** redesigned with 4 focused features in alternating left/right layout with custom visuals
-2. **ComparisonChart** enhanced with better Devus highlighting, improved readability, and mobile-optimized cards
-3. **Section order** swapped so Core Features appears before the Comparison Chart
-4. **Mobile adaptations** ensure readability and reduced complexity on smaller screens
