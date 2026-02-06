@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard,
   Heart,
   Folder,
   Clock,
@@ -16,6 +15,7 @@ import {
 import { Header } from "@/components/Header";
 import { DashboardToolGrid } from "@/components/DashboardToolGrid";
 import { AIDiscoveredTools } from "@/components/AIDiscoveredTools";
+import { ToolsOfTheWeek } from "@/components/ToolsOfTheWeek";
 import { useFavoritesDb, useFollowedCategoriesDb } from "@/hooks/use-tools";
 import { useAISearch } from "@/hooks/use-ai-search";
 import { useAuth } from "@/hooks/useAuth";
@@ -52,6 +52,11 @@ const Dashboard = () => {
     clearResults,
   } = useAISearch(selectedCategory, selectedTags);
 
+  // Scroll to top on mount (after welcome animation)
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
   // Auth guard - redirect if not logged in
   useEffect(() => {
     if (!authLoading && !user) {
@@ -87,13 +92,11 @@ const Dashboard = () => {
     setSelectedTags(prev =>
       prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
     );
-    // Clear AI results when filters change
     clearResults();
   };
   
   const handleCategoryChange = (category: Category | null) => {
     setSelectedCategory(category);
-    // Clear AI results when filters change
     clearResults();
   };
 
@@ -123,6 +126,10 @@ const Dashboard = () => {
       <Header />
 
       <main className="container py-8 md:py-12">
+        {/* Tools of the Week - Full Width Hero */}
+        <ToolsOfTheWeek />
+
+        {/* Main Content Grid */}
         <div className="grid lg:grid-cols-[280px,1fr] gap-8">
           {/* Sidebar */}
           <motion.aside
@@ -203,19 +210,6 @@ const Dashboard = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            {/* Header */}
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-                <LayoutDashboard className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold">Intelligence Hub</h1>
-                <p className="text-sm text-muted-foreground">
-                  Discover, compare, and track developer tools
-                </p>
-              </div>
-            </div>
-
             {/* Tab Content */}
             {activeTab === "explore" && (
               <motion.div
