@@ -152,7 +152,7 @@ Deno.serve(async (req) => {
     // Use Lovable AI to extract rich metadata for each tool
     const enrichedTools: WeeklyTool[] = [];
     
-    for (const candidate of toolCandidates.slice(0, 10)) {
+    for (const candidate of toolCandidates.slice(0, 5)) {
       try {
         const aiPrompt = `Analyze this developer tool and extract structured information.
 
