@@ -113,6 +113,30 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_tools_cache: {
+        Row: {
+          created_at: string | null
+          id: string
+          tools_data: Json
+          updated_at: string | null
+          week_start_date: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          tools_data: Json
+          updated_at?: string | null
+          week_start_date: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          tools_data?: Json
+          updated_at?: string | null
+          week_start_date?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

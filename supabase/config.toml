@@ -1,1 +1,4 @@
 project_id = "wztlprdcakcrtevagvcr"
+
+[functions.weekly-tools]
+verify_jwt = false
