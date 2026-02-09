@@ -19,53 +19,182 @@ interface WeeklyTool {
   source: "firecrawl";
 }
 
-// Quality tool sources to prioritize
-const prioritySites = [
-  'github.com',
-  'producthunt.com',
-  'npmjs.com',
+const SOURCES = [
+  { name: 'hackernews', url: 'https://news.ycombinator.com/newest', type: 'listing' },
+  { name: 'hackernews_show', url: 'https://news.ycombinator.com/show', type: 'listing' },
+  { name: 'openai_blog', url: 'https://openai.com/blog', type: 'blog' },
+  { name: 'anthropic_news', url: 'https://www.anthropic.com/news', type: 'blog' },
+  { name: 'vercel_blog', url: 'https://vercel.com/blog', type: 'blog' },
+  { name: 'github_blog', url: 'https://github.blog/category/engineering/', type: 'blog' },
+  { name: 'console_dev', url: 'https://console.dev', type: 'aggregator' },
 ];
 
-// Domains to skip
-const skipDomains = [
-  'linkedin.com', 'twitter.com', 'x.com', 'facebook.com', 'youtube.com', 'instagram.com',
-  'medium.com', 'dev.to', 'hashnode.dev', 'substack.com', 'wordpress.com', 'blogger.com',
-  'reddit.com', 'news.ycombinator.com', 'techcrunch.com', 'wired.com', 'theverge.com',
-  'g2.com', 'capterra.com', 'alternativeto.com', 'slant.co', 'trustradius.com',
-  'stackoverflow.com', 'quora.com', 'stackexchange.com',
-];
+const TOOL_SCHEMA = {
+  type: 'object',
+  properties: {
+    tools: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+            description: 'Exact tool name only - 1-3 words maximum (e.g. "Cursor", "v0", "Claude Opus 4")',
+          },
+          category: {
+            type: 'string',
+            enum: ['AI Model', 'CLI Tool', 'API', 'Framework', 'Library', 'IDE/Editor', 'Extension', 'DevOps Tool', 'UI/UX Tool', 'AI Agent', 'Database', 'Deployment Platform', 'Testing Tool', 'Other'],
+          },
+          description: {
+            type: 'string',
+            description: 'One sentence describing what it does',
+          },
+          announcementDate: {
+            type: 'string',
+            description: 'Date announced if mentioned (YYYY-MM-DD format)',
+          },
+          creator: {
+            type: 'string',
+            description: 'Company or creator name',
+          },
+          sourceUrl: {
+            type: 'string',
+            description: 'URL to the announcement',
+          },
+        },
+        required: ['name', 'category', 'description'],
+      },
+    },
+  },
+  required: ['tools'],
+};
 
-const skipPatterns = [
-  '/blog/', '/articles/', '/news/', '/best-', '/top-', '/posts/',
-  '/comparing/', '/vs/', '/comparison/', '/alternatives/',
-  'awesome-list', 'awesome-',
-];
+const PROMPTS: Record<string, string> = {
+  blog: `You are extracting ONLY newly announced developer tools from this page.
 
-function shouldSkipUrl(url: string): boolean {
-  const lowerUrl = url.toLowerCase();
-  if (skipDomains.some(domain => lowerUrl.includes(domain))) return true;
-  if (skipPatterns.some(pattern => lowerUrl.includes(pattern))) return true;
-  return false;
+STRICT RULES:
+- Extract ONLY tools that are being ANNOUNCED or RELEASED on this page
+- Tool name must be 1-3 words maximum (e.g. "Cursor", "GitHub Copilot", "Claude Sonnet 4")
+- Focus ONLY on developer tools: coding, programming, DevOps, AI/ML, UI/UX, frontend, backend, databases, deployment, testing, AI agents
+- SKIP: tutorials, how-to guides, blog posts about existing tools, discussions, opinions, reviews, comparisons
+
+INCLUDE ONLY:
+✓ New product launches
+✓ New model releases (e.g. GPT-5, Claude Opus 4)
+✓ New framework/library releases
+✓ New developer APIs
+✓ New CLI tools
+✓ New IDE/editor tools
+✓ New DevOps platforms
+✓ New AI agent frameworks
+
+EXCLUDE:
+✗ Tutorials ("How to use...")
+✗ Discussions or forums
+✗ Opinion pieces
+✗ General news articles
+✗ Non-developer tools (consumer apps, games, etc.)
+✗ Updates to existing well-known tools (unless major version like 2.0)
+
+Extract the exact tool name as it appears in the announcement.`,
+
+  listing: `You are scanning a list of posts to find ONLY announcements of new developer tools.
+
+STRICT RULES:
+- Look for posts that ANNOUNCE or LAUNCH new tools
+- Tool name must be 1-3 words maximum
+- Focus ONLY on developer tools: coding, programming, DevOps, AI/ML, UI/UX, frontend, backend, databases, AI agents
+- SKIP: "Show HN" projects that are not polished tools, tutorials, discussions, "Ask HN" posts
+
+IDENTIFY posts with patterns like:
+✓ "Introducing [Tool]"
+✓ "Announcing [Tool]"
+✓ "[Tool] - new [category] for developers"
+✓ "We built [Tool]"
+✓ "Launching [Tool]"
+✓ "[Company] releases [Tool]"
+
+SKIP posts like:
+✗ "How to build..."
+✗ "Why I switched to..."
+✗ "Discussion: ..."
+✗ "Ask HN: ..."
+✗ Personal projects without clear product name
+✗ Blog posts, articles, tutorials
+
+Extract ONLY the tool name (1-3 words) from qualifying posts.`,
+
+  aggregator: `You are extracting developer tools from a curated tools directory or newsletter.
+
+STRICT RULES:
+- Extract ONLY the tool name (1-3 words maximum)
+- Focus ONLY on developer tools: coding, programming, DevOps, AI/ML, UI/UX, frontend, backend, databases, AI agents
+- SKIP: consumer apps, games, productivity tools not for developers, design tools not for UI/UX work
+
+Extract the exact tool name as listed.`,
+};
+
+async function scrapeWithFirecrawl(url: string, prompt: string, apiKey: string) {
+  try {
+    const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url,
+        formats: ['extract'],
+        extract: { prompt, schema: TOOL_SCHEMA },
+        timeout: 30000,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error(`Firecrawl API error for ${url}: ${response.status}`);
+      return [];
+    }
+
+    const data = await response.json();
+    return data?.data?.extract?.tools || [];
+  } catch (error) {
+    console.error(`Error scraping ${url}:`, error);
+    return [];
+  }
 }
 
-function extractToolName(url: string, title: string): string {
-  if (url.includes('github.com')) {
-    const repoMatch = url.match(/github\.com\/[\w-]+\/([\w-]+)/);
-    if (repoMatch) {
-      return repoMatch[1].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-    }
-  }
-  if (url.includes('producthunt.com')) {
-    return title.split(' - ')[0].split(' | ')[0].split(':')[0].trim();
-  }
-  if (url.includes('npmjs.com')) {
-    const pkgMatch = url.match(/npmjs\.com\/package\/([@\w-]+(?:\/[\w-]+)?)/);
-    if (pkgMatch) {
-      return pkgMatch[1].replace(/^@/, '').replace(/\//g, ' ').replace(/-/g, ' ')
-        .replace(/\b\w/g, c => c.toUpperCase());
-    }
-  }
-  return title.split(' - ')[0].split(' | ')[0].split(':')[0].replace(/^\d+\.\s*/, '').trim().slice(0, 50);
+function deduplicateTools(tools: any[]) {
+  const seen = new Map();
+  return tools.filter((tool) => {
+    const normalizedName = tool.name.toLowerCase().trim();
+    if (seen.has(normalizedName)) return false;
+    if (tool.name.split(' ').length > 4) return false;
+    const genericNames = ['new tool', 'the tool', 'our tool', 'this tool', 'my tool', 'tool'];
+    if (genericNames.includes(normalizedName)) return false;
+    seen.set(normalizedName, true);
+    return true;
+  });
+}
+
+// Map Firecrawl categories to our app categories
+function mapCategory(firecrawlCategory: string): string {
+  const map: Record<string, string> = {
+    'AI Model': 'ai-ml',
+    'AI Agent': 'ai-ml',
+    'CLI Tool': 'devops',
+    'API': 'backend',
+    'Framework': 'frontend',
+    'Library': 'frontend',
+    'IDE/Editor': 'productivity',
+    'Extension': 'productivity',
+    'DevOps Tool': 'devops',
+    'UI/UX Tool': 'frontend',
+    'Database': 'database',
+    'Deployment Platform': 'devops',
+    'Testing Tool': 'testing',
+    'Other': 'productivity',
+  };
+  return map[firecrawlCategory] || 'productivity';
 }
 
 Deno.serve(async (req) => {
@@ -76,14 +205,13 @@ Deno.serve(async (req) => {
   try {
     const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY');
     const lovableKey = Deno.env.get('LOVABLE_API_KEY');
-    
+
     if (!firecrawlKey) {
       return new Response(
         JSON.stringify({ success: false, error: 'Firecrawl connector not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
     if (!lovableKey) {
       return new Response(
         JSON.stringify({ success: false, error: 'Lovable AI not configured' }),
@@ -91,75 +219,42 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Build trending-focused query for current week
-    const currentYear = new Date().getFullYear();
-    const siteQuery = prioritySites.map(s => `site:${s}`).join(' OR ');
-    const searchQuery = `(${siteQuery}) new developer tool ${currentYear} trending (CLI OR SDK OR framework OR library OR devtool) -"best tools" -"top tools" -"list of"`;
-    
-    console.log('Weekly tools search query:', searchQuery);
+    console.log('Starting curated source scrape...');
 
-    // Search with Firecrawl
-    const searchResponse = await fetch('https://api.firecrawl.dev/v1/search', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${firecrawlKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query: searchQuery,
-        limit: 20,
-        scrapeOptions: { formats: ['markdown'] },
-      }),
+    // Scrape all sources in parallel
+    const scrapePromises = SOURCES.map(async (source) => {
+      console.log(`Scraping ${source.name}...`);
+      const prompt = PROMPTS[source.type];
+      const tools = await scrapeWithFirecrawl(source.url, prompt, firecrawlKey);
+      return tools.map((tool: any) => ({
+        ...tool,
+        source: source.name,
+        scrapedAt: new Date().toISOString(),
+      }));
     });
 
-    const searchData = await searchResponse.json();
-    
-    if (!searchResponse.ok) {
-      console.error('Firecrawl search error:', searchData);
-      return new Response(
-        JSON.stringify({ success: false, error: searchData.error || 'Firecrawl search failed' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const results = await Promise.all(scrapePromises);
+    const allTools: any[] = [];
+    results.forEach((tools) => allTools.push(...tools));
 
-    const results = searchData.data || [];
-    const toolCandidates: { name: string; url: string; description: string; markdown?: string }[] = [];
-    const seenNames = new Set<string>();
+    console.log(`Found ${allTools.length} tools before deduplication`);
 
-    for (const result of results) {
-      if (!result.url || !result.title) continue;
-      if (shouldSkipUrl(result.url)) continue;
-      
-      const toolName = extractToolName(result.url, result.title);
-      const normalizedName = toolName.toLowerCase();
-      
-      if (seenNames.has(normalizedName)) continue;
-      if (toolName.split(' ').length > 5) continue;
-      
-      seenNames.add(normalizedName);
-      toolCandidates.push({
-        name: toolName,
-        url: result.url,
-        description: result.description || '',
-        markdown: result.markdown?.slice(0, 2000) || '',
-      });
-      
-      if (toolCandidates.length >= 12) break;
-    }
+    const uniqueTools = deduplicateTools(allTools);
+    console.log(`${uniqueTools.length} unique tools after dedup`);
 
-    console.log(`Found ${toolCandidates.length} tool candidates`);
-
-    // Use Lovable AI to extract rich metadata for each tool
+    // Take top 5 and enrich with Gemini
+    const top5 = uniqueTools.slice(0, 5);
     const enrichedTools: WeeklyTool[] = [];
-    
-    for (const candidate of toolCandidates.slice(0, 5)) {
+
+    for (const candidate of top5) {
       try {
         const aiPrompt = `Analyze this developer tool and extract structured information.
 
 Tool Name: ${candidate.name}
-URL: ${candidate.url}
+Category: ${candidate.category}
 Description: ${candidate.description}
-Content Preview: ${candidate.markdown}
+Creator: ${candidate.creator || 'Unknown'}
+Source URL: ${candidate.sourceUrl || ''}
 
 Respond with ONLY a valid JSON object (no markdown, no code blocks):
 {
@@ -170,7 +265,8 @@ Respond with ONLY a valid JSON object (no markdown, no code blocks):
   "useCases": ["Use case 1", "Use case 2", "Use case 3"],
   "techStackFit": ["Technology 1", "Technology 2"],
   "learningCurve": "low or medium or high",
-  "communityActivity": "still-building or early-stage or active or very-active"
+  "communityActivity": "still-building or early-stage or active or very-active",
+  "url": "Official website URL for this tool (best guess if not provided)"
 }`;
 
         const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -189,29 +285,28 @@ Respond with ONLY a valid JSON object (no markdown, no code blocks):
         });
 
         if (!aiResponse.ok) {
-          console.error('AI response not ok for', candidate.name);
+          console.error('AI response not ok for', candidate.name, aiResponse.status);
           continue;
         }
 
         const aiData = await aiResponse.json();
         const aiContent = aiData.choices?.[0]?.message?.content || '';
-        
-        // Parse AI response - clean up markdown code blocks if present
+
         let cleanContent = aiContent.trim();
         if (cleanContent.startsWith('```')) {
           cleanContent = cleanContent.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
         }
-        
+
         const parsed = JSON.parse(cleanContent);
-        
+
         enrichedTools.push({
           id: crypto.randomUUID(),
           name: candidate.name,
           description: parsed.description || candidate.description,
           longDescription: parsed.longDescription,
-          url: candidate.url,
-          githubUrl: candidate.url.includes('github.com') ? candidate.url : undefined,
-          category: parsed.category || 'productivity',
+          url: parsed.url || candidate.sourceUrl || `https://www.google.com/search?q=${encodeURIComponent(candidate.name + ' developer tool')}`,
+          githubUrl: undefined,
+          category: parsed.category || mapCategory(candidate.category),
           tags: parsed.tags || [],
           useCases: parsed.useCases || [],
           techStackFit: parsed.techStackFit || [],
@@ -219,18 +314,16 @@ Respond with ONLY a valid JSON object (no markdown, no code blocks):
           communityActivity: parsed.communityActivity || 'active',
           source: 'firecrawl',
         });
-        
+
         console.log('Enriched tool:', candidate.name);
       } catch (parseError) {
         console.error('Failed to enrich tool:', candidate.name, parseError);
-        // Add with basic info if AI fails
         enrichedTools.push({
           id: crypto.randomUUID(),
           name: candidate.name,
-          description: candidate.description || `A developer tool from ${candidate.url}`,
-          url: candidate.url,
-          githubUrl: candidate.url.includes('github.com') ? candidate.url : undefined,
-          category: 'productivity',
+          description: candidate.description || `A developer tool`,
+          url: candidate.sourceUrl || `https://www.google.com/search?q=${encodeURIComponent(candidate.name + ' developer tool')}`,
+          category: mapCategory(candidate.category),
           tags: [],
           useCases: ['Development workflow', 'Productivity'],
           techStackFit: [],
@@ -244,8 +337,8 @@ Respond with ONLY a valid JSON object (no markdown, no code blocks):
     console.log(`Returning ${enrichedTools.length} enriched weekly tools`);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         tools: enrichedTools,
         weekOf: new Date().toISOString(),
       }),

@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Sparkles, TrendingUp, ExternalLink, Github, Loader2, AlertCircle } from "lucide-react";
 import { useWeeklyTools, WeeklyTool } from "@/hooks/use-weekly-tools";
+import { DemoToolModal } from "./DemoToolModal";
+import { Tool, Category } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const learningCurveLabels = {
@@ -16,7 +19,47 @@ const communityLabels = {
   "very-active": { label: "Very Active", color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
 };
 
-function WeeklyToolCard({ tool, index }: { tool: WeeklyTool; index: number }) {
+// Map WeeklyTool category to the Tool Category type
+const categoryMap: Record<string, Category> = {
+  frontend: "frontend",
+  backend: "backend",
+  devops: "devops",
+  "ai-ml": "ai-ml",
+  database: "database",
+  testing: "testing",
+  mobile: "mobile",
+  security: "security",
+  productivity: "productivity",
+};
+
+// Map WeeklyTool communityActivity to Tool communityActivity
+const communityActivityMap: Record<string, "low" | "moderate" | "active" | "very-active"> = {
+  "still-building": "low",
+  "early-stage": "moderate",
+  active: "active",
+  "very-active": "very-active",
+};
+
+function weeklyToolToTool(wt: WeeklyTool): Tool {
+  return {
+    id: wt.id,
+    name: wt.name,
+    description: wt.description,
+    longDescription: wt.longDescription,
+    category: categoryMap[wt.category] || "productivity",
+    tags: [],
+    url: wt.url,
+    githubUrl: wt.githubUrl,
+    upvotes: 0,
+    createdAt: new Date().toISOString(),
+    useCases: wt.useCases,
+    techStackFit: wt.techStackFit,
+    learningCurve: wt.learningCurve,
+    communityActivity: communityActivityMap[wt.communityActivity] || "active",
+  };
+}
+
+function WeeklyToolCard({ tool, index, onClick }: { tool: WeeklyTool; index: number; onClick: () => void }) {
   const learning = learningCurveLabels[tool.learningCurve] || learningCurveLabels.medium;
   const community = communityLabels[tool.communityActivity] || communityLabels.active;
 
@@ -26,10 +69,10 @@ function WeeklyToolCard({ tool, index }: { tool: WeeklyTool; index: number }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className="group relative h-full"
+      className="group relative h-full cursor-pointer"
+      onClick={onClick}
     >
       <div className="glass glass-hover rounded-xl p-5 h-full flex flex-col">
-        {/* Glow effect */}
         <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
         {/* Header */}
@@ -97,6 +140,7 @@ function WeeklyToolCard({ tool, index }: { tool: WeeklyTool; index: number }) {
             href={tool.url}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
           >
             <ExternalLink className="w-4 h-4" />
@@ -107,6 +151,7 @@ function WeeklyToolCard({ tool, index }: { tool: WeeklyTool; index: number }) {
               href={tool.githubUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors"
             >
               <Github className="w-4 h-4" />
@@ -121,6 +166,7 @@ function WeeklyToolCard({ tool, index }: { tool: WeeklyTool; index: number }) {
 
 export function ToolsOfTheWeek() {
   const { tools, isLoading, error, weekOf } = useWeeklyTools();
+  const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
 
   return (
     <section className="mb-8">
@@ -141,7 +187,7 @@ export function ToolsOfTheWeek() {
               <TrendingUp className="w-5 h-5 text-primary ml-1" />
             </h2>
             <p className="text-sm text-muted-foreground">
-              Week of {weekOf || "..."} • Fresh developer tools discovered across GitHub, ProductHunt & npm
+              Week of {weekOf || "..."} • Fresh developer tools discovered across curated sources
             </p>
           </div>
         </div>
@@ -168,7 +214,12 @@ export function ToolsOfTheWeek() {
       {!isLoading && !error && tools.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {tools.map((tool, index) => (
-            <WeeklyToolCard key={tool.id} tool={tool} index={index} />
+            <WeeklyToolCard
+              key={tool.id}
+              tool={tool}
+              index={index}
+              onClick={() => setSelectedTool(weeklyToolToTool(tool))}
+            />
           ))}
         </div>
       )}
@@ -181,6 +232,13 @@ export function ToolsOfTheWeek() {
           <p className="text-sm text-muted-foreground mt-2">Check back soon!</p>
         </div>
       )}
+
+      {/* Expanded Modal */}
+      <DemoToolModal
+        tool={selectedTool}
+        isOpen={!!selectedTool}
+        onClose={() => setSelectedTool(null)}
+      />
     </section>
   );
 }
