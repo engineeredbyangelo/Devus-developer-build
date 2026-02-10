@@ -20,8 +20,6 @@ import { categories, tools } from "@/lib/data";
 import { Category, Tag, Tool } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { CategoryFilter } from "@/components/CategoryFilter";
-import { TagFilter } from "@/components/TagFilter";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -30,13 +28,11 @@ const Dashboard = () => {
   const { favoriteTools, isFavorite, toggleFavorite } = useFavoritesDb();
   const { followedCategories, toggleCategory, categoryTools } = useFollowedCategoriesDb();
 
-  // Explore tab state
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
 
-  // AI Search hook
   const {
     discoveredTools,
     isSearching,
@@ -58,15 +54,14 @@ const Dashboard = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-dash-bg flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-dash-primary" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (!user) return null;
 
-  // Filter tools for Explore tab
   const filteredTools = tools.filter((tool) => {
     const matchesSearch =
       !searchQuery ||
@@ -77,13 +72,6 @@ const Dashboard = () => {
       selectedTags.length === 0 || selectedTags.some((tag) => tool.tags.includes(tag));
     return matchesSearch && matchesCategory && matchesTags;
   });
-
-  const toggleTag = (tag: Tag) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
-    clearResults();
-  };
 
   const handleCategoryChange = (category: Category | null) => {
     setSelectedCategory(category);
@@ -101,7 +89,6 @@ const Dashboard = () => {
 
   const userName = profile?.full_name || user.email?.split("@")[0] || "Developer";
 
-  // Hero navigation
   const currentToolIndex = selectedTool
     ? filteredTools.findIndex((t) => t.id === selectedTool.id)
     : -1;
@@ -114,14 +101,15 @@ const Dashboard = () => {
       setSelectedTool(filteredTools[currentToolIndex + 1]);
   };
 
-  // Category filter chips
   const filterChips: { label: string; value: Category | null }[] = [
     { label: "All", value: null },
     ...categories.map((c) => ({ label: c.name, value: c.id })),
   ];
 
   return (
-    <div className="min-h-screen bg-dash-bg font-dash">
+    <div className="min-h-screen bg-background">
+      <div className="fixed inset-0 bg-gradient-radial from-primary/5 via-transparent to-transparent pointer-events-none" />
+
       <DashboardSidebar
         activeTab={activeTab}
         onTabChange={(tab) => {
@@ -133,9 +121,8 @@ const Dashboard = () => {
         avatarUrl={profile?.avatar_url || undefined}
       />
 
-      {/* Main content */}
-      <main className="ml-[60px] min-h-screen p-6 lg:p-8">
-        {/* Hero View */}
+      {/* Main content — offset by sidebar on lg+, full width on mobile */}
+      <main className="lg:ml-[60px] min-h-screen p-4 pt-16 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8 relative z-10">
         {selectedTool ? (
           <ToolHeroView
             tool={selectedTool}
@@ -149,7 +136,6 @@ const Dashboard = () => {
           />
         ) : (
           <>
-            {/* Explore */}
             {activeTab === "explore" && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -159,48 +145,41 @@ const Dashboard = () => {
               >
                 {/* Search */}
                 <div className="relative max-w-xl">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-dash-text-secondary" />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <input
                     type="text"
                     placeholder="Search developer tools..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full h-12 pl-11 pr-4 rounded-2xl bg-dash-card text-dash-card-foreground text-sm placeholder:text-dash-text-secondary outline-none transition-shadow focus:ring-2 focus:ring-dash-primary/30"
-                    style={{ boxShadow: "var(--dash-shadow)" }}
+                    className="w-full h-12 pl-11 pr-4 rounded-2xl glass text-foreground text-sm placeholder:text-muted-foreground outline-none transition-shadow focus:ring-2 focus:ring-primary/30"
                   />
                 </div>
 
-                {/* Filter chips */}
-                <div className="flex flex-wrap gap-2">
+                {/* Filter chips — scrollable on mobile */}
+                <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap scrollbar-none">
                   {filterChips.map((chip) => (
                     <button
                       key={chip.label}
                       onClick={() => handleCategoryChange(chip.value)}
                       className={cn(
-                        "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                        "px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap shrink-0",
                         selectedCategory === chip.value
-                          ? "bg-dash-primary text-dash-primary-foreground"
-                          : "bg-dash-card text-dash-text-secondary hover:text-dash-card-foreground"
+                          ? "bg-primary text-primary-foreground glow-sm"
+                          : "glass text-muted-foreground hover:text-foreground"
                       )}
-                      style={
-                        selectedCategory !== chip.value
-                          ? { boxShadow: "var(--dash-shadow)" }
-                          : undefined
-                      }
                     >
                       {chip.label}
                     </button>
                   ))}
                 </div>
 
-                {/* Results count */}
-                <p className="text-sm text-dash-text-secondary">
+                <p className="text-sm text-muted-foreground">
                   {filteredTools.length} tool{filteredTools.length !== 1 ? "s" : ""} found
                 </p>
 
-                {/* Tool Grid */}
+                {/* Tool Grid — responsive columns */}
                 <motion.div
-                  className="grid sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4"
+                  className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4"
                   initial="hidden"
                   animate="visible"
                   variants={{
@@ -233,15 +212,11 @@ const Dashboard = () => {
                 </motion.div>
 
                 {filteredTools.length === 0 && (
-                  <div
-                    className="bg-dash-card rounded-2xl p-12 text-center"
-                    style={{ boxShadow: "var(--dash-shadow)" }}
-                  >
-                    <p className="text-dash-text-secondary">No tools found matching your criteria.</p>
+                  <div className="glass rounded-2xl p-12 text-center">
+                    <p className="text-muted-foreground">No tools found matching your criteria.</p>
                   </div>
                 )}
 
-                {/* AI Discovery */}
                 <AIDiscoveredTools
                   tools={discoveredTools}
                   isSearching={isSearching}
@@ -253,26 +228,19 @@ const Dashboard = () => {
               </motion.div>
             )}
 
-            {/* Favorites */}
             {activeTab === "favorites" && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} key="favorites" className="space-y-6">
-                <h2 className="text-xl font-semibold text-dash-card-foreground">Saved Tools</h2>
+                <h2 className="text-lg font-semibold text-foreground">Saved Tools</h2>
                 {favoriteTools.length === 0 ? (
-                  <div
-                    className="bg-dash-card rounded-2xl p-12 text-center"
-                    style={{ boxShadow: "var(--dash-shadow)" }}
-                  >
-                    <Heart className="w-12 h-12 text-dash-text-secondary/40 mx-auto mb-4" />
-                    <p className="text-dash-text-secondary mb-2">No favorites yet. Start exploring!</p>
-                    <Button
-                      onClick={() => setActiveTab("explore")}
-                      className="mt-2 bg-dash-primary hover:bg-dash-primary/90 text-dash-primary-foreground"
-                    >
+                  <div className="glass rounded-2xl p-12 text-center">
+                    <Heart className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
+                    <p className="text-muted-foreground mb-2">No favorites yet. Start exploring!</p>
+                    <Button onClick={() => setActiveTab("explore")} className="mt-2">
                       Explore Tools
                     </Button>
                   </div>
                 ) : (
-                  <div className="grid sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
                     {favoriteTools.map((tool) => (
                       <DashboardToolCard
                         key={tool.id}
@@ -290,15 +258,14 @@ const Dashboard = () => {
               </motion.div>
             )}
 
-            {/* Categories */}
             {activeTab === "categories" && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} key="categories" className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold text-dash-card-foreground mb-2">Followed Categories</h2>
-                  <p className="text-sm text-dash-text-secondary mb-6">
+                  <h2 className="text-lg font-semibold text-foreground mb-2">Followed Categories</h2>
+                  <p className="text-sm text-muted-foreground mb-6">
                     Get notified about new tools in these categories
                   </p>
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {categories.map((category) => {
                       const isFollowed = followedCategories.includes(category.id);
                       return (
@@ -306,27 +273,28 @@ const Dashboard = () => {
                           key={category.id}
                           onClick={() => toggleCategory(category.id)}
                           className={cn(
-                            "bg-dash-card rounded-2xl p-5 text-left transition-all",
-                            isFollowed && "ring-2 ring-dash-primary"
+                            "glass glass-hover rounded-xl p-4 text-left transition-all",
+                            isFollowed && "border-primary/50 bg-primary/5"
                           )}
-                          style={{ boxShadow: "var(--dash-shadow)" }}
                           whileTap={{ scale: 0.98 }}
                         >
                           <div className="flex items-center justify-between">
                             <div>
-                              <h3 className="font-medium text-dash-card-foreground">{category.name}</h3>
-                              <p className="text-sm text-dash-text-secondary mt-1">{category.description}</p>
+                              <h3 className="font-medium text-foreground">{category.name}</h3>
+                              <p className="text-sm text-muted-foreground mt-1">{category.description}</p>
                             </div>
                             <div
                               className={cn(
                                 "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors",
                                 isFollowed
-                                  ? "border-dash-primary bg-dash-primary"
-                                  : "border-dash-text-secondary"
+                                  ? "border-primary bg-primary"
+                                  : "border-muted-foreground"
                               )}
                             >
                               {isFollowed && (
-                                <ChevronRight className="w-4 h-4 text-dash-primary-foreground" />
+                                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                                  <ChevronRight className="w-4 h-4 text-primary-foreground" />
+                                </motion.div>
                               )}
                             </div>
                           </div>
@@ -337,10 +305,10 @@ const Dashboard = () => {
                 </div>
                 {followedCategories.length > 0 && categoryTools.length > 0 && (
                   <div>
-                    <h3 className="text-lg font-semibold text-dash-card-foreground mb-4">
+                    <h3 className="text-lg font-semibold text-foreground mb-4">
                       Tools from Followed Categories
                     </h3>
-                    <div className="grid sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
                       {categoryTools.map((tool) => (
                         <DashboardToolCard
                           key={tool.id}
@@ -359,20 +327,14 @@ const Dashboard = () => {
               </motion.div>
             )}
 
-            {/* Submissions */}
             {activeTab === "submissions" && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} key="submissions" className="space-y-6">
-                <h2 className="text-xl font-semibold text-dash-card-foreground">Your Submissions</h2>
-                <div
-                  className="bg-dash-card rounded-2xl p-12 text-center"
-                  style={{ boxShadow: "var(--dash-shadow)" }}
-                >
-                  <Clock className="w-12 h-12 text-dash-text-secondary/40 mx-auto mb-4" />
-                  <p className="text-dash-text-secondary">You haven't submitted any tools yet.</p>
+                <h2 className="text-lg font-semibold text-foreground">Your Submissions</h2>
+                <div className="glass rounded-2xl p-12 text-center">
+                  <Clock className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
+                  <p className="text-muted-foreground">You haven't submitted any tools yet.</p>
                   <Link to="/submit">
-                    <Button className="mt-4 bg-dash-primary hover:bg-dash-primary/90 text-dash-primary-foreground">
-                      Submit a Tool
-                    </Button>
+                    <Button className="mt-4 glow-sm">Submit a Tool</Button>
                   </Link>
                 </div>
               </motion.div>

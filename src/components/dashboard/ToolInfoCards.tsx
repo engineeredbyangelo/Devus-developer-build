@@ -7,10 +7,7 @@ interface ToolInfoCardsProps {
 }
 
 const cardClass =
-  "bg-dash-card text-dash-card-foreground rounded-2xl p-6 font-dash transition-all duration-300 hover:-translate-y-0.5";
-const cardStyle = {
-  boxShadow: "var(--dash-shadow)",
-};
+  "glass rounded-2xl p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30";
 
 export function ToolInfoCards({ tool }: ToolInfoCardsProps) {
   return (
@@ -22,16 +19,15 @@ export function ToolInfoCards({ tool }: ToolInfoCardsProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className={cardClass}
-          style={cardStyle}
         >
-          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-            <Zap className="w-5 h-5 text-dash-primary" />
+          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-foreground">
+            <Zap className="w-5 h-5 text-primary" />
             Use Cases
           </h3>
           <ul className="space-y-2">
             {tool.useCases.map((uc, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-dash-text-secondary">
-                <span className="mt-1.5 w-2 h-2 rounded-full bg-dash-primary shrink-0" />
+              <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                <span className="mt-1.5 w-2 h-2 rounded-full bg-primary shrink-0" />
                 {uc}
               </li>
             ))}
@@ -46,17 +42,16 @@ export function ToolInfoCards({ tool }: ToolInfoCardsProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
           className={cardClass}
-          style={cardStyle}
         >
-          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-            <Monitor className="w-5 h-5 text-dash-primary" />
+          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-foreground">
+            <Monitor className="w-5 h-5 text-primary" />
             Works Great With
           </h3>
           <div className="flex flex-wrap gap-2">
             {tool.techStackFit.map((tech, i) => (
               <span
                 key={i}
-                className="px-3 py-1.5 rounded-full bg-dash-sidebar text-dash-sidebar-foreground text-xs font-medium"
+                className="px-3 py-1.5 rounded-full bg-secondary text-secondary-foreground text-xs font-medium"
               >
                 {tech}
               </span>
@@ -66,19 +61,18 @@ export function ToolInfoCards({ tool }: ToolInfoCardsProps) {
       )}
 
       {/* Learning & Community */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className={cardClass}
-          style={cardStyle}
         >
-          <h3 className="text-sm font-semibold mb-2 flex items-center gap-1.5">
-            <BookOpen className="w-4 h-4 text-dash-primary" />
+          <h3 className="text-sm font-semibold mb-2 flex items-center gap-1.5 text-foreground">
+            <BookOpen className="w-4 h-4 text-primary" />
             Learning Curve
           </h3>
-          <p className="text-sm font-semibold text-dash-primary capitalize">
+          <p className="text-sm font-semibold text-primary capitalize">
             {tool.learningCurve === "low"
               ? "Easy to Learn"
               : tool.learningCurve === "medium"
@@ -91,13 +85,12 @@ export function ToolInfoCards({ tool }: ToolInfoCardsProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
           className={cardClass}
-          style={cardStyle}
         >
-          <h3 className="text-sm font-semibold mb-2 flex items-center gap-1.5">
-            <Users className="w-4 h-4 text-dash-primary" />
+          <h3 className="text-sm font-semibold mb-2 flex items-center gap-1.5 text-foreground">
+            <Users className="w-4 h-4 text-primary" />
             Community
           </h3>
-          <p className="text-sm font-semibold text-dash-primary capitalize">
+          <p className="text-sm font-semibold text-primary capitalize">
             {tool.communityActivity?.replace("-", " ") || "Unknown"}
           </p>
         </motion.div>
@@ -105,19 +98,18 @@ export function ToolInfoCards({ tool }: ToolInfoCardsProps) {
 
       {/* Pros & Cons */}
       {(tool.pros || tool.cons) && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             className={cardClass}
-            style={cardStyle}
           >
-            <h3 className="text-sm font-semibold mb-3 text-dash-primary">Pros</h3>
+            <h3 className="text-sm font-semibold mb-3 text-primary">Pros</h3>
             <ul className="space-y-2">
               {tool.pros?.map((pro, i) => (
-                <li key={i} className="flex items-start gap-2 text-xs text-dash-text-secondary">
-                  <Check className="w-3.5 h-3.5 text-dash-primary shrink-0 mt-0.5" />
+                <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                  <Check className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
                   {pro}
                 </li>
               ))}
@@ -128,13 +120,12 @@ export function ToolInfoCards({ tool }: ToolInfoCardsProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35 }}
             className={cardClass}
-            style={cardStyle}
           >
-            <h3 className="text-sm font-semibold mb-3 text-dash-warning">Cons</h3>
+            <h3 className="text-sm font-semibold mb-3 text-destructive">Cons</h3>
             <ul className="space-y-2">
               {tool.cons?.map((con, i) => (
-                <li key={i} className="flex items-start gap-2 text-xs text-dash-text-secondary">
-                  <Ban className="w-3.5 h-3.5 text-dash-warning shrink-0 mt-0.5" />
+                <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                  <Ban className="w-3.5 h-3.5 text-destructive shrink-0 mt-0.5" />
                   {con}
                 </li>
               ))}
