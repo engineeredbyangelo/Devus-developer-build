@@ -49,33 +49,30 @@ export function ToolHeroView({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
-        className="font-dash"
       >
         {/* Top bar */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <button
             onClick={onBack}
-            className="flex items-center gap-1 text-sm text-dash-text-secondary hover:text-dash-card-foreground transition-colors"
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
             Back to Explore
           </button>
           <div className="flex items-center gap-3">
-            <span className="text-sm text-dash-text-secondary">
+            <span className="text-sm text-muted-foreground hidden sm:inline">
               {toolIndex + 1} of {totalTools} tools
             </span>
             <div className="flex items-center gap-1">
               <button
                 onClick={onPrev}
-                className="w-8 h-8 rounded-lg bg-dash-card flex items-center justify-center text-dash-card-foreground hover:bg-dash-primary hover:text-dash-primary-foreground transition-all"
-                style={{ boxShadow: "var(--dash-shadow)" }}
+                className="w-8 h-8 rounded-lg glass flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-all"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={onNext}
-                className="w-8 h-8 rounded-lg bg-dash-card flex items-center justify-center text-dash-card-foreground hover:bg-dash-primary hover:text-dash-primary-foreground transition-all"
-                style={{ boxShadow: "var(--dash-shadow)" }}
+                className="w-8 h-8 rounded-lg glass flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-all"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -83,59 +80,51 @@ export function ToolHeroView({
             <button
               onClick={onToggleFavorite}
               className={cn(
-                "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
+                "w-8 h-8 rounded-lg glass flex items-center justify-center transition-all",
                 isFavorite
-                  ? "bg-red-50 text-red-500"
-                  : "bg-dash-card text-dash-text-secondary hover:text-red-500"
+                  ? "text-red-500"
+                  : "text-muted-foreground hover:text-red-500"
               )}
-              style={{ boxShadow: "var(--dash-shadow)" }}
             >
               <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
             </button>
-            <button
-              className="w-8 h-8 rounded-lg bg-dash-card flex items-center justify-center text-dash-text-secondary hover:text-dash-card-foreground transition-all"
-              style={{ boxShadow: "var(--dash-shadow)" }}
-            >
+            <button className="w-8 h-8 rounded-lg glass flex items-center justify-center text-muted-foreground hover:text-foreground transition-all">
               <Share2 className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Hero content */}
-        <div className="grid lg:grid-cols-[1fr,40%] gap-8">
+        {/* Hero content — stacks on mobile */}
+        <div className="grid lg:grid-cols-[1fr,40%] gap-6 lg:gap-8">
           {/* Left: Hero */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-gradient-to-br from-dash-card to-dash-bg rounded-3xl p-10"
-            style={{ boxShadow: "0 4px 20px hsla(0,0%,0%,0.06)" }}
+            className="glass rounded-3xl p-6 sm:p-10"
           >
-            <div className="flex items-start gap-6">
+            <div className="flex flex-col sm:flex-row items-start gap-5 sm:gap-6">
               {/* Logo */}
-              <div
-                className="w-[120px] h-[120px] rounded-2xl bg-dash-bg flex items-center justify-center shrink-0 overflow-hidden"
-                style={{ boxShadow: "var(--dash-shadow)" }}
-              >
+              <div className="w-20 h-20 sm:w-[120px] sm:h-[120px] rounded-2xl bg-secondary flex items-center justify-center shrink-0 overflow-hidden">
                 {tool.logoUrl ? (
                   <img
                     src={tool.logoUrl}
                     alt={tool.name}
-                    className="w-20 h-20 object-contain"
+                    className="w-14 h-14 sm:w-20 sm:h-20 object-contain"
                   />
                 ) : (
-                  <Code className="w-12 h-12 text-dash-primary" />
+                  <Code className="w-8 h-8 sm:w-12 sm:h-12 text-primary" />
                 )}
               </div>
 
               <div className="min-w-0 flex-1">
                 {/* Name + stars */}
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-[48px] font-bold leading-tight text-dash-card-foreground">
+                <div className="flex items-center gap-3 mb-2 flex-wrap">
+                  <h1 className="text-3xl sm:text-[48px] font-bold leading-tight text-foreground">
                     {tool.name}
                   </h1>
                   {starsFormatted && (
-                    <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-dash-bg text-sm font-semibold text-dash-card-foreground">
+                    <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-secondary text-sm font-semibold text-foreground">
                       <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                       {starsFormatted}
                     </span>
@@ -144,23 +133,23 @@ export function ToolHeroView({
 
                 {/* Category */}
                 <div className="flex items-center gap-2 mb-4">
-                  <span className="px-3 py-1 rounded-full bg-dash-bg text-xs font-medium text-dash-text-secondary flex items-center gap-1.5">
+                  <span className="px-3 py-1 rounded-full bg-secondary text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                     <Code className="w-3.5 h-3.5" />
                     {category?.name || tool.category}
                   </span>
                 </div>
 
                 {/* Description */}
-                <p className="text-lg leading-relaxed text-dash-text-secondary max-w-xl">
+                <p className="text-base sm:text-lg leading-relaxed text-muted-foreground max-w-xl">
                   {tool.longDescription || tool.description}
                 </p>
               </div>
             </div>
 
             {/* Action buttons */}
-            <div className="flex gap-3 mt-8">
+            <div className="flex flex-col sm:flex-row gap-3 mt-8">
               <a href={tool.url} target="_blank" rel="noopener noreferrer" className="flex-1">
-                <Button className="w-full h-12 rounded-xl bg-dash-primary hover:bg-dash-primary/90 text-dash-primary-foreground font-semibold text-sm gap-2">
+                <Button className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm gap-2 glow-sm">
                   Visit {tool.name}
                   <ExternalLink className="w-4 h-4" />
                 </Button>
@@ -169,7 +158,7 @@ export function ToolHeroView({
                 <a href={tool.githubUrl} target="_blank" rel="noopener noreferrer" className="flex-1">
                   <Button
                     variant="outline"
-                    className="w-full h-12 rounded-xl border-dash-sidebar text-dash-card-foreground font-semibold text-sm gap-2 hover:bg-dash-sidebar hover:text-dash-sidebar-foreground"
+                    className="w-full h-12 rounded-xl font-semibold text-sm gap-2"
                   >
                     <Github className="w-4 h-4" />
                     View on GitHub
@@ -184,7 +173,7 @@ export function ToolHeroView({
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="overflow-y-auto max-h-[calc(100vh-180px)] pr-1"
+            className="lg:overflow-y-auto lg:max-h-[calc(100vh-180px)] lg:pr-1"
           >
             <ToolInfoCards tool={tool} />
           </motion.div>
