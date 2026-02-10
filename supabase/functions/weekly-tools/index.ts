@@ -19,153 +19,90 @@ interface WeeklyTool {
   source: "firecrawl";
 }
 
-const SOURCES = [
-  { name: 'hackernews', url: 'https://news.ycombinator.com/newest', type: 'listing' },
-  { name: 'hackernews_show', url: 'https://news.ycombinator.com/show', type: 'listing' },
-  { name: 'openai_blog', url: 'https://openai.com/blog', type: 'blog' },
-  { name: 'anthropic_news', url: 'https://www.anthropic.com/news', type: 'blog' },
-  { name: 'vercel_blog', url: 'https://vercel.com/blog', type: 'blog' },
-  { name: 'github_blog', url: 'https://github.blog/category/engineering/', type: 'blog' },
-  { name: 'console_dev', url: 'https://console.dev', type: 'aggregator' },
-];
+interface PerplexityTool {
+  name: string;
+  category: string;
+  description: string;
+  url: string;
+  creator: string;
+}
 
-const TOOL_SCHEMA = {
-  type: 'object',
-  properties: {
-    tools: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          name: {
-            type: 'string',
-            description: 'Exact tool name only - 1-3 words maximum (e.g. "Cursor", "v0", "Claude Opus 4")',
-          },
-          category: {
-            type: 'string',
-            enum: ['AI Model', 'CLI Tool', 'API', 'Framework', 'Library', 'IDE/Editor', 'Extension', 'DevOps Tool', 'UI/UX Tool', 'AI Agent', 'Database', 'Deployment Platform', 'Testing Tool', 'Other'],
-          },
-          description: {
-            type: 'string',
-            description: 'One sentence describing what it does',
-          },
-          announcementDate: {
-            type: 'string',
-            description: 'Date announced if mentioned (YYYY-MM-DD format)',
-          },
-          creator: {
-            type: 'string',
-            description: 'Company or creator name',
-          },
-          sourceUrl: {
-            type: 'string',
-            description: 'URL to the announcement',
-          },
-        },
-        required: ['name', 'category', 'description'],
-      },
+async function discoverToolsWithPerplexity(apiKey: string): Promise<PerplexityTool[]> {
+  const today = new Date();
+  const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const dateRange = `${weekAgo.toISOString().split('T')[0]} to ${today.toISOString().split('T')[0]}`;
+
+  const response = await fetch('https://api.perplexity.ai/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
     },
-  },
-  required: ['tools'],
-};
+    body: JSON.stringify({
+      model: 'sonar',
+      messages: [
+        {
+          role: 'system',
+          content: `You are a developer tools researcher. Find the most interesting NEW developer tools announced or released in the past week. Focus on tools that are genuinely useful for software developers.
 
-const PROMPTS: Record<string, string> = {
-  blog: `You are extracting ONLY newly announced developer tools from this page.
+IMPORTANT: Respond with ONLY a valid JSON array, no markdown, no code blocks, no explanation.`,
+        },
+        {
+          role: 'user',
+          content: `Find 10-15 new developer tools, frameworks, libraries, APIs, or AI models that were announced or released between ${dateRange}.
 
-STRICT RULES:
-- Extract ONLY tools that are being ANNOUNCED or RELEASED on this page
-- Tool name must be 1-3 words maximum (e.g. "Cursor", "GitHub Copilot", "Claude Sonnet 4")
-- Focus ONLY on developer tools: coding, programming, DevOps, AI/ML, UI/UX, frontend, backend, databases, deployment, testing, AI agents
-- SKIP: tutorials, how-to guides, blog posts about existing tools, discussions, opinions, reviews, comparisons
+Search across: Hacker News, Product Hunt, GitHub trending, tech blogs (Vercel, OpenAI, Anthropic, Google, GitHub), developer newsletters (Console.dev, TLDR, Changelog), and Twitter/X developer community.
 
-INCLUDE ONLY:
-✓ New product launches
-✓ New model releases (e.g. GPT-5, Claude Opus 4)
-✓ New framework/library releases
-✓ New developer APIs
-✓ New CLI tools
-✓ New IDE/editor tools
-✓ New DevOps platforms
-✓ New AI agent frameworks
+Focus on:
+- New AI coding tools and agents
+- New frameworks and libraries  
+- New APIs and developer platforms
+- New CLI tools and DevOps tools
+- New database tools
+- New testing frameworks
+- AI model releases (GPT, Claude, Gemini, open-source models)
 
-EXCLUDE:
-✗ Tutorials ("How to use...")
-✗ Discussions or forums
-✗ Opinion pieces
-✗ General news articles
-✗ Non-developer tools (consumer apps, games, etc.)
-✗ Updates to existing well-known tools (unless major version like 2.0)
+For each tool provide:
+- name: exact tool name (1-3 words)
+- category: one of "AI Model", "AI Agent", "CLI Tool", "API", "Framework", "Library", "IDE/Editor", "DevOps Tool", "UI/UX Tool", "Database", "Deployment Platform", "Testing Tool"
+- description: one sentence about what it does
+- url: official website or announcement URL
+- creator: company or person who made it
 
-Extract the exact tool name as it appears in the announcement.`,
+Respond as a JSON array of objects. NO markdown formatting.`,
+        },
+      ],
+      search_recency_filter: 'week',
+    }),
+  });
 
-  listing: `You are scanning a list of posts to find ONLY announcements of new developer tools.
+  if (!response.ok) {
+    const errText = await response.text();
+    console.error('Perplexity API error:', response.status, errText);
+    throw new Error(`Perplexity API error: ${response.status}`);
+  }
 
-STRICT RULES:
-- Look for posts that ANNOUNCE or LAUNCH new tools
-- Tool name must be 1-3 words maximum
-- Focus ONLY on developer tools: coding, programming, DevOps, AI/ML, UI/UX, frontend, backend, databases, AI agents
-- SKIP: "Show HN" projects that are not polished tools, tutorials, discussions, "Ask HN" posts
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content || '';
 
-IDENTIFY posts with patterns like:
-✓ "Introducing [Tool]"
-✓ "Announcing [Tool]"
-✓ "[Tool] - new [category] for developers"
-✓ "We built [Tool]"
-✓ "Launching [Tool]"
-✓ "[Company] releases [Tool]"
+  let cleanContent = content.trim();
+  if (cleanContent.startsWith('```')) {
+    cleanContent = cleanContent.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+  }
 
-SKIP posts like:
-✗ "How to build..."
-✗ "Why I switched to..."
-✗ "Discussion: ..."
-✗ "Ask HN: ..."
-✗ Personal projects without clear product name
-✗ Blog posts, articles, tutorials
-
-Extract ONLY the tool name (1-3 words) from qualifying posts.`,
-
-  aggregator: `You are extracting developer tools from a curated tools directory or newsletter.
-
-STRICT RULES:
-- Extract ONLY the tool name (1-3 words maximum)
-- Focus ONLY on developer tools: coding, programming, DevOps, AI/ML, UI/UX, frontend, backend, databases, AI agents
-- SKIP: consumer apps, games, productivity tools not for developers, design tools not for UI/UX work
-
-Extract the exact tool name as listed.`,
-};
-
-async function scrapeWithFirecrawl(url: string, prompt: string, apiKey: string) {
   try {
-    const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url,
-        formats: ['extract'],
-        extract: { prompt, schema: TOOL_SCHEMA },
-        timeout: 30000,
-      }),
-    });
-
-    if (!response.ok) {
-      console.error(`Firecrawl API error for ${url}: ${response.status}`);
-      return [];
-    }
-
-    const data = await response.json();
-    return data?.data?.extract?.tools || [];
-  } catch (error) {
-    console.error(`Error scraping ${url}:`, error);
-    return [];
+    const tools = JSON.parse(cleanContent);
+    return Array.isArray(tools) ? tools : tools.tools || [];
+  } catch (e) {
+    console.error('Failed to parse Perplexity response:', cleanContent.substring(0, 200));
+    throw new Error('Failed to parse Perplexity tool discovery response');
   }
 }
 
-function deduplicateTools(tools: any[]) {
-  const seen = new Map();
+function deduplicateTools(tools: PerplexityTool[]) {
+  const seen = new Map<string, boolean>();
   return tools.filter((tool) => {
+    if (!tool.name) return false;
     const normalizedName = tool.name.toLowerCase().trim();
     if (seen.has(normalizedName)) return false;
     if (tool.name.split(' ').length > 4) return false;
@@ -176,8 +113,7 @@ function deduplicateTools(tools: any[]) {
   });
 }
 
-// Map Firecrawl categories to our app categories
-function mapCategory(firecrawlCategory: string): string {
+function mapCategory(category: string): string {
   const map: Record<string, string> = {
     'AI Model': 'ai-ml',
     'AI Agent': 'ai-ml',
@@ -194,7 +130,7 @@ function mapCategory(firecrawlCategory: string): string {
     'Testing Tool': 'testing',
     'Other': 'productivity',
   };
-  return map[firecrawlCategory] || 'productivity';
+  return map[category] || 'productivity';
 }
 
 Deno.serve(async (req) => {
@@ -203,12 +139,12 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY');
+    const perplexityKey = Deno.env.get('PERPLEXITY_API_KEY');
     const lovableKey = Deno.env.get('LOVABLE_API_KEY');
 
-    if (!firecrawlKey) {
+    if (!perplexityKey) {
       return new Response(
-        JSON.stringify({ success: false, error: 'Firecrawl connector not configured' }),
+        JSON.stringify({ success: false, error: 'Perplexity API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -219,27 +155,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log('Starting curated source scrape...');
+    console.log('Discovering tools with Perplexity...');
+    const discoveredTools = await discoverToolsWithPerplexity(perplexityKey);
+    console.log(`Perplexity found ${discoveredTools.length} tools`);
 
-    // Scrape all sources in parallel
-    const scrapePromises = SOURCES.map(async (source) => {
-      console.log(`Scraping ${source.name}...`);
-      const prompt = PROMPTS[source.type];
-      const tools = await scrapeWithFirecrawl(source.url, prompt, firecrawlKey);
-      return tools.map((tool: any) => ({
-        ...tool,
-        source: source.name,
-        scrapedAt: new Date().toISOString(),
-      }));
-    });
-
-    const results = await Promise.all(scrapePromises);
-    const allTools: any[] = [];
-    results.forEach((tools) => allTools.push(...tools));
-
-    console.log(`Found ${allTools.length} tools before deduplication`);
-
-    const uniqueTools = deduplicateTools(allTools);
+    const uniqueTools = deduplicateTools(discoveredTools);
     console.log(`${uniqueTools.length} unique tools after dedup`);
 
     // Take top 5 and enrich with Gemini
@@ -254,7 +174,7 @@ Tool Name: ${candidate.name}
 Category: ${candidate.category}
 Description: ${candidate.description}
 Creator: ${candidate.creator || 'Unknown'}
-Source URL: ${candidate.sourceUrl || ''}
+URL: ${candidate.url || ''}
 
 Respond with ONLY a valid JSON object (no markdown, no code blocks):
 {
@@ -266,7 +186,8 @@ Respond with ONLY a valid JSON object (no markdown, no code blocks):
   "techStackFit": ["Technology 1", "Technology 2"],
   "learningCurve": "low or medium or high",
   "communityActivity": "still-building or early-stage or active or very-active",
-  "url": "Official website URL for this tool (best guess if not provided)"
+  "url": "Official website URL for this tool",
+  "githubUrl": "GitHub URL if it's open source, or null"
 }`;
 
         const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -285,7 +206,7 @@ Respond with ONLY a valid JSON object (no markdown, no code blocks):
         });
 
         if (!aiResponse.ok) {
-          console.error('AI response not ok for', candidate.name, aiResponse.status);
+          console.error('AI enrichment failed for', candidate.name, aiResponse.status);
           continue;
         }
 
@@ -304,15 +225,15 @@ Respond with ONLY a valid JSON object (no markdown, no code blocks):
           name: candidate.name,
           description: parsed.description || candidate.description,
           longDescription: parsed.longDescription,
-          url: parsed.url || candidate.sourceUrl || `https://www.google.com/search?q=${encodeURIComponent(candidate.name + ' developer tool')}`,
-          githubUrl: undefined,
+          url: parsed.url || candidate.url || `https://www.google.com/search?q=${encodeURIComponent(candidate.name + ' developer tool')}`,
+          githubUrl: parsed.githubUrl || undefined,
           category: parsed.category || mapCategory(candidate.category),
           tags: parsed.tags || [],
           useCases: parsed.useCases || [],
           techStackFit: parsed.techStackFit || [],
           learningCurve: parsed.learningCurve || 'medium',
           communityActivity: parsed.communityActivity || 'active',
-          source: 'firecrawl',
+          source: 'firecrawl', // keep compatible with existing type
         });
 
         console.log('Enriched tool:', candidate.name);
@@ -321,8 +242,8 @@ Respond with ONLY a valid JSON object (no markdown, no code blocks):
         enrichedTools.push({
           id: crypto.randomUUID(),
           name: candidate.name,
-          description: candidate.description || `A developer tool`,
-          url: candidate.sourceUrl || `https://www.google.com/search?q=${encodeURIComponent(candidate.name + ' developer tool')}`,
+          description: candidate.description || 'A developer tool',
+          url: candidate.url || `https://www.google.com/search?q=${encodeURIComponent(candidate.name + ' developer tool')}`,
           category: mapCategory(candidate.category),
           tags: [],
           useCases: ['Development workflow', 'Productivity'],
