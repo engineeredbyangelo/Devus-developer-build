@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Compass,
   Heart,
@@ -7,8 +6,6 @@ import {
   Clock,
   Settings,
   LogOut,
-  Menu,
-  X,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -43,54 +40,14 @@ export function DashboardSidebar({
   userName,
   avatarUrl,
 }: DashboardSidebarProps) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  const handleTabChange = (tab: DashboardTab) => {
-    onTabChange(tab);
-    setMobileOpen(false);
-  };
-
   return (
     <TooltipProvider delayDuration={200}>
-      {/* Mobile hamburger */}
-      <button
-        onClick={() => setMobileOpen(true)}
-        className="fixed top-4 left-4 z-[60] w-10 h-10 rounded-xl glass flex items-center justify-center text-foreground lg:hidden"
-      >
-        <Menu className="w-5 h-5" />
-      </button>
-
-      {/* Mobile overlay */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setMobileOpen(false)}
-            className="fixed inset-0 bg-background/60 backdrop-blur-sm z-[55] lg:hidden"
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Sidebar */}
+      {/* Desktop: Left sidebar */}
       <motion.aside
         initial={{ x: -60, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        className={cn(
-          "fixed left-0 top-0 bottom-0 w-[60px] bg-card border-r border-border flex flex-col items-center py-4 z-[56] transition-transform duration-300",
-          "max-lg:translate-x-[-60px]",
-          mobileOpen && "max-lg:translate-x-0"
-        )}
+        className="fixed left-0 top-0 bottom-0 w-[60px] bg-card border-r border-border flex-col items-center py-4 z-[56] hidden lg:flex"
       >
-        {/* Close on mobile */}
-        <button
-          onClick={() => setMobileOpen(false)}
-          className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground mb-2 lg:hidden"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
         {/* Avatar */}
         <Tooltip>
           <TooltipTrigger asChild>
@@ -113,7 +70,7 @@ export function DashboardSidebar({
               <Tooltip key={item.id}>
                 <TooltipTrigger asChild>
                   <button
-                    onClick={() => handleTabChange(item.id)}
+                    onClick={() => onTabChange(item.id)}
                     className={cn(
                       "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200",
                       isActive
@@ -153,6 +110,48 @@ export function DashboardSidebar({
           </Tooltip>
         </div>
       </motion.aside>
+
+      {/* Mobile: Bottom navigation bar */}
+      <nav className="fixed bottom-0 left-0 right-0 z-[56] lg:hidden bg-card/95 backdrop-blur-xl border-t border-border safe-area-bottom">
+        <div className="flex items-center justify-around h-16 px-2">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => onTabChange(item.id)}
+                className={cn(
+                  "flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200",
+                  isActive
+                    ? "text-primary"
+                    : "text-muted-foreground"
+                )}
+              >
+                <div
+                  className={cn(
+                    "w-9 h-9 rounded-xl flex items-center justify-center transition-all",
+                    isActive && "bg-primary/15 glow-sm"
+                  )}
+                >
+                  <Icon className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-medium">{item.label}</span>
+              </button>
+            );
+          })}
+          {/* Settings on mobile bottom bar */}
+          <button
+            onClick={onSignOut}
+            className="flex flex-col items-center justify-center gap-1 flex-1 h-full text-muted-foreground transition-all duration-200"
+          >
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center">
+              <LogOut className="w-5 h-5" />
+            </div>
+            <span className="text-[10px] font-medium">Sign Out</span>
+          </button>
+        </div>
+      </nav>
     </TooltipProvider>
   );
 }
