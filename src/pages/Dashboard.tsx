@@ -122,7 +122,7 @@ const Dashboard = () => {
       />
 
       {/* Main content — offset by sidebar on lg+, full width on mobile */}
-      <main className="lg:ml-[60px] min-h-screen p-4 pt-16 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8 relative z-10">
+      <main className="lg:ml-[60px] min-h-screen p-4 pb-24 sm:p-6 sm:pb-24 lg:p-8 lg:pb-8 relative z-10">
         {selectedTool ? (
           <ToolHeroView
             tool={selectedTool}
