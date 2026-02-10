@@ -65,6 +65,17 @@ export default {
           DEFAULT: "hsl(var(--surface))",
           elevated: "hsl(var(--surface-elevated))",
         },
+        dash: {
+          bg: "hsl(var(--dash-bg))",
+          card: "hsl(var(--dash-card))",
+          "card-foreground": "hsl(var(--dash-card-foreground))",
+          sidebar: "hsl(var(--dash-sidebar))",
+          "sidebar-foreground": "hsl(var(--dash-sidebar-foreground))",
+          primary: "hsl(var(--dash-primary))",
+          "primary-foreground": "hsl(var(--dash-primary-foreground))",
+          "text-secondary": "hsl(var(--dash-text-secondary))",
+          warning: "hsl(var(--dash-warning))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -73,6 +84,7 @@ export default {
       },
       fontFamily: {
         sans: ["Sora", "system-ui", "sans-serif"],
+        dash: ["Inter", "system-ui", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],
       },
       keyframes: {
