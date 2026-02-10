@@ -42,6 +42,19 @@
     --surface: 240 10% 10%;
     --surface-elevated: 240 10% 12%;
 
+    /* Dashboard-specific tokens */
+    --dash-bg: 0 0% 96%;
+    --dash-card: 0 0% 100%;
+    --dash-card-foreground: 0 0% 10%;
+    --dash-sidebar: 0 0% 17%;
+    --dash-sidebar-foreground: 0 0% 96%;
+    --dash-primary: 160 100% 39%;
+    --dash-primary-foreground: 0 0% 100%;
+    --dash-text-secondary: 0 0% 42%;
+    --dash-warning: 0 68% 70%;
+    --dash-shadow: 0 2px 12px hsla(0, 0%, 0%, 0.08);
+    --dash-shadow-hover: 0 4px 20px hsla(0, 0%, 0%, 0.12);
+
     --sidebar-background: 240 10% 8%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 186 100% 50%;
