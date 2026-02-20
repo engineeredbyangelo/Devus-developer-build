@@ -1,65 +1,93 @@
 
 
-# Landing Page Section Refinement
+# Landing Page Alignment and Tool Stack Showcase
 
-## Problems Identified
+## 1. Fix All Stale References
 
-1. **No spacing** between the "Why Devus Exists" stat cards and the "Your toolkit, anywhere" mobile preview -- they sit in the same component with only `mb-20` gap
-2. **Two sections feel identical**: "Designed for Mobile" (inside WhyDevusSection) and "Why Developers Choose Devus" (FeaturesSection header) overlap in purpose and messaging
-3. **"AI-Powered Discovery"** feature row in FeaturesSection is outdated -- the app now uses weekly tool refreshes, not AI search
-4. The staggering alternating feature rows are great and should stay, but need clearer differentiation from the mobile showcase
+Several places still mention AI-powered features or outdated tool counts.
 
-## Changes
+| File | Line | Current | Updated |
+|------|------|---------|---------|
+| `WhyDevusSection.tsx` | 48 | "AI-powered search finds the perfect tools for your stack" | "Curated weekly drops deliver the latest tools to your dashboard" |
+| `BenefitsSection.tsx` | 59 | "Upgrade to Pro for AI-powered features and daily updates." | "Upgrade to Pro for weekly alerts, early access, and tool submissions." |
+| `AIDiscoveredTools.tsx` | 58 | "Find additional tools matching your filters using AI-powered search" | "Discover more tools matching your filters" |
+| `AIDiscoveredTools.tsx` | 96 | "AI-Discovered (X)" | "Discovered (X)" |
+| `AIDiscoveredTools.tsx` | 125 | "Powered by Firecrawl - Real-time web search" | "Curated developer tools" |
+| `LandingHero.tsx` | 91 | "35+ Curated Tools" | "65+ Curated Tools" |
+| `DemoPreview.tsx` | 126 | "Want to see all 35+ tools?" | "Want to see all 65+ tools?" |
 
-### 1. Split WhyDevusSection into two distinct halves
+## 2. New Section: Tool Stack Showcase
 
-- **Top half** stays as-is: "Why Devus Exists" with the three stat cards (Tool Overload, Consolidation, Augment). Add more vertical padding at the bottom (`mb-28 md:mb-36`) for breathing room.
-- **Bottom half** (the mobile preview + features list) gets pulled out into a **standalone section** with its own identity. Rename it from "Designed for Mobile" to something like **"Built for Your Workflow"** -- emphasizing it's about the product experience, not just mobile support.
+A vibrant, interactive section placed **after "How It Works"** and **before "Demo Preview"**. It lets users visually explore tool categories with animated cards -- giving a taste of the dashboard without signing up.
 
-### 2. Update FeaturesSection to remove overlap
+### Design
 
-- Change the heading from "Why Developers Choose Devus" to **"How It Works"** or **"Core Features"** to differentiate it from the WhyDevus narrative
-- **Replace "AI-Powered Discovery"** with a new feature: **"Weekly Tool Drops"** -- describing how freshly released tools land on your dashboard every week with optional notifications
-- Update the visual from the AI orbs animation to a calendar/notification-themed animation (e.g., a pulsing bell icon with floating tool cards dropping in)
-- Keep the three other staggering rows (Direct Links, GitHub Access, Smart Filtering) unchanged
+- Badge: "Explore the Stack"
+- Title: "65+ Tools Across 12 Categories"
+- Subtitle: "From AI models to deployment platforms -- handpicked for quality"
+- Interactive category pills that filter a mini card grid below
+- 6 animated tool preview cards showing real tools from the selected category
+- Each card shows: tool initial logo, name, category badge, "New" tag if applicable
+- Glassmorphism card styling matching the rest of the landing page
+- Horizontal scroll on mobile for category pills, 3-column grid on desktop for cards
+- Staggered entrance animations with framer-motion
+- A subtle CTA at the bottom: "Sign up to explore the full collection"
 
-### 3. Update feature descriptions and benefits
+### Component Structure
 
-The "Weekly Tool Drops" feature row will have:
-- Title: "Weekly Tool Drops"
-- Icon: `Bell` or `CalendarDays` from lucide
-- Description: "Never miss the latest releases. Every week, freshly launched developer tools are curated and delivered straight to your dashboard."
-- Benefits: "Curated weekly", "New release alerts", "Stay ahead of the curve"
-- Visual: New `DropsVisual` animation with a bell icon center and floating tool cards dropping in
+```text
+ToolStackShowcase
+  +-- Badge + Title + Subtitle
+  +-- Category pills (scrollable row)
+  +-- Tool preview cards (3-col grid / stacked on mobile)
+  +-- CTA button
+```
 
-### 4. Update BenefitsSection pricing table
+### New File
 
-- Change "AI-powered search" to "Weekly new tool alerts" in the feature list
-- Change "Daily new tool updates" to "Priority early access" or similar
+`src/components/ToolStackShowcase.tsx`
+
+- Imports categories and tools from `src/lib/data.ts`
+- Uses `useState` to track selected category
+- Filters tools by category and shows up to 6
+- Uses framer-motion for scroll-triggered animations
+- Glassmorphism cards with hover effects
+- Fully responsive: horizontal scroll pills on mobile, grid adapts from 1 to 3 columns
+
+## 3. Updated Index.tsx Section Flow
+
+```text
+Hero (65+ Curated Tools)
+  |
+"Why Devus Exists" -- stat cards
+  |  <-- generous spacing
+"Built for Your Workflow" -- mobile mockup + updated feature bullets
+  |
+"How It Works" -- Weekly Drops, Direct Links, GitHub, Filtering
+  |
+"Explore the Stack" -- NEW interactive category showcase
+  |
+Demo Preview (65+ tools)
+  |
+Pricing / Benefits (updated copy)
+  |
+Footer
+```
 
 ## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/components/WhyDevusSection.tsx` | Increase spacing between stat cards and mobile showcase; rename "Designed for Mobile" badge to "Built for Your Workflow" |
-| `src/components/FeaturesSection.tsx` | Change section heading to "How It Works"; replace AI-Powered Discovery with Weekly Tool Drops; add new `DropsVisual` animation component |
-| `src/components/BenefitsSection.tsx` | Update pricing feature list to reflect weekly drops instead of AI search |
+| `src/components/WhyDevusSection.tsx` | Update Smart Discovery description (line 48) |
+| `src/components/BenefitsSection.tsx` | Update subtitle copy (line 59) |
+| `src/components/AIDiscoveredTools.tsx` | Remove AI/Firecrawl references (lines 58, 96, 125) |
+| `src/components/LandingHero.tsx` | Change "35+" to "65+" (line 91) |
+| `src/components/DemoPreview.tsx` | Change "35+" to "65+" (line 126) |
+| `src/pages/Index.tsx` | Import and add ToolStackShowcase between FeaturesSection and DemoPreview |
 
-## Section Flow (Top to Bottom)
+## New File to Create
 
-```text
-Hero
-  |
-"Why Devus Exists" -- stat cards (problem, consolidation, augment)
-  |  <-- generous spacing
-"Built for Your Workflow" -- mobile mockup + feature bullets
-  |
-"How It Works" -- staggering alternating rows (Weekly Drops, Direct Links, GitHub, Filtering)
-  |
-Demo Preview
-  |
-Pricing / Benefits
-  |
-Footer
-```
+| File | Description |
+|------|-------------|
+| `src/components/ToolStackShowcase.tsx` | Interactive category explorer with animated tool cards, glassmorphism styling, horizontal scroll on mobile, framer-motion entrance animations, and sign-up CTA |
 
