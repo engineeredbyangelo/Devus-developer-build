@@ -1,124 +1,65 @@
 
 
-# Dashboard Redesign Plan
+# Landing Page Section Refinement
 
-## Overview
+## Problems Identified
 
-Transform the current dark-themed, sidebar-and-grid dashboard into a modern, immersive "tool gallery" experience with a light-on-dark hybrid aesthetic, a full-screen hero showcase, information cards, an AI assistant widget, and tool-by-tool navigation.
+1. **No spacing** between the "Why Devus Exists" stat cards and the "Your toolkit, anywhere" mobile preview -- they sit in the same component with only `mb-20` gap
+2. **Two sections feel identical**: "Designed for Mobile" (inside WhyDevusSection) and "Why Developers Choose Devus" (FeaturesSection header) overlap in purpose and messaging
+3. **"AI-Powered Discovery"** feature row in FeaturesSection is outdated -- the app now uses weekly tool refreshes, not AI search
+4. The staggering alternating feature rows are great and should stay, but need clearer differentiation from the mobile showcase
 
----
+## Changes
 
-## What Changes
+### 1. Split WhyDevusSection into two distinct halves
 
-### 1. New Color System and Typography
+- **Top half** stays as-is: "Why Devus Exists" with the three stat cards (Tool Overload, Consolidation, Augment). Add more vertical padding at the bottom (`mb-28 md:mb-36`) for breathing room.
+- **Bottom half** (the mobile preview + features list) gets pulled out into a **standalone section** with its own identity. Rename it from "Designed for Mobile" to something like **"Built for Your Workflow"** -- emphasizing it's about the product experience, not just mobile support.
 
-- Introduce a dashboard-specific color palette that layers light cards on the existing dark sidebar
-- Primary action color shifts from cyan (#00BCD4) to teal-green (#00C896)
-- Cards become white (#FFFFFF) on a light gray (#F5F5F5) content background
-- Sidebar stays dark (#2C2C2C)
-- Typography switches to Inter font with the specified size hierarchy (48px tool name, 20px headings, 16px body, 14px small)
+### 2. Update FeaturesSection to remove overlap
 
-### 2. Layout Overhaul (Dashboard.tsx)
+- Change the heading from "Why Developers Choose Devus" to **"How It Works"** or **"Core Features"** to differentiate it from the WhyDevus narrative
+- **Replace "AI-Powered Discovery"** with a new feature: **"Weekly Tool Drops"** -- describing how freshly released tools land on your dashboard every week with optional notifications
+- Update the visual from the AI orbs animation to a calendar/notification-themed animation (e.g., a pulsing bell icon with floating tool cards dropping in)
+- Keep the three other staggering rows (Direct Links, GitHub Access, Smart Filtering) unchanged
 
-Replace the current `Header + ToolsOfTheWeek + [Sidebar | Content]` layout with:
+### 3. Update feature descriptions and benefits
 
-- **Dark icon-only sidebar** (60px wide, left edge) with navigation icons: Explore, Favorites, Categories, Submissions, Settings, Sign Out
-- **Light gray main content area** filling the remaining width
-- **No top Header** on the dashboard (remove `<Header />` from this page) -- the sidebar handles navigation
-- **Full-screen hero view** as the primary content when a tool is selected
-- **Tool grid** as default view when browsing/exploring
+The "Weekly Tool Drops" feature row will have:
+- Title: "Weekly Tool Drops"
+- Icon: `Bell` or `CalendarDays` from lucide
+- Description: "Never miss the latest releases. Every week, freshly launched developer tools are curated and delivered straight to your dashboard."
+- Benefits: "Curated weekly", "New release alerts", "Stay ahead of the curve"
+- Visual: New `DropsVisual` animation with a bell icon center and floating tool cards dropping in
 
-### 3. Tool Hero Section (New Component: `ToolHeroView.tsx`)
+### 4. Update BenefitsSection pricing table
 
-When a tool is selected, the main content area transforms into an immersive hero display:
-
-- **Left panel (60%)**: Large tool logo (120x120), tool name (48px bold), category badge with icon, star count, description (18px), version/date metadata
-- **Right panel (40%)**: Stacked information cards:
-  - Use Cases card (white, bullet points with teal dots)
-  - Works Great With card (tech pills with dark backgrounds)
-  - Learning Curve + Community cards (side by side)
-  - Pros + Cons cards (side by side, green checks / red alerts)
-- **Bottom action bar**: Full-width "Visit [Tool]" (teal) and "View on GitHub" (dark outline) buttons
-- **Top-right actions**: Bookmark and Share icons
-- **Navigation**: Left/right arrows to browse tools, "1 of 247 tools" counter
-
-### 4. Dashboard Sidebar (New Component: `DashboardSidebar.tsx`)
-
-- 60px wide, dark background (#2C2C2C)
-- Icon-only navigation with tooltips
-- Icons: Compass (Explore), Heart (Favorites), Folder (Categories), Clock (Submissions), Settings, LogOut
-- Active state: teal highlight on icon
-- User avatar at top
-
-### 5. Explore View Updates
-
-- Filter chips at top of content area: "All", "Frontend", "Backend", "DevOps", "AI/ML", etc.
-- Search bar with "Search developer tools..." placeholder
-- Tool cards redesigned with white backgrounds, 16px border-radius, subtle shadows
-- Hover effect: `translateY(-2px)` with elevation increase
-- Click a card to enter the hero view
-
-### 6. AI Assistant Widget (New Component: `AIAssistantWidget.tsx`)
-
-- Floating card in bottom-right corner of the dashboard
-- White background with shadow
-- "AI Assistant" title, "Get recommendations based on your stack" subtitle
-- Quick action buttons: Compare Tools, Find Alternatives, Check Compatibility, Learning Resources
-- Text input with "Ask about this tool..." placeholder and teal send button
-- Collapsible (minimize to a small FAB icon)
-
-### 7. Card Design System Updates
-
-- All info cards: white background, 16px border-radius, `box-shadow: 0 2px 12px rgba(0,0,0,0.08)`, 24px padding, 16px gap
-- Hover: slight elevation increase (shadow deepens)
-- Smooth transitions (300ms ease-in-out)
-
-### 8. Responsive Behavior
-
-- Desktop: Sidebar (60px) + Hero left 60% + Info cards right 40%
-- Tablet: Sidebar collapses to hidden (hamburger), content stacks vertically
-- Mobile: Single column, collapsible sections, bottom sheet for AI assistant
-
----
-
-## Files to Create
-
-| File | Purpose |
-|------|---------|
-| `src/components/dashboard/DashboardSidebar.tsx` | 60px icon-only sidebar |
-| `src/components/dashboard/ToolHeroView.tsx` | Full-screen hero tool showcase |
-| `src/components/dashboard/ToolInfoCards.tsx` | Use cases, tech stack, learning, pros/cons cards |
-| `src/components/dashboard/AIAssistantWidget.tsx` | Floating AI assistant |
-| `src/components/dashboard/DashboardToolCard.tsx` | Redesigned white tool card for grid |
-| `src/components/dashboard/DashboardLayout.tsx` | Layout wrapper with sidebar + content |
+- Change "AI-powered search" to "Weekly new tool alerts" in the feature list
+- Change "Daily new tool updates" to "Priority early access" or similar
 
 ## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/pages/Dashboard.tsx` | Complete rewrite using new layout components |
-| `src/index.css` | Add dashboard-specific CSS variables and card styles |
-| `tailwind.config.ts` | Add Inter font family, dashboard color tokens |
+| `src/components/WhyDevusSection.tsx` | Increase spacing between stat cards and mobile showcase; rename "Designed for Mobile" badge to "Built for Your Workflow" |
+| `src/components/FeaturesSection.tsx` | Change section heading to "How It Works"; replace AI-Powered Discovery with Weekly Tool Drops; add new `DropsVisual` animation component |
+| `src/components/BenefitsSection.tsx` | Update pricing feature list to reflect weekly drops instead of AI search |
 
-## Implementation Sequence
+## Section Flow (Top to Bottom)
 
-1. Add Inter font and dashboard CSS variables/tokens
-2. Build `DashboardSidebar` (icon-only nav)
-3. Build `DashboardLayout` (sidebar + content wrapper)
-4. Build `DashboardToolCard` (white card redesign)
-5. Build `ToolHeroView` + `ToolInfoCards` (hero showcase)
-6. Build `AIAssistantWidget` (floating assistant)
-7. Rewrite `Dashboard.tsx` to compose all new components
-8. Add responsive breakpoints and mobile behavior
-
----
-
-## Technical Notes
-
-- Framer Motion remains the animation library for all transitions, hover effects, and view changes
-- The existing `Tool` type already has all needed fields: `useCases`, `techStackFit`, `learningCurve`, `communityActivity`, `pros`, `cons`
-- The existing hooks (`useFavoritesDb`, `useFollowedCategoriesDb`, `useAISearch`) are reused unchanged
-- The `DemoToolModal` is replaced by the inline `ToolHeroView` -- clicking a tool navigates to the hero view instead of opening a modal
-- `tools` array from `src/lib/data.ts` provides the "1 of 247 tools" navigation data
-- The AI Assistant widget is UI-only initially (quick actions will use the existing `useAISearch` hook for "Find Alternatives")
+```text
+Hero
+  |
+"Why Devus Exists" -- stat cards (problem, consolidation, augment)
+  |  <-- generous spacing
+"Built for Your Workflow" -- mobile mockup + feature bullets
+  |
+"How It Works" -- staggering alternating rows (Weekly Drops, Direct Links, GitHub, Filtering)
+  |
+Demo Preview
+  |
+Pricing / Benefits
+  |
+Footer
+```
 
