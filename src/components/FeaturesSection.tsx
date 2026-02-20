@@ -1,17 +1,17 @@
  import { motion } from "framer-motion";
  import {
-   ExternalLink,
-   Github,
-   Filter,
-   Sparkles,
-   Zap,
-   LucideIcon,
-   Search,
-   Database,
-   Code2,
-   Tag,
-   Layers,
- } from "lucide-react";
+    ExternalLink,
+    Github,
+    Filter,
+    Bell,
+    Zap,
+    LucideIcon,
+    Tag,
+    Layers,
+    CalendarDays,
+    Package,
+    Sparkles,
+  } from "lucide-react";
  import { useIsMobile } from "@/hooks/use-mobile";
  
  interface FeatureItem {
@@ -19,18 +19,18 @@
    title: string;
    description: string;
    benefits: string[];
-   visual: "ai" | "links" | "github" | "filter";
+   visual: "drops" | "links" | "github" | "filter";
  }
  
- const features: FeatureItem[] = [
-   {
-     icon: Sparkles,
-     title: "AI-Powered Discovery",
-     description:
-       "Find tools across GitHub, ProductHunt & npm in real-time with intelligent search that understands what you need.",
-     benefits: ["Semantic search", "Real-time results", "Cross-platform indexing"],
-     visual: "ai",
-   },
+  const features: FeatureItem[] = [
+    {
+      icon: Bell,
+      title: "Weekly Tool Drops",
+      description:
+        "Never miss the latest releases. Every week, freshly launched developer tools are curated and delivered straight to your dashboard.",
+      benefits: ["Curated weekly", "New release alerts", "Stay ahead of the curve"],
+      visual: "drops",
+    },
    {
      icon: ExternalLink,
      title: "Direct Links",
@@ -58,69 +58,69 @@
  ];
  
  // Visual components for each feature
- function AIVisual() {
-   return (
-     <div className="relative w-full h-48 md:h-64 flex items-center justify-center">
-       {/* Central icon with glow */}
-       <motion.div
-         className="relative z-10"
-         animate={{ scale: [1, 1.05, 1] }}
-         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-       >
-         <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 backdrop-blur-sm border border-primary/30 flex items-center justify-center shadow-lg shadow-primary/20">
-           <Sparkles className="w-10 h-10 md:w-12 md:h-12 text-primary" />
-         </div>
-       </motion.div>
- 
-       {/* Floating orbs */}
-       {[Search, Database, Code2].map((Icon, i) => (
-         <motion.div
-           key={i}
-           className="absolute w-10 h-10 md:w-12 md:h-12 rounded-xl bg-secondary/80 backdrop-blur-sm border border-border/50 flex items-center justify-center"
-           style={{
-             top: `${20 + i * 25}%`,
-             left: i % 2 === 0 ? "15%" : "75%",
-           }}
-           animate={{
-             y: [0, -8, 0],
-             opacity: [0.7, 1, 0.7],
-           }}
-           transition={{
-             duration: 2 + i * 0.5,
-             repeat: Infinity,
-             delay: i * 0.3,
-           }}
-         >
-           <Icon className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground" />
-         </motion.div>
-       ))}
- 
-       {/* Connecting lines (hidden on mobile) */}
-       <svg className="absolute inset-0 w-full h-full hidden md:block" style={{ zIndex: 0 }}>
-         <motion.line
-           x1="20%" y1="30%" x2="45%" y2="50%"
-           stroke="hsl(var(--primary) / 0.2)"
-           strokeWidth="1"
-           strokeDasharray="4 4"
-           initial={{ pathLength: 0 }}
-           whileInView={{ pathLength: 1 }}
-           viewport={{ once: true }}
-           transition={{ duration: 1 }}
-         />
-         <motion.line
-           x1="80%" y1="35%" x2="55%" y2="50%"
-           stroke="hsl(var(--primary) / 0.2)"
-           strokeWidth="1"
-           strokeDasharray="4 4"
-           initial={{ pathLength: 0 }}
-           whileInView={{ pathLength: 1 }}
-           viewport={{ once: true }}
-           transition={{ duration: 1, delay: 0.2 }}
-         />
-       </svg>
-     </div>
-   );
- }
+  function DropsVisual() {
+    const tools = [
+      { name: "Opus 4.6", color: "hsl(var(--primary))" },
+      { name: "Codex 5.3", color: "hsl(280 80% 60%)" },
+      { name: "Llama 4", color: "hsl(200 80% 55%)" },
+    ];
+    return (
+      <div className="relative w-full h-48 md:h-64 flex items-center justify-center">
+        {/* Central bell icon with pulse */}
+        <motion.div
+          className="relative z-10"
+          animate={{ scale: [1, 1.08, 1] }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 backdrop-blur-sm border border-primary/30 flex items-center justify-center shadow-lg shadow-primary/20">
+            <Bell className="w-10 h-10 md:w-12 md:h-12 text-primary" />
+          </div>
+          {/* Notification dot */}
+          <motion.div
+            className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary border-2 border-background"
+            animate={{ scale: [1, 1.3, 1] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          />
+        </motion.div>
+
+        {/* Floating tool cards dropping in */}
+        {tools.map((tool, i) => (
+          <motion.div
+            key={tool.name}
+            className="absolute px-3 py-1.5 rounded-lg bg-secondary/80 backdrop-blur-sm border border-border/50 flex items-center gap-2"
+            style={{
+              top: `${15 + i * 28}%`,
+              left: i % 2 === 0 ? "8%" : "68%",
+            }}
+            animate={{
+              y: [0, -6, 0],
+              opacity: [0.6, 1, 0.6],
+            }}
+            transition={{
+              duration: 2.5,
+              repeat: Infinity,
+              delay: i * 0.4,
+            }}
+          >
+            <div className="w-5 h-5 rounded" style={{ background: `${tool.color}30` }}>
+              <Package className="w-5 h-5 p-0.5" style={{ color: tool.color }} />
+            </div>
+            <span className="text-xs font-medium text-foreground/80">{tool.name}</span>
+            <Sparkles className="w-3 h-3 text-primary/60" />
+          </motion.div>
+        ))}
+
+        {/* Calendar icon */}
+        <motion.div
+          className="absolute bottom-[10%] left-1/2 -translate-x-1/2"
+          animate={{ y: [0, -4, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <CalendarDays className="w-6 h-6 text-primary/40" />
+        </motion.div>
+      </div>
+    );
+  }
  
  function LinksVisual() {
    return (
@@ -267,12 +267,12 @@
    );
  }
  
- const visualComponents = {
-   ai: AIVisual,
-   links: LinksVisual,
-   github: GithubVisual,
-   filter: FilterVisual,
- };
+  const visualComponents = {
+    drops: DropsVisual,
+    links: LinksVisual,
+    github: GithubVisual,
+    filter: FilterVisual,
+  };
  
  function FeatureRow({ feature, index }: { feature: FeatureItem; index: number }) {
    const isReversed = index % 2 === 1;
@@ -368,12 +368,12 @@
              <Zap className="w-4 h-4 text-primary" />
              <span className="text-sm font-medium text-primary">Core Features</span>
            </div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Why Developers Choose <span className="text-foreground">Dev</span><span className="text-primary glow-text">us</span>
-            </h2>
-           <p className="text-muted-foreground max-w-2xl mx-auto">
-             Everything you need to discover, compare, and track the best developer tools
-           </p>
+             <h2 className="text-3xl md:text-4xl font-bold mb-4">
+               How It Works
+             </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Discover, track, and stay ahead with the best developer tools — delivered to you weekly
+            </p>
          </motion.div>
  
          {/* Feature Rows - Alternating Layout */}

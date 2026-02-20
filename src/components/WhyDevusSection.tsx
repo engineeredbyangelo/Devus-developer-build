@@ -252,7 +252,7 @@ export function WhyDevusSection() {
         </div>
 
         {/* Glass Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20 md:mb-28">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-28 md:mb-36">
           {cards.map((card, i) => (
             <GlassCard key={card.id} card={card} index={i} />
           ))}
@@ -269,7 +269,7 @@ export function WhyDevusSection() {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6"
             >
               <Smartphone className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Designed for Mobile</span>
+              <span className="text-sm font-medium text-primary">Built for Your Workflow</span>
             </motion.div>
 
             <motion.h3
