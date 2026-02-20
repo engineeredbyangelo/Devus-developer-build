@@ -112,7 +112,7 @@ export function AuthModal({ isOpen, onClose, initialMode = "signin", onSignInSuc
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md p-0 gap-0 bg-card border-border max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md p-0 gap-0 bg-card border-border max-h-[85dvh] overflow-y-auto">
         {/* Glow effect */}
         <div className="absolute inset-0 bg-gradient-radial from-primary/5 via-transparent to-transparent pointer-events-none" />
 

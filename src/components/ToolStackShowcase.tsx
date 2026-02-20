@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Layers, Code, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { categories, tools } from "@/lib/data";
-import { Category } from "@/lib/types";
+import { Category, Tool } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { CategoryBadge } from "./CategoryBadge";
+import { DemoToolModal } from "./DemoToolModal";
 
 interface ToolStackShowcaseProps {
   onSignUp: () => void;
@@ -13,6 +14,7 @@ interface ToolStackShowcaseProps {
 
 export function ToolStackShowcase({ onSignUp }: ToolStackShowcaseProps) {
   const [selectedCategory, setSelectedCategory] = useState<Category>("frontend");
+  const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
 
   const filteredTools = useMemo(() => {
     return tools.filter((t) => t.category === selectedCategory).slice(0, 6);
@@ -91,7 +93,8 @@ export function ToolStackShowcase({ onSignUp }: ToolStackShowcaseProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.06, duration: 0.35 }}
                 whileHover={{ y: -4 }}
-                className="glass glass-hover rounded-xl p-5 flex items-start gap-4 cursor-default"
+                className="glass glass-hover rounded-xl p-5 flex items-start gap-4 cursor-pointer"
+                onClick={() => setSelectedTool(tool)}
               >
                 {/* Logo placeholder */}
                 <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -147,6 +150,12 @@ export function ToolStackShowcase({ onSignUp }: ToolStackShowcaseProps) {
           </Button>
         </motion.div>
       </div>
+
+      <DemoToolModal
+        tool={selectedTool}
+        isOpen={!!selectedTool}
+        onClose={() => setSelectedTool(null)}
+      />
     </section>
   );
 }
