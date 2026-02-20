@@ -56,7 +56,7 @@ export function BenefitsSection({ onSignUp }: BenefitsSectionProps) {
             Start Free, Upgrade When Ready
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Get started with full access to our tool directory. Upgrade to Pro for AI-powered features and daily updates.
+            Get started with full access to our tool directory. Upgrade to Pro for weekly alerts, early access, and tool submissions.
           </p>
         </motion.div>
 

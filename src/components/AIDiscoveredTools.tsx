@@ -55,7 +55,7 @@ export function AIDiscoveredTools({
           <h3 className="font-semibold">Discover More Tools</h3>
         </div>
         <p className="text-sm text-muted-foreground mb-4">
-          Find additional tools matching your filters using AI-powered search
+          Discover more tools matching your filters
         </p>
         <Button onClick={onDiscover} className="glow-sm">
           <Zap className="w-4 h-4 mr-2" />
@@ -93,7 +93,7 @@ export function AIDiscoveredTools({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-primary" />
-              <h3 className="font-semibold">AI-Discovered ({tools.length})</h3>
+              <h3 className="font-semibold">Discovered ({tools.length})</h3>
             </div>
             <Button variant="ghost" size="sm" onClick={onClear}>
               <X className="w-4 h-4 mr-1" />
@@ -122,7 +122,7 @@ export function AIDiscoveredTools({
           </div>
 
           <p className="text-xs text-muted-foreground text-center pt-2">
-            Powered by Firecrawl • Real-time web search
+            Curated developer tools
           </p>
         </motion.div>
 

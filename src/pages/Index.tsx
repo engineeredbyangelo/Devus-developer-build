@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { LandingHero } from "@/components/LandingHero";
 import { WhyDevusSection } from "@/components/WhyDevusSection";
 import { FeaturesSection } from "@/components/FeaturesSection";
+import { ToolStackShowcase } from "@/components/ToolStackShowcase";
 import { DemoPreview } from "@/components/DemoPreview";
 import { BenefitsSection } from "@/components/BenefitsSection";
 import { AuthModal } from "@/components/AuthModal";
@@ -37,7 +38,8 @@ const Index = () => {
       {/* Features Section - Core features elaboration */}
       <FeaturesSection />
 
-
+      {/* Tool Stack Showcase - Interactive category explorer */}
+      <ToolStackShowcase onSignUp={openSignUp} />
 
       {/* Demo Preview - Limited sample for testing */}
       <DemoPreview onSignUp={openSignUp} />
