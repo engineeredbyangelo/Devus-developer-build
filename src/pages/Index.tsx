@@ -4,7 +4,6 @@ import { Header } from "@/components/Header";
 import { LandingHero } from "@/components/LandingHero";
 import { WhyDevusSection } from "@/components/WhyDevusSection";
 import { FeaturesSection } from "@/components/FeaturesSection";
- import { ComparisonChart } from "@/components/ComparisonChart";
 import { DemoPreview } from "@/components/DemoPreview";
 import { BenefitsSection } from "@/components/BenefitsSection";
 import { AuthModal } from "@/components/AuthModal";
@@ -38,9 +37,8 @@ const Index = () => {
       {/* Features Section - Core features elaboration */}
       <FeaturesSection />
 
-       {/* Comparison Chart - Devus vs Twitter/Reddit/IndieHacker */}
-       <ComparisonChart />
- 
+
+
       {/* Demo Preview - Limited sample for testing */}
       <DemoPreview onSignUp={openSignUp} />
 
