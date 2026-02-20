@@ -24,10 +24,10 @@ const features: TierFeature[] = [
   { name: "Direct links & GitHub access", free: true, pro: true },
   { name: "Personal favorites collection", free: true, pro: true },
   { name: "Weekly new tool updates", free: true, pro: true },
-  { name: "AI-powered search", free: false, pro: true },
+  { name: "Weekly new tool alerts", free: false, pro: true },
   { name: "Tool submission", free: false, pro: true },
   { name: "Early access to new tools", free: false, pro: true },
-  { name: "Daily new tool updates", free: false, pro: true },
+  { name: "Priority early access", free: false, pro: true },
 ];
 
 interface BenefitsSectionProps {
