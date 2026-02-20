@@ -123,7 +123,7 @@ export function DemoPreview({ onSignUp }: DemoPreviewProps) {
           <div className="glass rounded-2xl p-6 md:p-8 max-w-2xl mx-auto">
             <Sparkles className="w-8 md:w-10 h-8 md:h-10 text-primary mx-auto mb-4" />
             <h3 className="text-lg md:text-xl font-semibold mb-2">
-              Want to see all 35+ tools?
+              Want to see all 65+ tools?
             </h3>
             <p className="text-sm md:text-base text-muted-foreground mb-6">
               Sign up for free to unlock the full collection, save favorites, and get personalized recommendations.

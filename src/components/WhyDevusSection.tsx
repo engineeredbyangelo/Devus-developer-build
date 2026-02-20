@@ -45,7 +45,7 @@ interface MobileFeature {
 }
 
 const mobileFeatures: MobileFeature[] = [
-  { id: "discover", icon: Search, title: "Smart Discovery", description: "AI-powered search finds the perfect tools for your stack" },
+  { id: "discover", icon: Search, title: "Smart Discovery", description: "Curated weekly drops deliver the latest tools to your dashboard" },
   { id: "save", icon: Bookmark, title: "Save & Organize", description: "Bookmark favorites and build your personal toolkit" },
   { id: "compare", icon: BarChart3, title: "Deep Insights", description: "Compare learning curves, community activity & tech fit" },
   { id: "filter", icon: Filter, title: "Smart Filters", description: "Filter by category, tags, and compatibility" },

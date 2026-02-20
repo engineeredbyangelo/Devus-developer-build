@@ -88,7 +88,7 @@ export function LandingHero({ onGetStarted }: LandingHeroProps) {
               className="mt-8 md:mt-12 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4"
             >
               {[
-                { icon: Zap, label: "35+ Curated Tools", desc: "Hand-picked for quality" },
+                { icon: Zap, label: "65+ Curated Tools", desc: "Hand-picked for quality" },
                 { icon: Shield, label: "Honest Reviews", desc: "Pros, cons, alternatives" },
                 { icon: Users, label: "Community Driven", desc: "Vote & submit tools" },
               ].map((feature, i) => (
