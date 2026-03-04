@@ -1,0 +1,48 @@
+# Devus – Cline AI Rules
+# Automatically loaded by Cline (formerly Claude Dev) in VS Code.
+
+## Tech Stack
+React 18, TypeScript, Vite 5, Bun, Tailwind CSS 3.4, Framer Motion 12, Supabase (Lovable Cloud), React Router 6, React Query 5, Zod 3.
+
+## Import Rules
+- ALWAYS use `@/` alias. Never relative `../../`.
+- Supabase client: `import { supabase } from "@/integrations/supabase/client"`
+
+## Design System (STRICT)
+- All colors via HSL CSS variables in `src/index.css` and `tailwind.config.ts`.
+- Use semantic tokens: `bg-primary`, `text-foreground`, `border-muted`, `bg-surface`, etc.
+- NEVER hardcode colors (`#hex`, `rgb()`, `text-white`, `bg-black`).
+- Fonts: Sora (display), Inter (body), JetBrains Mono (code).
+
+## Component Rules
+- PascalCase filenames, named exports, one component per file.
+- Use shadcn/ui from `src/components/ui/` as base primitives.
+- Animations: Framer Motion only.
+
+## State
+- Auth → `useAuth()` from `@/contexts/AuthContext`
+- Server data → React Query hooks
+- Tool catalog → `@/lib/data.ts` and `@/lib/types.ts`
+
+## Read-Only Files (NEVER edit)
+- `src/integrations/supabase/client.ts`
+- `src/integrations/supabase/types.ts`
+- `supabase/config.toml`
+- `.env`
+
+## Backend / Supabase
+- Edge functions: `supabase/functions/<name>/index.ts` (Deno)
+- Always add RLS policies to new tables.
+- User roles in separate `user_roles` table, never on profiles.
+- No anonymous signups.
+
+## Dependencies
+- Install with `bun add`. Verify with Context7 MCP first.
+- Don't duplicate existing package functionality.
+
+## Prohibited
+- Hardcoded colors in components
+- localStorage for auth/roles
+- API keys in source code
+- Editing auto-generated Supabase files
+- Relative import paths
