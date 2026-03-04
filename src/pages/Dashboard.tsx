@@ -342,13 +342,17 @@ const Dashboard = () => {
             {activeTab === "submissions" && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} key="submissions" className="space-y-6">
                 <h2 className="text-lg font-semibold text-foreground">Your Submissions</h2>
-                <div className="glass rounded-2xl p-12 text-center">
-                  <Clock className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
-                  <p className="text-muted-foreground">You haven't submitted any tools yet.</p>
-                  <Link to="/submit">
-                    <Button className="mt-4 glow-sm">Submit a Tool</Button>
-                  </Link>
-                </div>
+                {isPro ? (
+                  <div className="glass rounded-2xl p-12 text-center">
+                    <Clock className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
+                    <p className="text-muted-foreground">You haven't submitted any tools yet.</p>
+                    <Link to="/submit">
+                      <Button className="mt-4 glow-sm">Submit a Tool</Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <UpgradeBanner message="Tool submissions are a Pro feature. Upgrade to submit and share your favorite developer tools." />
+                )}
               </motion.div>
             )}
           </>
