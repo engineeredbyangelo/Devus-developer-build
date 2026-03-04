@@ -16,6 +16,8 @@ import { AIDiscoveredTools } from "@/components/AIDiscoveredTools";
 import { useFavoritesDb, useFollowedCategoriesDb } from "@/hooks/use-tools";
 import { useAISearch } from "@/hooks/use-ai-search";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/use-subscription";
+import { UpgradeBanner } from "@/components/UpgradeBanner";
 import { categories, tools } from "@/lib/data";
 import { Category, Tag, Tool } from "@/lib/types";
 import { cn } from "@/lib/utils";
