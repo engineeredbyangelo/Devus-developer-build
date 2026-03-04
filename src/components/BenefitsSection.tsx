@@ -36,7 +36,7 @@ interface BenefitsSectionProps {
 
 export function BenefitsSection({ onSignUp }: BenefitsSectionProps) {
   return (
-    <section className="py-20 relative overflow-hidden border-t border-border/30">
+    <section id="pricing" className="py-20 relative overflow-hidden border-t border-border/30">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-t from-primary/5 via-transparent to-transparent pointer-events-none" />
       

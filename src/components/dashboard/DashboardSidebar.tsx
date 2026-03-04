@@ -24,6 +24,7 @@ interface DashboardSidebarProps {
   onSignOut: () => void;
   userName: string;
   avatarUrl?: string;
+  isPro?: boolean;
 }
 
 const navItems = [
@@ -39,6 +40,7 @@ export function DashboardSidebar({
   onSignOut,
   userName,
   avatarUrl,
+  isPro = false,
 }: DashboardSidebarProps) {
   return (
     <TooltipProvider delayDuration={200}>
@@ -51,12 +53,18 @@ export function DashboardSidebar({
         {/* Avatar */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Avatar className="w-9 h-9 mb-6 cursor-pointer ring-2 ring-primary/30">
+            <Avatar className="w-9 h-9 mb-1 cursor-pointer ring-2 ring-primary/30">
               <AvatarImage src={avatarUrl || ""} />
               <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
                 {userName.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
+            {isPro && (
+              <span className="text-[9px] font-bold text-primary bg-primary/15 px-1.5 py-0.5 rounded-full mb-4">
+                PRO
+              </span>
+            )}
+            {!isPro && <div className="mb-4" />}
           </TooltipTrigger>
           <TooltipContent side="right">{userName}</TooltipContent>
         </Tooltip>

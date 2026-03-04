@@ -1,95 +1,93 @@
 
 
-# Stripe Integration + Free/Pro Tier Gating
+# Landing Page Alignment and Tool Stack Showcase
 
-## Overview
+## 1. Fix All Stale References
 
-Wire up Stripe checkout for the Pro plan ($18/month), store subscription status in the database, and gate dashboard features so free users only see 35 tools and cannot access Pro-only tabs.
+Several places still mention AI-powered features or outdated tool counts.
 
----
+| File | Line | Current | Updated |
+|------|------|---------|---------|
+| `WhyDevusSection.tsx` | 48 | "AI-powered search finds the perfect tools for your stack" | "Curated weekly drops deliver the latest tools to your dashboard" |
+| `BenefitsSection.tsx` | 59 | "Upgrade to Pro for AI-powered features and daily updates." | "Upgrade to Pro for weekly alerts, early access, and tool submissions." |
+| `AIDiscoveredTools.tsx` | 58 | "Find additional tools matching your filters using AI-powered search" | "Discover more tools matching your filters" |
+| `AIDiscoveredTools.tsx` | 96 | "AI-Discovered (X)" | "Discovered (X)" |
+| `AIDiscoveredTools.tsx` | 125 | "Powered by Firecrawl - Real-time web search" | "Curated developer tools" |
+| `LandingHero.tsx` | 91 | "35+ Curated Tools" | "65+ Curated Tools" |
+| `DemoPreview.tsx` | 126 | "Want to see all 35+ tools?" | "Want to see all 65+ tools?" |
 
-## 1. Enable Stripe
+## 2. New Section: Tool Stack Showcase
 
-Use the Stripe enablement tool to connect Stripe and create the Pro product/price ($18/month recurring).
+A vibrant, interactive section placed **after "How It Works"** and **before "Demo Preview"**. It lets users visually explore tool categories with animated cards -- giving a taste of the dashboard without signing up.
 
-## 2. Database Changes
+### Design
 
-**New table: `subscriptions`**
-- `id` (uuid, PK)
-- `user_id` (uuid, FK → auth.users, unique, not null)
-- `stripe_customer_id` (text)
-- `stripe_subscription_id` (text)
-- `status` (text — `active`, `canceled`, `past_due`, `trialing`)
-- `current_period_end` (timestamptz)
-- `created_at` / `updated_at`
+- Badge: "Explore the Stack"
+- Title: "65+ Tools Across 12 Categories"
+- Subtitle: "From AI models to deployment platforms -- handpicked for quality"
+- Interactive category pills that filter a mini card grid below
+- 6 animated tool preview cards showing real tools from the selected category
+- Each card shows: tool initial logo, name, category badge, "New" tag if applicable
+- Glassmorphism card styling matching the rest of the landing page
+- Horizontal scroll on mobile for category pills, 3-column grid on desktop for cards
+- Staggered entrance animations with framer-motion
+- A subtle CTA at the bottom: "Sign up to explore the full collection"
 
-**RLS policies:**
-- Users can SELECT their own subscription (`auth.uid() = user_id`)
-- Service role inserts/updates via Edge Functions (no user INSERT/UPDATE)
+### Component Structure
 
-## 3. Edge Functions
+```text
+ToolStackShowcase
+  +-- Badge + Title + Subtitle
+  +-- Category pills (scrollable row)
+  +-- Tool preview cards (3-col grid / stacked on mobile)
+  +-- CTA button
+```
 
-### `create-checkout` 
-- Receives `priceId` from client
-- Creates or retrieves Stripe customer (using user email)
-- Creates Stripe Checkout Session (mode: subscription, success/cancel URLs)
-- Returns session URL
+### New File
 
-### `stripe-webhook`
-- Listens for `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`
-- Upserts `subscriptions` table with status changes
-- `verify_jwt = false` in config.toml (Stripe signs webhooks, not JWT)
+`src/components/ToolStackShowcase.tsx`
 
-### `create-portal`
-- Creates Stripe Billing Portal session for managing subscription
-- Returns portal URL
+- Imports categories and tools from `src/lib/data.ts`
+- Uses `useState` to track selected category
+- Filters tools by category and shows up to 6
+- Uses framer-motion for scroll-triggered animations
+- Glassmorphism cards with hover effects
+- Fully responsive: horizontal scroll pills on mobile, grid adapts from 1 to 3 columns
 
-## 4. Subscription Hook
+## 3. Updated Index.tsx Section Flow
 
-**New file: `src/hooks/use-subscription.ts`**
-- Queries `subscriptions` table for current user
-- Exposes `{ isPro, isLoading, subscription }` 
-- `isPro = subscription?.status === 'active'`
-
-## 5. Dashboard Gating (Free Tier = 35 Tools)
-
-**`src/pages/Dashboard.tsx`** changes:
-- Import `useSubscription`
-- Free users: `filteredTools.slice(0, 35)` — after the 35th tool, show an inline glass banner: "Upgrade to Pro to unlock all 65+ tools" with an upgrade button
-- "Submissions" tab: free users see the inline banner instead of the submit CTA — "Tool submissions are a Pro feature"
-- Pass `isPro` down where needed
-
-## 6. BenefitsSection Stripe Buttons
-
-**`src/components/BenefitsSection.tsx`** changes:
-- "Get Started Free" button → still calls `onSignUp` (unchanged)
-- "Upgrade to Pro" button → if user is authenticated, calls `create-checkout` edge function and redirects to Stripe Checkout; if not authenticated, opens sign-up modal first
-- Add a `useAuth` + `useSubscription` check; if already Pro, show "Manage Subscription" button that opens the Stripe billing portal
-
-## 7. Pro Badge in Sidebar
-
-**`src/components/dashboard/DashboardSidebar.tsx`**:
-- Accept `isPro` prop
-- Show a small "Pro" badge next to the user avatar when `isPro` is true
-
----
-
-## Files to Create
-| File | Purpose |
-|------|---------|
-| `src/hooks/use-subscription.ts` | Subscription status hook |
-| `supabase/functions/create-checkout/index.ts` | Stripe Checkout session |
-| `supabase/functions/stripe-webhook/index.ts` | Stripe webhook handler |
-| `supabase/functions/create-portal/index.ts` | Stripe billing portal |
+```text
+Hero (65+ Curated Tools)
+  |
+"Why Devus Exists" -- stat cards
+  |  <-- generous spacing
+"Built for Your Workflow" -- mobile mockup + updated feature bullets
+  |
+"How It Works" -- Weekly Drops, Direct Links, GitHub, Filtering
+  |
+"Explore the Stack" -- NEW interactive category showcase
+  |
+Demo Preview (65+ tools)
+  |
+Pricing / Benefits (updated copy)
+  |
+Footer
+```
 
 ## Files to Modify
+
 | File | Changes |
 |------|---------|
-| `src/pages/Dashboard.tsx` | Tool cap at 35, inline upgrade banners, Pro gating |
-| `src/components/BenefitsSection.tsx` | Stripe checkout integration on Pro CTA |
-| `src/components/dashboard/DashboardSidebar.tsx` | Pro badge |
-| `supabase/config.toml` | JWT verification settings for new functions |
+| `src/components/WhyDevusSection.tsx` | Update Smart Discovery description (line 48) |
+| `src/components/BenefitsSection.tsx` | Update subtitle copy (line 59) |
+| `src/components/AIDiscoveredTools.tsx` | Remove AI/Firecrawl references (lines 58, 96, 125) |
+| `src/components/LandingHero.tsx` | Change "35+" to "65+" (line 91) |
+| `src/components/DemoPreview.tsx` | Change "35+" to "65+" (line 126) |
+| `src/pages/Index.tsx` | Import and add ToolStackShowcase between FeaturesSection and DemoPreview |
 
-## Migration
-- Create `subscriptions` table with RLS
+## New File to Create
+
+| File | Description |
+|------|-------------|
+| `src/components/ToolStackShowcase.tsx` | Interactive category explorer with animated tool cards, glassmorphism styling, horizontal scroll on mobile, framer-motion entrance animations, and sign-up CTA |
 

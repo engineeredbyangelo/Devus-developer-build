@@ -16,6 +16,8 @@ import { AIDiscoveredTools } from "@/components/AIDiscoveredTools";
 import { useFavoritesDb, useFollowedCategoriesDb } from "@/hooks/use-tools";
 import { useAISearch } from "@/hooks/use-ai-search";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/use-subscription";
+import { UpgradeBanner } from "@/components/UpgradeBanner";
 import { categories, tools } from "@/lib/data";
 import { Category, Tag, Tool } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -24,6 +26,7 @@ import { Button } from "@/components/ui/button";
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, profile, isLoading: authLoading, signOut } = useAuth();
+  const { isPro, isLoading: subLoading } = useSubscription();
   const [activeTab, setActiveTab] = useState<DashboardTab>("explore");
   const { favoriteTools, isFavorite, toggleFavorite } = useFavoritesDb();
   const { followedCategories, toggleCategory, categoryTools } = useFollowedCategoriesDb();
@@ -119,6 +122,7 @@ const Dashboard = () => {
         onSignOut={handleSignOut}
         userName={userName}
         avatarUrl={profile?.avatar_url || undefined}
+        isPro={isPro}
       />
 
       {/* Main content — offset by sidebar on lg+, full width on mobile */}
@@ -175,6 +179,9 @@ const Dashboard = () => {
 
                 <p className="text-sm text-muted-foreground">
                   {filteredTools.length} tool{filteredTools.length !== 1 ? "s" : ""} found
+                  {!isPro && filteredTools.length > 35 && (
+                    <span className="text-primary ml-1">(showing 35 of {filteredTools.length})</span>
+                  )}
                 </p>
 
                 {/* Tool Grid — responsive columns */}
@@ -190,7 +197,7 @@ const Dashboard = () => {
                     },
                   }}
                 >
-                  {filteredTools.map((tool) => (
+                  {(isPro ? filteredTools : filteredTools.slice(0, 35)).map((tool) => (
                     <motion.div
                       key={tool.id}
                       variants={{
@@ -210,6 +217,11 @@ const Dashboard = () => {
                     </motion.div>
                   ))}
                 </motion.div>
+
+                {/* Upgrade banner when free user has more tools available */}
+                {!isPro && filteredTools.length > 35 && (
+                  <UpgradeBanner message={`You're viewing 35 of ${filteredTools.length} tools. Upgrade to Pro to unlock the full directory.`} />
+                )}
 
                 {filteredTools.length === 0 && (
                   <div className="glass rounded-2xl p-12 text-center">
@@ -330,13 +342,17 @@ const Dashboard = () => {
             {activeTab === "submissions" && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} key="submissions" className="space-y-6">
                 <h2 className="text-lg font-semibold text-foreground">Your Submissions</h2>
-                <div className="glass rounded-2xl p-12 text-center">
-                  <Clock className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
-                  <p className="text-muted-foreground">You haven't submitted any tools yet.</p>
-                  <Link to="/submit">
-                    <Button className="mt-4 glow-sm">Submit a Tool</Button>
-                  </Link>
-                </div>
+                {isPro ? (
+                  <div className="glass rounded-2xl p-12 text-center">
+                    <Clock className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
+                    <p className="text-muted-foreground">You haven't submitted any tools yet.</p>
+                    <Link to="/submit">
+                      <Button className="mt-4 glow-sm">Submit a Tool</Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <UpgradeBanner message="Tool submissions are a Pro feature. Upgrade to submit and share your favorite developer tools." />
+                )}
               </motion.div>
             )}
           </>
