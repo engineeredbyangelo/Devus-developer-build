@@ -179,6 +179,9 @@ const Dashboard = () => {
 
                 <p className="text-sm text-muted-foreground">
                   {filteredTools.length} tool{filteredTools.length !== 1 ? "s" : ""} found
+                  {!isPro && filteredTools.length > 35 && (
+                    <span className="text-primary ml-1">(showing 35 of {filteredTools.length})</span>
+                  )}
                 </p>
 
                 {/* Tool Grid — responsive columns */}
@@ -194,7 +197,7 @@ const Dashboard = () => {
                     },
                   }}
                 >
-                  {filteredTools.map((tool) => (
+                  {(isPro ? filteredTools : filteredTools.slice(0, 35)).map((tool) => (
                     <motion.div
                       key={tool.id}
                       variants={{
@@ -214,6 +217,11 @@ const Dashboard = () => {
                     </motion.div>
                   ))}
                 </motion.div>
+
+                {/* Upgrade banner when free user has more tools available */}
+                {!isPro && filteredTools.length > 35 && (
+                  <UpgradeBanner message={`You're viewing 35 of ${filteredTools.length} tools. Upgrade to Pro to unlock the full directory.`} />
+                )}
 
                 {filteredTools.length === 0 && (
                   <div className="glass rounded-2xl p-12 text-center">
