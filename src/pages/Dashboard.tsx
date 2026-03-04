@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, profile, isLoading: authLoading, signOut } = useAuth();
+  const { isPro, isLoading: subLoading } = useSubscription();
   const [activeTab, setActiveTab] = useState<DashboardTab>("explore");
   const { favoriteTools, isFavorite, toggleFavorite } = useFavoritesDb();
   const { followedCategories, toggleCategory, categoryTools } = useFollowedCategoriesDb();
