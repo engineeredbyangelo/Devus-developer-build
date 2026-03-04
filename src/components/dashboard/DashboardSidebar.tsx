@@ -40,6 +40,7 @@ export function DashboardSidebar({
   onSignOut,
   userName,
   avatarUrl,
+  isPro = false,
 }: DashboardSidebarProps) {
   return (
     <TooltipProvider delayDuration={200}>
