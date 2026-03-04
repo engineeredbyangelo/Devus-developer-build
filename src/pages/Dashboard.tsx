@@ -122,6 +122,7 @@ const Dashboard = () => {
         onSignOut={handleSignOut}
         userName={userName}
         avatarUrl={profile?.avatar_url || undefined}
+        isPro={isPro}
       />
 
       {/* Main content — offset by sidebar on lg+, full width on mobile */}
