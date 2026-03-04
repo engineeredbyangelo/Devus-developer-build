@@ -24,6 +24,7 @@ interface DashboardSidebarProps {
   onSignOut: () => void;
   userName: string;
   avatarUrl?: string;
+  isPro?: boolean;
 }
 
 const navItems = [
