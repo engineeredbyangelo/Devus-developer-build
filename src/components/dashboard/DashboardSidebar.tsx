@@ -53,18 +53,21 @@ export function DashboardSidebar({
         {/* Avatar */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Avatar className="w-9 h-9 mb-1 cursor-pointer ring-2 ring-primary/30">
-              <AvatarImage src={avatarUrl || ""} />
-              <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
-                {userName.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            {isPro && (
-              <span className="text-[9px] font-bold text-primary bg-primary/15 px-1.5 py-0.5 rounded-full mb-4">
-                PRO
-              </span>
-            )}
-            {!isPro && <div className="mb-4" />}
+            <div className="flex flex-col items-center cursor-pointer">
+              <Avatar className="w-9 h-9 mb-1 ring-2 ring-primary/30">
+                <AvatarImage src={avatarUrl || ""} />
+                <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
+                  {userName.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              {isPro ? (
+                <span className="text-[9px] font-bold text-primary bg-primary/15 px-1.5 py-0.5 rounded-full mb-4">
+                  PRO
+                </span>
+              ) : (
+                <div className="mb-4" />
+              )}
+            </div>
           </TooltipTrigger>
           <TooltipContent side="right">{userName}</TooltipContent>
         </Tooltip>
