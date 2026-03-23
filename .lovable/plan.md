@@ -1,93 +1,112 @@
 
 
-# Landing Page Alignment and Tool Stack Showcase
+# Dashboard Overhaul: Pricing, Payments, Immersive UX, and Firecrawl Integration
 
-## 1. Fix All Stale References
+## Summary
 
-Several places still mention AI-powered features or outdated tool counts.
+This is a multi-part update: add a dedicated `/pricing` page, remove the submissions feature, update pricing to $16/month, improve dashboard immersion and mobile responsiveness, unify tool card open behavior, and integrate Firecrawl for fresh tool discovery.
 
-| File | Line | Current | Updated |
-|------|------|---------|---------|
-| `WhyDevusSection.tsx` | 48 | "AI-powered search finds the perfect tools for your stack" | "Curated weekly drops deliver the latest tools to your dashboard" |
-| `BenefitsSection.tsx` | 59 | "Upgrade to Pro for AI-powered features and daily updates." | "Upgrade to Pro for weekly alerts, early access, and tool submissions." |
-| `AIDiscoveredTools.tsx` | 58 | "Find additional tools matching your filters using AI-powered search" | "Discover more tools matching your filters" |
-| `AIDiscoveredTools.tsx` | 96 | "AI-Discovered (X)" | "Discovered (X)" |
-| `AIDiscoveredTools.tsx` | 125 | "Powered by Firecrawl - Real-time web search" | "Curated developer tools" |
-| `LandingHero.tsx` | 91 | "35+ Curated Tools" | "65+ Curated Tools" |
-| `DemoPreview.tsx` | 126 | "Want to see all 35+ tools?" | "Want to see all 65+ tools?" |
+---
 
-## 2. New Section: Tool Stack Showcase
+## 1. Create `/pricing` Page
 
-A vibrant, interactive section placed **after "How It Works"** and **before "Demo Preview"**. It lets users visually explore tool categories with animated cards -- giving a taste of the dashboard without signing up.
+**New file: `src/pages/Pricing.tsx`**
+- Replicates the `BenefitsSection` pricing cards but as a full standalone page
+- Updated price: **$16/month** (down from $18)
+- Includes a detailed feature comparison table (using existing `Table` UI components)
+- FAQ section using `Accordion` component with common questions (cancellation, refunds, what's included, etc.)
+- Header + footer consistent with landing page
+- Remove "Tool submission" from feature list (per removal request)
 
-### Design
+**Route addition in `App.tsx`**: `/pricing`
 
-- Badge: "Explore the Stack"
-- Title: "65+ Tools Across 12 Categories"
-- Subtitle: "From AI models to deployment platforms -- handpicked for quality"
-- Interactive category pills that filter a mini card grid below
-- 6 animated tool preview cards showing real tools from the selected category
-- Each card shows: tool initial logo, name, category badge, "New" tag if applicable
-- Glassmorphism card styling matching the rest of the landing page
-- Horizontal scroll on mobile for category pills, 3-column grid on desktop for cards
-- Staggered entrance animations with framer-motion
-- A subtle CTA at the bottom: "Sign up to explore the full collection"
+## 2. Remove Submissions Feature
 
-### Component Structure
+- **Delete** `src/pages/Submit.tsx`
+- **Remove** `/submit` route from `App.tsx`
+- **Remove** `"submissions"` tab from `DashboardSidebar` nav items and `DashboardTab` type
+- **Remove** submissions tab content from `Dashboard.tsx`
+- Update `BenefitsSection` features list to remove "Tool submission" line item
 
-```text
-ToolStackShowcase
-  +-- Badge + Title + Subtitle
-  +-- Category pills (scrollable row)
-  +-- Tool preview cards (3-col grid / stacked on mobile)
-  +-- CTA button
-```
+## 3. Update Pricing to $16/month
 
-### New File
+- `BenefitsSection.tsx`: Change `$18` to `$16`
+- `UpgradeBanner.tsx`: Update messaging if it references price
+- New `Pricing.tsx` page uses `$16`
 
-`src/components/ToolStackShowcase.tsx`
+## 4. Payment Processor — Alternatives to Stripe
 
-- Imports categories and tools from `src/lib/data.ts`
-- Uses `useState` to track selected category
-- Filters tools by category and shows up to 6
-- Uses framer-motion for scroll-triggered animations
-- Glassmorphism cards with hover effects
-- Fully responsive: horizontal scroll pills on mobile, grid adapts from 1 to 3 columns
+Since no Stripe key is available, we will explore alternatives. Present the user with options:
 
-## 3. Updated Index.tsx Section Flow
+- **Lemon Squeezy** — merchant of record, handles tax/compliance, simple API, popular with indie devs
+- **Paddle** — similar MOR model, handles global payments
+- **Polar** — built for developer tools, supports subscriptions
 
-```text
-Hero (65+ Curated Tools)
-  |
-"Why Devus Exists" -- stat cards
-  |  <-- generous spacing
-"Built for Your Workflow" -- mobile mockup + updated feature bullets
-  |
-"How It Works" -- Weekly Drops, Direct Links, GitHub, Filtering
-  |
-"Explore the Stack" -- NEW interactive category showcase
-  |
-Demo Preview (65+ tools)
-  |
-Pricing / Benefits (updated copy)
-  |
-Footer
-```
+This requires a follow-up decision from the user before implementation. For now, the pricing page will have a "Subscribe" button that shows a toast indicating payment integration is pending.
+
+## 5. Dashboard Immersion Improvements
+
+### Unified Tool Card Open Behavior
+- **Problem**: `DemoToolModal` (landing page) and `ToolHeroView` (dashboard) are different experiences
+- **Solution**: When a tool card opens in the dashboard, it already uses `ToolHeroView` (the immersive hero layout). Ensure the `DemoToolModal` on the landing page also provides the same level of detail and smooth transitions — or redirect tool clicks to `/tool/:id` for a unified experience
+- Review both components to ensure identical information architecture (description, use cases, tech stack, learning curve, links)
+
+### Mobile Responsiveness
+- `ToolHeroView`: Improve stacking on small screens — logo/name/description stack vertically, action buttons full-width, info cards collapsible
+- Dashboard grid: Already uses `grid-cols-1 sm:grid-cols-2`, verify bottom nav doesn't overlap content
+- Add `safe-area-inset-bottom` padding to main content area for iOS devices
+
+## 6. Firecrawl Integration for Fresh Tools
+
+Firecrawl is already connected (`std_01kgn3h69wfakb1wjchyqt6bky`).
+
+### New Edge Function: `discover-fresh-tools`
+- Uses Firecrawl search API to find newly released developer tools
+- Searches queries like "new developer tools released this week", "trending GitHub repositories"
+- Returns structured tool data (name, description, URL, category, tags)
+
+### New Dashboard Tab: "Fresh Finds" (replaces Submissions tab slot)
+- Shows Firecrawl-discovered tools with a "Discovered just now" badge
+- Users can trigger a refresh to search for new tools
+- Results cached in a new `fresh_tools_cache` table (similar pattern to `weekly_tools_cache`)
+- Free users see up to 5 fresh tools; Pro users get unlimited
+
+### Database Migration
+- Create `fresh_tools_cache` table: `id`, `search_query`, `tools_data` (jsonb), `created_at`, `expires_at`
+- RLS: public SELECT, authenticated INSERT/UPDATE
+
+---
+
+## Files to Create
+| File | Purpose |
+|------|---------|
+| `src/pages/Pricing.tsx` | Dedicated pricing page with FAQ and comparison |
+| `supabase/functions/discover-fresh-tools/index.ts` | Firecrawl-powered tool discovery |
 
 ## Files to Modify
-
 | File | Changes |
 |------|---------|
-| `src/components/WhyDevusSection.tsx` | Update Smart Discovery description (line 48) |
-| `src/components/BenefitsSection.tsx` | Update subtitle copy (line 59) |
-| `src/components/AIDiscoveredTools.tsx` | Remove AI/Firecrawl references (lines 58, 96, 125) |
-| `src/components/LandingHero.tsx` | Change "35+" to "65+" (line 91) |
-| `src/components/DemoPreview.tsx` | Change "35+" to "65+" (line 126) |
-| `src/pages/Index.tsx` | Import and add ToolStackShowcase between FeaturesSection and DemoPreview |
+| `src/App.tsx` | Add `/pricing` route, remove `/submit` route |
+| `src/components/BenefitsSection.tsx` | Price to $16, remove submissions feature, link to `/pricing` |
+| `src/components/dashboard/DashboardSidebar.tsx` | Replace "submissions" with "fresh" tab |
+| `src/pages/Dashboard.tsx` | Remove submissions tab, add Fresh Finds tab, mobile improvements |
+| `src/components/dashboard/ToolHeroView.tsx` | Mobile responsiveness polish |
+| `src/components/UpgradeBanner.tsx` | Link to `/pricing` instead of `#pricing` anchor |
 
-## New File to Create
+## Files to Delete
+| File | Reason |
+|------|--------|
+| `src/pages/Submit.tsx` | Feature removed |
 
-| File | Description |
-|------|-------------|
-| `src/components/ToolStackShowcase.tsx` | Interactive category explorer with animated tool cards, glassmorphism styling, horizontal scroll on mobile, framer-motion entrance animations, and sign-up CTA |
+## Migration
+- Create `fresh_tools_cache` table with RLS policies
+
+---
+
+## Technical Details
+
+- The Firecrawl edge function will use `FIRECRAWL_API_KEY` (already configured as a secret) to call the search endpoint
+- The pricing page FAQ uses the existing `Accordion` UI component
+- Payment processor integration is deferred until the user selects a provider — the Subscribe button will be wired to a placeholder that can be swapped in later
+- The `DashboardTab` type changes from `"explore" | "favorites" | "categories" | "submissions"` to `"explore" | "favorites" | "categories" | "fresh"`
 
