@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import ToolDetail from "./pages/ToolDetail";
-import Submit from "./pages/Submit";
+import Pricing from "./pages/Pricing";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
@@ -22,9 +22,9 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/tool/:id" element={<ToolDetail />} />
-            {/* Redirect old favorites route to dashboard */}
+            <Route path="/pricing" element={<Pricing />} />
             <Route path="/favorites" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/submit" element={<Submit />} />
+            <Route path="/submit" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -3,7 +3,7 @@ import {
   Compass,
   Heart,
   Folder,
-  Clock,
+  Sparkles,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -16,7 +16,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-export type DashboardTab = "explore" | "favorites" | "categories" | "submissions";
+export type DashboardTab = "explore" | "favorites" | "categories" | "fresh";
 
 interface DashboardSidebarProps {
   activeTab: DashboardTab;
@@ -31,7 +31,7 @@ const navItems = [
   { id: "explore" as DashboardTab, label: "Explore", icon: Compass },
   { id: "favorites" as DashboardTab, label: "Favorites", icon: Heart },
   { id: "categories" as DashboardTab, label: "Categories", icon: Folder },
-  { id: "submissions" as DashboardTab, label: "Submissions", icon: Clock },
+  { id: "fresh" as DashboardTab, label: "Fresh Finds", icon: Sparkles },
 ];
 
 export function DashboardSidebar({
@@ -120,7 +120,7 @@ export function DashboardSidebar({
       </motion.aside>
 
       {/* Mobile: Bottom navigation bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-[56] lg:hidden bg-card/95 backdrop-blur-xl border-t border-border safe-area-bottom">
+      <nav className="fixed bottom-0 left-0 right-0 z-[56] lg:hidden bg-card/95 backdrop-blur-xl border-t border-border" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         <div className="flex items-center justify-around h-16 px-2">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -148,7 +148,6 @@ export function DashboardSidebar({
               </button>
             );
           })}
-          {/* Settings on mobile bottom bar */}
           <button
             onClick={onSignOut}
             className="flex flex-col items-center justify-center gap-1 flex-1 h-full text-muted-foreground transition-all duration-200"

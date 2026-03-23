@@ -24,10 +24,10 @@ const features: TierFeature[] = [
   { name: "Direct links & GitHub access", free: true, pro: true },
   { name: "Personal favorites collection", free: true, pro: true },
   { name: "Weekly new tool updates", free: true, pro: true },
+  { name: "Fresh Finds (AI discovery)", free: false, pro: true },
   { name: "Weekly new tool alerts", free: false, pro: true },
-  { name: "Tool submission", free: false, pro: true },
   { name: "Early access to new tools", free: false, pro: true },
-  { name: "Priority early access", free: false, pro: true },
+  { name: "Priority support", free: false, pro: true },
 ];
 
 interface BenefitsSectionProps {
@@ -130,7 +130,7 @@ export function BenefitsSection({ onSignUp }: BenefitsSectionProps) {
                 <CardTitle className="text-xl">Pro</CardTitle>
                 <CardDescription>For power users</CardDescription>
                 <div className="pt-4">
-                  <span className="text-4xl font-bold">$18</span>
+                  <span className="text-4xl font-bold">$16</span>
                   <span className="text-muted-foreground">/month</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">Annual plan coming soon</p>

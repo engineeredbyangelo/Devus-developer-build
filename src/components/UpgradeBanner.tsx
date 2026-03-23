@@ -24,14 +24,7 @@ export function UpgradeBanner({
           <p className="text-sm text-muted-foreground">{message}</p>
         </div>
         <Button
-          onClick={() => {
-            const el = document.getElementById("pricing");
-            if (el) {
-              el.scrollIntoView({ behavior: "smooth" });
-            } else {
-              navigate("/#pricing");
-            }
-          }}
+          onClick={() => navigate("/pricing")}
           className="glow-sm shrink-0"
         >
           Upgrade to Pro

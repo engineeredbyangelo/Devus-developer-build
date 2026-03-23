@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Heart,
-  Clock,
   ChevronRight,
   Search,
   Loader2,
+  Sparkles,
+  RefreshCw,
+  ExternalLink,
+  Zap,
 } from "lucide-react";
 import { DashboardSidebar, DashboardTab } from "@/components/dashboard/DashboardSidebar";
 import { DashboardToolCard } from "@/components/dashboard/DashboardToolCard";
@@ -15,6 +18,7 @@ import { AIAssistantWidget } from "@/components/dashboard/AIAssistantWidget";
 import { AIDiscoveredTools } from "@/components/AIDiscoveredTools";
 import { useFavoritesDb, useFollowedCategoriesDb } from "@/hooks/use-tools";
 import { useAISearch } from "@/hooks/use-ai-search";
+import { useFreshTools } from "@/hooks/use-fresh-tools";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/use-subscription";
 import { UpgradeBanner } from "@/components/UpgradeBanner";
@@ -44,6 +48,8 @@ const Dashboard = () => {
     discoverTools,
     clearResults,
   } = useAISearch(selectedCategory, selectedTags);
+
+  const { freshTools, isLoading: freshLoading, discoverFresh } = useFreshTools();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -109,6 +115,8 @@ const Dashboard = () => {
     ...categories.map((c) => ({ label: c.name, value: c.id })),
   ];
 
+  const displayedFreshTools = isPro ? freshTools : freshTools.slice(0, 5);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="fixed inset-0 bg-gradient-radial from-primary/5 via-transparent to-transparent pointer-events-none" />
@@ -125,8 +133,7 @@ const Dashboard = () => {
         isPro={isPro}
       />
 
-      {/* Main content — offset by sidebar on lg+, full width on mobile */}
-      <main className="lg:ml-[60px] min-h-screen p-4 pb-24 sm:p-6 sm:pb-24 lg:p-8 lg:pb-8 relative z-10">
+      <main className="lg:ml-[60px] min-h-screen p-4 sm:p-6 lg:p-8 relative z-10" style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }}>
         {selectedTool ? (
           <ToolHeroView
             tool={selectedTool}
@@ -159,7 +166,7 @@ const Dashboard = () => {
                   />
                 </div>
 
-                {/* Filter chips — scrollable on mobile */}
+                {/* Filter chips */}
                 <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap scrollbar-none">
                   {filterChips.map((chip) => (
                     <button
@@ -184,17 +191,14 @@ const Dashboard = () => {
                   )}
                 </p>
 
-                {/* Tool Grid — responsive columns */}
+                {/* Tool Grid */}
                 <motion.div
                   className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4"
                   initial="hidden"
                   animate="visible"
                   variants={{
                     hidden: { opacity: 0 },
-                    visible: {
-                      opacity: 1,
-                      transition: { staggerChildren: 0.04 },
-                    },
+                    visible: { opacity: 1, transition: { staggerChildren: 0.04 } },
                   }}
                 >
                   {(isPro ? filteredTools : filteredTools.slice(0, 35)).map((tool) => (
@@ -218,7 +222,6 @@ const Dashboard = () => {
                   ))}
                 </motion.div>
 
-                {/* Upgrade banner when free user has more tools available */}
                 {!isPro && filteredTools.length > 35 && (
                   <UpgradeBanner message={`You're viewing 35 of ${filteredTools.length} tools. Upgrade to Pro to unlock the full directory.`} />
                 )}
@@ -298,9 +301,7 @@ const Dashboard = () => {
                             <div
                               className={cn(
                                 "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors",
-                                isFollowed
-                                  ? "border-primary bg-primary"
-                                  : "border-muted-foreground"
+                                isFollowed ? "border-primary bg-primary" : "border-muted-foreground"
                               )}
                             >
                               {isFollowed && (
@@ -339,19 +340,93 @@ const Dashboard = () => {
               </motion.div>
             )}
 
-            {activeTab === "submissions" && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} key="submissions" className="space-y-6">
-                <h2 className="text-lg font-semibold text-foreground">Your Submissions</h2>
-                {isPro ? (
-                  <div className="glass rounded-2xl p-12 text-center">
-                    <Clock className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
-                    <p className="text-muted-foreground">You haven't submitted any tools yet.</p>
-                    <Link to="/submit">
-                      <Button className="mt-4 glow-sm">Submit a Tool</Button>
-                    </Link>
+            {activeTab === "fresh" && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} key="fresh" className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-primary" />
+                      Fresh Finds
+                    </h2>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      AI-discovered developer tools from across the web
+                    </p>
                   </div>
-                ) : (
-                  <UpgradeBanner message="Tool submissions are a Pro feature. Upgrade to submit and share your favorite developer tools." />
+                  <Button
+                    onClick={() => discoverFresh()}
+                    disabled={freshLoading}
+                    className="glow-sm shrink-0"
+                  >
+                    {freshLoading ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                    )}
+                    {freshLoading ? "Discovering..." : "Discover New Tools"}
+                  </Button>
+                </div>
+
+                {freshTools.length === 0 && !freshLoading && (
+                  <div className="glass rounded-2xl p-12 text-center">
+                    <Sparkles className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
+                    <p className="text-muted-foreground mb-2">
+                      Hit "Discover New Tools" to find freshly released developer tools.
+                    </p>
+                  </div>
+                )}
+
+                {displayedFreshTools.length > 0 && (
+                  <motion.div
+                    className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4"
+                    initial="hidden"
+                    animate="visible"
+                    variants={{
+                      hidden: { opacity: 0 },
+                      visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
+                    }}
+                  >
+                    {displayedFreshTools.map((tool) => (
+                      <motion.div
+                        key={tool.id}
+                        variants={{
+                          hidden: { opacity: 0, y: 16 },
+                          visible: { opacity: 1, y: 0 },
+                        }}
+                      >
+                        <div className="glass glass-hover rounded-2xl p-5 cursor-pointer transition-all group">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                                <Zap className="w-5 h-5 text-primary" />
+                              </div>
+                              <div className="min-w-0">
+                                <h3 className="font-semibold text-foreground text-sm truncate">{tool.name}</h3>
+                                <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                                  Just discovered
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <p className="text-xs text-muted-foreground line-clamp-2 mb-4">
+                            {tool.description}
+                          </p>
+                          <a
+                            href={tool.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Visit <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )}
+
+                {!isPro && freshTools.length > 5 && (
+                  <UpgradeBanner message={`You're seeing 5 of ${freshTools.length} fresh tools. Upgrade to Pro for unlimited AI-discovered tools.`} />
                 )}
               </motion.div>
             )}
