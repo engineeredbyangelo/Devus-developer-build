@@ -27,10 +27,10 @@ const App = () => (
             <Route path="/submit" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        </Routes>
       </TooltipProvider>
     </AuthProvider>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 
