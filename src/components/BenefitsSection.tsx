@@ -130,7 +130,7 @@ export function BenefitsSection({ onSignUp }: BenefitsSectionProps) {
                 <CardTitle className="text-xl">Pro</CardTitle>
                 <CardDescription>For power users</CardDescription>
                 <div className="pt-4">
-                  <span className="text-4xl font-bold">$18</span>
+                  <span className="text-4xl font-bold">$16</span>
                   <span className="text-muted-foreground">/month</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">Annual plan coming soon</p>
