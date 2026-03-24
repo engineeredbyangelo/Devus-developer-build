@@ -57,6 +57,7 @@ export const tools: Tool[] = [
     tags: ["open-source", "free"],
     url: "https://vuejs.org",
     githubUrl: "https://github.com/vuejs/vue",
+    screenshotUrl: "https://vuejs.org/images/logo.png",
     stars: 206000,
     upvotes: 1203,
     pros: ["Easy to learn", "Great documentation", "Flexible"],
