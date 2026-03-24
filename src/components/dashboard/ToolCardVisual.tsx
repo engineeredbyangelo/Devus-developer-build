@@ -58,7 +58,7 @@ export function ToolCardVisual({ tool, size = "md", className }: ToolCardVisualP
       >
         <div
           className="absolute inset-0"
-          style={{ backgroundImage: encodedSvg, backgroundSize: "cover" }}
+          style={{ backgroundImage: encodedSvg, backgroundSize: "cover", backgroundPosition: "center" }}
         />
       </div>
     );
