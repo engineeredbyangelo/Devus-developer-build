@@ -159,6 +159,7 @@ export const tools: Tool[] = [
     tags: ["open-source", "free", "cli"],
     url: "https://nodejs.org",
     githubUrl: "https://github.com/nodejs/node",
+    screenshotUrl: "https://nodejs.org/static/images/logo-hexagon-card.png",
     stars: 102000,
     upvotes: 1654,
     pros: ["Same language as frontend", "Huge ecosystem", "Fast"],
