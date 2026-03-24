@@ -244,17 +244,17 @@ const Dashboard = () => {
                           {displayedFreshTools.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                               {displayedFreshTools.slice(0, 4).map((tool) => (
-                                <div key={tool.id} className="glass glass-hover rounded-2xl p-3 sm:p-4 cursor-pointer">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                                      <Zap className="w-4 h-4 text-primary" />
+                                <div key={tool.id} className="glass glass-hover rounded-2xl overflow-hidden cursor-pointer">
+                                  <ToolCardVisual tool={tool as any} size="md" className="h-20" />
+                                  <div className="p-3">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <div className="min-w-0">
+                                        <h4 className="text-sm font-semibold text-foreground truncate">{tool.name}</h4>
+                                        <span className="text-[10px] text-primary">Just discovered</span>
+                                      </div>
                                     </div>
-                                    <div className="min-w-0">
-                                      <h4 className="text-sm font-semibold text-foreground truncate">{tool.name}</h4>
-                                      <span className="text-[10px] text-primary">Just discovered</span>
-                                    </div>
+                                    <p className="text-xs text-muted-foreground line-clamp-2">{tool.description}</p>
                                   </div>
-                                  <p className="text-xs text-muted-foreground line-clamp-2">{tool.description}</p>
                                 </div>
                               ))}
                             </div>
