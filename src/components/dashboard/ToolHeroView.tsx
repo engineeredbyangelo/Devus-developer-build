@@ -171,6 +171,7 @@ export function ToolHeroView({
                 </a>
               )}
             </div>
+            </div>
           </motion.div>
 
           {/* Right: Info cards */}
