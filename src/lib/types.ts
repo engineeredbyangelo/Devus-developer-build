@@ -53,7 +53,7 @@ export interface User {
   avatarUrl?: string;
   favorites: string[];
   followedCategories: Category[];
-  submittedTools: string[];
+  
 }
 
 export interface CategoryInfo {
