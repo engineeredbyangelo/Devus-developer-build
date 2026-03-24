@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Tool } from "@/lib/types";
-import { getCategoryVisual, getToolVisualAngle, getToolVisualScale, getPatternSvg } from "@/lib/tool-visuals";
+import { getCategoryVisual, generateCompositionSvg } from "@/lib/tool-visuals";
 import { cn } from "@/lib/utils";
 
 interface ToolCardVisualProps {
@@ -12,16 +12,30 @@ interface ToolCardVisualProps {
 export function ToolCardVisual({ tool, size = "md", className }: ToolCardVisualProps) {
   const [imgError, setImgError] = useState(false);
   const visual = getCategoryVisual(tool.category);
-  const angle = getToolVisualAngle(tool.name);
-  const scale = getToolVisualScale(tool.name);
 
   const sizeClasses = {
     sm: "h-8 w-8 rounded-lg",
-    md: "h-24 sm:h-28 w-full rounded-t-2xl",
-    lg: "h-32 sm:h-40 w-full rounded-t-2xl",
+    md: "h-28 sm:h-32 w-full rounded-t-2xl",
+    lg: "h-36 sm:h-44 w-full rounded-t-2xl",
   };
 
-  // Thumbnail mode (sm) — square with gradient
+  const svgDimensions = {
+    sm: { w: 64, h: 64 },
+    md: { w: 400, h: 200 },
+    lg: { w: 500, h: 280 },
+  };
+
+  const compositionSvg = useMemo(() => {
+    const dims = svgDimensions[size];
+    return generateCompositionSvg(tool.name, tool.category, dims.w, dims.h);
+  }, [tool.name, tool.category, size]);
+
+  const encodedSvg = useMemo(
+    () => `url("data:image/svg+xml,${encodeURIComponent(compositionSvg)}")`,
+    [compositionSvg]
+  );
+
+  // Thumbnail mode (sm)
   if (size === "sm") {
     if (tool.screenshotUrl && !imgError) {
       return (
@@ -37,22 +51,20 @@ export function ToolCardVisual({ tool, size = "md", className }: ToolCardVisualP
     }
     return (
       <div
-        className={cn(
-          "overflow-hidden shrink-0 bg-gradient-to-br flex items-center justify-center",
-          visual.gradient,
-          sizeClasses.sm,
-          className
-        )}
-        style={{ transform: `rotate(${angle % 8}deg)` }}
+        className={cn("overflow-hidden shrink-0 relative", sizeClasses.sm, className)}
+        style={{
+          background: `radial-gradient(circle at 40% 40%, hsl(${visual.colors[0]} / 0.4), hsl(${visual.colors[1]} / 0.2), transparent)`,
+        }}
       >
-        <span className="text-xs font-bold" style={{ color: `hsl(${visual.accentHsl})`, opacity: 0.7 }}>
-          {tool.name.charAt(0)}
-        </span>
+        <div
+          className="absolute inset-0"
+          style={{ backgroundImage: encodedSvg, backgroundSize: "cover" }}
+        />
       </div>
     );
   }
 
-  // Banner mode (md/lg)
+  // Banner mode (md/lg) — screenshot path
   if (tool.screenshotUrl && !imgError) {
     return (
       <div className={cn("overflow-hidden relative", sizeClasses[size], className)}>
@@ -63,53 +75,46 @@ export function ToolCardVisual({ tool, size = "md", className }: ToolCardVisualP
           onError={() => setImgError(true)}
           loading="lazy"
         />
-        {/* Bottom gradient overlay for text readability */}
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
       </div>
     );
   }
 
-  // Abstract gradient fallback
-  const patternSvg = getPatternSvg(visual.pattern, angle);
-  const encodedPattern = `url("data:image/svg+xml,${encodeURIComponent(patternSvg)}")`;
-
+  // Generative abstract composition fallback
   return (
     <div
       className={cn(
-        "overflow-hidden relative bg-gradient-to-br",
-        visual.gradient,
+        "overflow-hidden relative group/visual",
         sizeClasses[size],
         className
       )}
       style={{
-        backgroundImage: `linear-gradient(${angle}deg, var(--tw-gradient-stops))`,
+        background: `radial-gradient(ellipse at ${30 + (tool.name.length % 40)}% ${20 + (tool.name.length % 30)}%, hsl(${visual.colors[0]} / 0.35), hsl(${visual.colors[1]} / 0.15) 50%, hsl(${visual.colors[2]} / 0.05) 100%)`,
       }}
     >
-      {/* Pattern overlay */}
+      {/* Composition SVG overlay */}
       <div
-        className="absolute inset-0 text-foreground"
+        className="absolute inset-0 transition-transform duration-700 ease-out group-hover/visual:scale-105"
+        style={{ backgroundImage: encodedSvg, backgroundSize: "cover" }}
+      />
+
+      {/* Accent glow bloom */}
+      <div
+        className="absolute inset-0 pointer-events-none"
         style={{
-          backgroundImage: encodedPattern,
-          backgroundRepeat: "repeat",
-          transform: `scale(${scale})`,
+          background: `radial-gradient(circle at ${50 + (tool.name.charCodeAt(0) % 30)}% ${40 + (tool.name.charCodeAt(1) % 30 || 0)}%, hsl(${visual.colors[0]} / 0.15), transparent 60%)`,
         }}
       />
-      {/* Large watermark letter */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <span
-          className="font-bold select-none"
-          style={{
-            fontSize: size === "lg" ? "5rem" : "3.5rem",
-            color: `hsl(${visual.accentHsl})`,
-            opacity: 0.08,
-            transform: `rotate(${(angle % 20) - 10}deg)`,
-          }}
-        >
-          {tool.name.charAt(0)}
-        </span>
-      </div>
-      {/* Bottom fade */}
-      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-background/60 to-transparent pointer-events-none" />
+
+      {/* Bottom fade into card */}
+      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background/70 to-transparent pointer-events-none" />
+
+      {/* Shimmer on hover */}
+      <div className="absolute inset-0 opacity-0 group-hover/visual:opacity-100 transition-opacity duration-500 pointer-events-none"
+        style={{
+          background: `linear-gradient(105deg, transparent 40%, hsl(${visual.colors[0]} / 0.08) 50%, transparent 60%)`,
+        }}
+      />
     </div>
   );
 }
