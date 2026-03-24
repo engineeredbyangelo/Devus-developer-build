@@ -78,6 +78,7 @@ export const tools: Tool[] = [
     tags: ["open-source", "free"],
     url: "https://svelte.dev",
     githubUrl: "https://github.com/sveltejs/svelte",
+    screenshotUrl: "https://svelte.dev/images/twitter-thumbnail.jpg",
     stars: 75000,
     upvotes: 987,
     isNew: true,
