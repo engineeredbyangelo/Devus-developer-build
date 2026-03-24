@@ -184,7 +184,7 @@ const Dashboard = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     key="home"
-                    className="space-y-8"
+                    className="space-y-6 sm:space-y-8"
                   >
                     {isNewUser ? (
                       <OnboardingPrompt onComplete={handleOnboardingComplete} />
