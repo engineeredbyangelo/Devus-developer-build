@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { DashboardTopNav, DashboardTab } from "@/components/dashboard/DashboardTopNav";
 import { DashboardToolCard } from "@/components/dashboard/DashboardToolCard";
+import { ToolCardVisual } from "@/components/dashboard/ToolCardVisual";
 import { ToolHeroView } from "@/components/dashboard/ToolHeroView";
 import { AIAssistantWidget } from "@/components/dashboard/AIAssistantWidget";
 import { AIDiscoveredTools } from "@/components/AIDiscoveredTools";
