@@ -1,112 +1,139 @@
 
 
-# Dashboard Overhaul: Pricing, Payments, Immersive UX, and Firecrawl Integration
+# Dashboard Overhaul: "Devus Home" — Personalized Developer Feed
 
 ## Summary
 
-This is a multi-part update: add a dedicated `/pricing` page, remove the submissions feature, update pricing to $16/month, improve dashboard immersion and mobile responsiveness, unify tool card open behavior, and integrate Firecrawl for fresh tool discovery.
+Transform the current tab-based dashboard into a personalized "Developer Home" experience with a smart feed, top navigation bar, weekly digest banner, and contextual sidebar. The goal is to make every visit feel fresh and relevant, driving daily return visits.
 
 ---
 
-## 1. Create `/pricing` Page
+## Architecture Change
 
-**New file: `src/pages/Pricing.tsx`**
-- Replicates the `BenefitsSection` pricing cards but as a full standalone page
-- Updated price: **$16/month** (down from $18)
-- Includes a detailed feature comparison table (using existing `Table` UI components)
-- FAQ section using `Accordion` component with common questions (cancellation, refunds, what's included, etc.)
-- Header + footer consistent with landing page
-- Remove "Tool submission" from feature list (per removal request)
+```text
+CURRENT                          NEW
+┌──────────────────────┐        ┌────────────────────────────────┐
+│ 60px   │             │        │  Top Nav: Home|Explore|Toolkit │
+│ Side   │  Tab Content│        ├────────────────────┬───────────┤
+│ bar    │  (one at    │        │                    │ Right     │
+│        │   a time)   │        │  Smart Feed        │ Sidebar   │
+│        │             │        │  (vertical stack)  │ (stats,   │
+│        │             │        │                    │  AI chat) │
+└──────────────────────┘        └────────────────────┴───────────┘
+```
 
-**Route addition in `App.tsx`**: `/pricing`
+## Navigation Redesign
 
-## 2. Remove Submissions Feature
+**Replace**: 60px icon sidebar + bottom mobile nav
+**With**: Horizontal top navigation bar
 
-- **Delete** `src/pages/Submit.tsx`
-- **Remove** `/submit` route from `App.tsx`
-- **Remove** `"submissions"` tab from `DashboardSidebar` nav items and `DashboardTab` type
-- **Remove** submissions tab content from `Dashboard.tsx`
-- Update `BenefitsSection` features list to remove "Tool submission" line item
+- Tabs: **Home** (default, new) | **Explore** (current grid) | **My Toolkit** (favorites) | **Categories**
+- Embedded global search bar with AI hint placeholder: *"Search or ask anything… e.g., 'lightweight React alternatives'"*
+- User avatar + sign-out dropdown on the right
+- Mobile: collapses to hamburger or bottom tab bar with same items
 
-## 3. Update Pricing to $16/month
+**Files**: Rewrite `DashboardSidebar.tsx` → new `DashboardTopNav.tsx`. Update `DashboardTab` type to `"home" | "explore" | "toolkit" | "categories"`.
 
-- `BenefitsSection.tsx`: Change `$18` to `$16`
-- `UpgradeBanner.tsx`: Update messaging if it references price
-- New `Pricing.tsx` page uses `$16`
+## Home Tab — Smart Personalized Feed
 
-## 4. Payment Processor — Alternatives to Stripe
+The new default tab. A vertical stack of curated sections, each with a "See all" link.
 
-Since no Stripe key is available, we will explore alternatives. Present the user with options:
+### Section 1: Weekly Digest Banner (dismissible)
+- Glassmorphism card at top: "Fresh This Week • N new high-signal tools"
+- Subtitle: "Curated for developers who follow [user's categories]"
+- "Browse This Week's Picks" button + inline carousel of 3-4 tool cards
+- Dismissible via X button (state stored in localStorage)
+- **New component**: `WeeklyDigestBanner.tsx`
 
-- **Lemon Squeezy** — merchant of record, handles tax/compliance, simple API, popular with indie devs
-- **Paddle** — similar MOR model, handles global payments
-- **Polar** — built for developer tools, supports subscriptions
+### Section 2: Recommended for You
+- 4-6 tool cards selected from the user's followed categories + favorites similarity
+- Algorithm (simple, no AI needed initially): tools in followed categories that aren't already favorited, sorted by `isNew` and `stars`
+- Each card has a "Why this?" tag: *"Matches your React + Tailwind stack"* or *"New in AI/ML"*
+- **New component**: `RecommendedSection.tsx`
+- **New hook**: `use-recommendations.ts` — computes recommendations from `profile.favorites`, `profile.followed_categories`, and `tools` data
 
-This requires a follow-up decision from the user before implementation. For now, the pricing page will have a "Subscribe" button that shows a toast indicating payment integration is pending.
+### Section 3: Fresh Finds
+- Reuses existing `useFreshTools` hook and fresh tools UI
+- Shows 5-8 newest tools with "Just discovered" badge and curator note (tool description)
+- Pro gate: free users see 5, Pro users unlimited
 
-## 5. Dashboard Immersion Improvements
+### Section 4: Trending in Your Ecosystem
+- Dynamic header: "Popular with [category] devs this month"
+- Tools sorted by `stars` descending within user's followed categories
+- Falls back to overall top tools if no categories followed
+- **New component**: `TrendingSection.tsx`
 
-### Unified Tool Card Open Behavior
-- **Problem**: `DemoToolModal` (landing page) and `ToolHeroView` (dashboard) are different experiences
-- **Solution**: When a tool card opens in the dashboard, it already uses `ToolHeroView` (the immersive hero layout). Ensure the `DemoToolModal` on the landing page also provides the same level of detail and smooth transitions — or redirect tool clicks to `/tool/:id` for a unified experience
-- Review both components to ensure identical information architecture (description, use cases, tech stack, learning curve, links)
+### Section 5: My Toolkit (compact row)
+- Horizontal scroll of favorited tools — name, category badge, quick "View" button
+- Subtle badge if tool has `isNew` flag
+- **New component**: `ToolkitStrip.tsx`
 
-### Mobile Responsiveness
-- `ToolHeroView`: Improve stacking on small screens — logo/name/description stack vertically, action buttons full-width, info cards collapsible
-- Dashboard grid: Already uses `grid-cols-1 sm:grid-cols-2`, verify bottom nav doesn't overlap content
-- Add `safe-area-inset-bottom` padding to main content area for iOS devices
+## Right Sidebar (desktop only, collapsible)
 
-## 6. Firecrawl Integration for Fresh Tools
+- **Stack coverage**: Simple stat based on how many categories the user follows out of total (e.g., "4/9 categories covered")
+- **Quick Add**: Mini search input that filters tools and lets user favorite directly
+- **Ask Devus**: Small AI chat input that triggers existing `useAISearch` hook
+- Hidden on mobile; content accessible via Home tab sections instead
+- **New component**: `DashboardRightSidebar.tsx`
 
-Firecrawl is already connected (`std_01kgn3h69wfakb1wjchyqt6bky`).
+## Empty / New User State
 
-### New Edge Function: `discover-fresh-tools`
-- Uses Firecrawl search API to find newly released developer tools
-- Searches queries like "new developer tools released this week", "trending GitHub repositories"
-- Returns structured tool data (name, description, URL, category, tags)
+When user has no favorites and no followed categories:
+- Replace the feed with a "Build Your First Stack" onboarding card
+- 2 quick questions: "What's your main stack?" (React/Vue/Svelte/Other) + "What are you building?" (SaaS/Mobile/AI apps/Other)
+- On submit: auto-follow relevant categories and show instant personalized feed
+- **New component**: `OnboardingPrompt.tsx`
+- Answers stored via existing `useFollowedCategoriesDb` hook
 
-### New Dashboard Tab: "Fresh Finds" (replaces Submissions tab slot)
-- Shows Firecrawl-discovered tools with a "Discovered just now" badge
-- Users can trigger a refresh to search for new tools
-- Results cached in a new `fresh_tools_cache` table (similar pattern to `weekly_tools_cache`)
-- Free users see up to 5 fresh tools; Pro users get unlimited
+## Explore Tab
 
-### Database Migration
-- Create `fresh_tools_cache` table: `id`, `search_query`, `tools_data` (jsonb), `created_at`, `expires_at`
-- RLS: public SELECT, authenticated INSERT/UPDATE
+Unchanged — current grid with search, category chips, and AI discovery. Power users browse everything here.
+
+## My Toolkit Tab
+
+Replaces "Favorites" tab. Same content, renamed for clarity. Shows favorited tools in a grid with last-visited context.
+
+## Categories Tab
+
+Unchanged — follow/unfollow categories, see tools from followed categories.
 
 ---
 
 ## Files to Create
+
 | File | Purpose |
 |------|---------|
-| `src/pages/Pricing.tsx` | Dedicated pricing page with FAQ and comparison |
-| `supabase/functions/discover-fresh-tools/index.ts` | Firecrawl-powered tool discovery |
+| `src/components/dashboard/DashboardTopNav.tsx` | Horizontal top nav replacing sidebar |
+| `src/components/dashboard/WeeklyDigestBanner.tsx` | Dismissible weekly picks banner |
+| `src/components/dashboard/RecommendedSection.tsx` | "Recommended for You" section |
+| `src/components/dashboard/TrendingSection.tsx` | "Trending in Your Ecosystem" section |
+| `src/components/dashboard/ToolkitStrip.tsx` | Compact horizontal favorites row |
+| `src/components/dashboard/DashboardRightSidebar.tsx` | Right sidebar with stats + AI input |
+| `src/components/dashboard/OnboardingPrompt.tsx` | New user onboarding flow |
+| `src/hooks/use-recommendations.ts` | Recommendation logic hook |
 
 ## Files to Modify
+
 | File | Changes |
 |------|---------|
-| `src/App.tsx` | Add `/pricing` route, remove `/submit` route |
-| `src/components/BenefitsSection.tsx` | Price to $16, remove submissions feature, link to `/pricing` |
-| `src/components/dashboard/DashboardSidebar.tsx` | Replace "submissions" with "fresh" tab |
-| `src/pages/Dashboard.tsx` | Remove submissions tab, add Fresh Finds tab, mobile improvements |
-| `src/components/dashboard/ToolHeroView.tsx` | Mobile responsiveness polish |
-| `src/components/UpgradeBanner.tsx` | Link to `/pricing` instead of `#pricing` anchor |
+| `src/pages/Dashboard.tsx` | Major rewrite — new layout with top nav, home tab with feed sections, right sidebar, onboarding state |
+| `src/components/dashboard/DashboardSidebar.tsx` | Replace with `DashboardTopNav` (may delete or keep for reference) |
+| `src/lib/types.ts` | Remove `submittedTools` from `User` interface |
 
 ## Files to Delete
-| File | Reason |
-|------|--------|
-| `src/pages/Submit.tsx` | Feature removed |
 
-## Migration
-- Create `fresh_tools_cache` table with RLS policies
+| File | Reason |
+|------|---------|
+| `src/components/dashboard/DashboardSidebar.tsx` | Replaced by `DashboardTopNav.tsx` |
 
 ---
 
-## Technical Details
+## Technical Notes
 
-- The Firecrawl edge function will use `FIRECRAWL_API_KEY` (already configured as a secret) to call the search endpoint
-- The pricing page FAQ uses the existing `Accordion` UI component
-- Payment processor integration is deferred until the user selects a provider — the Subscribe button will be wired to a placeholder that can be swapped in later
-- The `DashboardTab` type changes from `"explore" | "favorites" | "categories" | "submissions"` to `"explore" | "favorites" | "categories" | "fresh"`
+- **Recommendation algorithm**: Start simple — tools from followed categories not yet favorited, weighted by `isNew` + `stars`. No database changes needed; all computed client-side from existing `tools` array and `profile` data.
+- **"Why this?" tags**: Generated from matching logic — if tool.category matches a followed category, show "Matches your [category] stack"; if `isNew`, show "New this week".
+- **Weekly digest**: Reuses `useFreshTools` or filters `tools` by `isNew` flag. No new edge function needed.
+- **Right sidebar AI input**: Wired to existing `useAISearch` hook with `discoverTools()`.
+- **Mobile**: Top nav collapses to a bottom tab bar (similar pattern to current but with new tab set). Right sidebar hidden; its features accessible inline in the Home feed.
+- **No database migrations required** — all personalization is derived from existing `profiles.favorites` and `profiles.followed_categories`.
 
