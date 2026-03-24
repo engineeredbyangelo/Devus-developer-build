@@ -75,26 +75,7 @@ export function useWeeklyTools() {
         const freshTools = functionData.tools as WeeklyTool[];
         setTools(freshTools);
 
-        // Cache the results - use type assertion for JSONB field
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const cacheData: any = {
-            week_start_date: weekStartStr,
-            tools_data: freshTools,
-          };
-          
-          const { error: upsertError } = await supabase
-            .from("weekly_tools_cache")
-            .upsert(cacheData, { onConflict: "week_start_date" });
-          
-          if (upsertError) {
-            console.warn("Failed to cache weekly tools:", upsertError);
-          } else {
-            console.log("Cached weekly tools successfully");
-          }
-        } catch (cacheWriteError) {
-          console.warn("Failed to cache weekly tools:", cacheWriteError);
-        }
+        // Cache is now handled server-side by the edge function
       } catch (err) {
         console.error("Error fetching weekly tools:", err);
         setError(err instanceof Error ? err.message : "Failed to load weekly tools");

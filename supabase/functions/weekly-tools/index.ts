@@ -1,3 +1,5 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
@@ -139,6 +141,30 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Authenticate the request
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const perplexityKey = Deno.env.get('PERPLEXITY_API_KEY');
     const lovableKey = Deno.env.get('LOVABLE_API_KEY');
 
@@ -162,7 +188,6 @@ Deno.serve(async (req) => {
     const uniqueTools = deduplicateTools(discoveredTools);
     console.log(`${uniqueTools.length} unique tools after dedup`);
 
-    // Take top 5 and enrich with Gemini
     const top5 = uniqueTools.slice(0, 5);
     const enrichedTools: WeeklyTool[] = [];
 
@@ -233,7 +258,7 @@ Respond with ONLY a valid JSON object (no markdown, no code blocks):
           techStackFit: parsed.techStackFit || [],
           learningCurve: parsed.learningCurve || 'medium',
           communityActivity: parsed.communityActivity || 'active',
-          source: 'firecrawl', // keep compatible with existing type
+          source: 'firecrawl',
         });
 
         console.log('Enriched tool:', candidate.name);
@@ -257,6 +282,30 @@ Respond with ONLY a valid JSON object (no markdown, no code blocks):
 
     console.log(`Returning ${enrichedTools.length} enriched weekly tools`);
 
+    // Cache results server-side using service role key (bypasses RLS)
+    try {
+      const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      if (serviceRoleKey) {
+        const adminClient = createClient(
+          Deno.env.get('SUPABASE_URL')!,
+          serviceRoleKey
+        );
+        const weekStart = new Date();
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1); // Monday
+        const weekStartStr = weekStart.toISOString().split('T')[0];
+        
+        await adminClient
+          .from('weekly_tools_cache')
+          .upsert(
+            { week_start_date: weekStartStr, tools_data: enrichedTools },
+            { onConflict: 'week_start_date' }
+          );
+        console.log('Cached weekly tools server-side');
+      }
+    } catch (cacheErr) {
+      console.error('Failed to cache weekly tools:', cacheErr);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -268,7 +317,7 @@ Respond with ONLY a valid JSON object (no markdown, no code blocks):
   } catch (error) {
     console.error('Error fetching weekly tools:', error);
     return new Response(
-      JSON.stringify({ success: false, error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ success: false, error: 'Failed to fetch weekly tools' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

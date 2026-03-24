@@ -1,3 +1,5 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
@@ -56,24 +58,20 @@ const prioritySites = [
 
 // Extract clean tool name from URL and title
 function extractToolName(url: string, title: string): string {
-  // For GitHub repos: extract repo name and format it nicely
   if (url.includes('github.com')) {
     const repoMatch = url.match(/github\.com\/[\w-]+\/([\w-]+)/);
     if (repoMatch) {
       const repoName = repoMatch[1];
-      // Convert repo-name to "Repo Name"
       return repoName
         .replace(/-/g, ' ')
         .replace(/\b\w/g, c => c.toUpperCase());
     }
   }
   
-  // For Product Hunt: extract product name before tagline
   if (url.includes('producthunt.com')) {
     return title.split(' - ')[0].split(' | ')[0].split(':')[0].trim();
   }
   
-  // For npm packages
   if (url.includes('npmjs.com')) {
     const pkgMatch = url.match(/npmjs\.com\/package\/([@\w-]+(?:\/[\w-]+)?)/);
     if (pkgMatch) {
@@ -82,30 +80,23 @@ function extractToolName(url: string, title: string): string {
     }
   }
   
-  // Default: clean up title
   return title
     .split(' - ')[0]
     .split(' | ')[0]
     .split(':')[0]
-    .replace(/^\d+\.\s*/, '') // Remove leading numbers like "1. "
+    .replace(/^\d+\.\s*/, '')
     .trim()
     .slice(0, 50);
 }
 
-// Check if URL should be skipped
 function shouldSkipUrl(url: string): boolean {
   const lowerUrl = url.toLowerCase();
-  
-  // Check domain blocklist
   if (skipDomains.some(domain => lowerUrl.includes(domain))) {
     return true;
   }
-  
-  // Check URL patterns
   if (skipPatterns.some(pattern => lowerUrl.includes(pattern))) {
     return true;
   }
-  
   return false;
 }
 
@@ -115,6 +106,30 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Authenticate the request
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { category, tags, searchQuery } = await req.json() as SearchRequest;
 
     const apiKey = Deno.env.get('FIRECRAWL_API_KEY');
@@ -126,7 +141,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Build a search query targeting actual tool sources
     const siteQuery = prioritySites.map(s => `site:${s}`).join(' OR ');
     
     const filterParts: string[] = [];
@@ -140,14 +154,11 @@ Deno.serve(async (req) => {
       filterParts.push(searchQuery);
     }
     
-    // Target actual developer/programming tools, not articles
     const filterString = filterParts.join(' ');
-    // More specific query focused on coding/programming tools
     const toolTerms = 'developer tool OR programming tool OR coding tool OR CLI OR SDK OR framework OR library';
     const finalQuery = `(${siteQuery}) ${filterString} (${toolTerms}) -"best tools" -"top tools" -"list of"`;
     console.log('Searching for:', finalQuery);
 
-    // Use Firecrawl's search API
     const response = await fetch('https://api.firecrawl.dev/v1/search', {
       method: 'POST',
       headers: {
@@ -156,7 +167,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         query: finalQuery,
-        limit: 15, // Request more since we'll filter some out
+        limit: 15,
         scrapeOptions: {
           formats: ['markdown'],
         },
@@ -168,38 +179,25 @@ Deno.serve(async (req) => {
     if (!response.ok) {
       console.error('Firecrawl API error:', data);
       return new Response(
-        JSON.stringify({ success: false, error: data.error || `Request failed with status ${response.status}` }),
+        JSON.stringify({ success: false, error: 'Search service error' }),
         { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Parse results into DiscoveredTool format with aggressive filtering
     const discoveredTools: DiscoveredTool[] = [];
     const results = data.data || [];
     const seenNames = new Set<string>();
     
     for (const result of results) {
       if (!result.url || !result.title) continue;
+      if (shouldSkipUrl(result.url)) continue;
       
-      // Skip unwanted URLs
-      if (shouldSkipUrl(result.url)) {
-        console.log('Skipping:', result.url);
-        continue;
-      }
-      
-      // Extract clean tool name
       const toolName = extractToolName(result.url, result.title);
-      
-      // Skip duplicates (same name)
       const normalizedName = toolName.toLowerCase();
       if (seenNames.has(normalizedName)) continue;
       seenNames.add(normalizedName);
       
-      // Skip if name looks like an article title (too many words)
-      if (toolName.split(' ').length > 5) {
-        console.log('Skipping article-like title:', toolName);
-        continue;
-      }
+      if (toolName.split(' ').length > 5) continue;
       
       const tool: DiscoveredTool = {
         id: crypto.randomUUID(),
@@ -214,8 +212,6 @@ Deno.serve(async (req) => {
       };
       
       discoveredTools.push(tool);
-      
-      // Limit to 8 quality results
       if (discoveredTools.length >= 8) break;
     }
 
@@ -231,9 +227,8 @@ Deno.serve(async (req) => {
     );
   } catch (error) {
     console.error('Error searching tools:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Failed to search tools';
     return new Response(
-      JSON.stringify({ success: false, error: errorMessage }),
+      JSON.stringify({ success: false, error: 'Failed to search tools' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
