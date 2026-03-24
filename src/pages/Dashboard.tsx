@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { DashboardTopNav, DashboardTab } from "@/components/dashboard/DashboardTopNav";
 import { DashboardToolCard } from "@/components/dashboard/DashboardToolCard";
+import { ToolCardVisual } from "@/components/dashboard/ToolCardVisual";
 import { ToolHeroView } from "@/components/dashboard/ToolHeroView";
 import { AIAssistantWidget } from "@/components/dashboard/AIAssistantWidget";
 import { AIDiscoveredTools } from "@/components/AIDiscoveredTools";
@@ -243,17 +244,17 @@ const Dashboard = () => {
                           {displayedFreshTools.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                               {displayedFreshTools.slice(0, 4).map((tool) => (
-                                <div key={tool.id} className="glass glass-hover rounded-2xl p-3 sm:p-4 cursor-pointer">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                                      <Zap className="w-4 h-4 text-primary" />
+                                <div key={tool.id} className="glass glass-hover rounded-2xl overflow-hidden cursor-pointer">
+                                  <ToolCardVisual tool={tool as any} size="md" className="h-20" />
+                                  <div className="p-3">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <div className="min-w-0">
+                                        <h4 className="text-sm font-semibold text-foreground truncate">{tool.name}</h4>
+                                        <span className="text-[10px] text-primary">Just discovered</span>
+                                      </div>
                                     </div>
-                                    <div className="min-w-0">
-                                      <h4 className="text-sm font-semibold text-foreground truncate">{tool.name}</h4>
-                                      <span className="text-[10px] text-primary">Just discovered</span>
-                                    </div>
+                                    <p className="text-xs text-muted-foreground line-clamp-2">{tool.description}</p>
                                   </div>
-                                  <p className="text-xs text-muted-foreground line-clamp-2">{tool.description}</p>
                                 </div>
                               ))}
                             </div>
@@ -323,40 +324,32 @@ const Dashboard = () => {
                           <h2 className="text-lg font-semibold text-foreground">Tool of the Day</h2>
                         </div>
                         <motion.div
-                          className="glass rounded-2xl p-5 sm:p-6 cursor-pointer hover:border-primary/30 transition-all"
+                          className="glass rounded-2xl overflow-hidden cursor-pointer hover:border-primary/30 transition-all"
                           whileHover={{ y: -2 }}
                           onClick={() => setSelectedTool(toolOfTheDay.tool)}
                         >
-                          <div className="flex flex-col sm:flex-row gap-4">
-                            <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 text-lg font-bold text-primary">
-                              {toolOfTheDay.tool.logoUrl ? (
-                                <img src={toolOfTheDay.tool.logoUrl} alt={toolOfTheDay.tool.name} className="w-10 h-10 rounded-lg object-contain" />
-                              ) : (
-                                toolOfTheDay.tool.name.charAt(0)
-                              )}
+                          <ToolCardVisual tool={toolOfTheDay.tool} size="lg" />
+                          <div className="p-5 sm:p-6">
+                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                              <h3 className="text-lg font-semibold text-foreground">{toolOfTheDay.tool.name}</h3>
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                                {toolOfTheDay.reason}
+                              </span>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap mb-1">
-                                <h3 className="text-lg font-semibold text-foreground">{toolOfTheDay.tool.name}</h3>
-                                <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
-                                  {toolOfTheDay.reason}
-                                </span>
-                              </div>
-                              <p className="text-sm text-muted-foreground line-clamp-2 sm:line-clamp-3">
-                                {toolOfTheDay.tool.description}
-                              </p>
-                              <Button
-                                size="sm"
-                                className="mt-3"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedTool(toolOfTheDay.tool);
-                                }}
-                              >
-                                View Details
-                                <ChevronRight className="w-4 h-4 ml-1" />
-                              </Button>
-                            </div>
+                            <p className="text-sm text-muted-foreground line-clamp-2 sm:line-clamp-3">
+                              {toolOfTheDay.tool.description}
+                            </p>
+                            <Button
+                              size="sm"
+                              className="mt-3"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedTool(toolOfTheDay.tool);
+                              }}
+                            >
+                              View Details
+                              <ChevronRight className="w-4 h-4 ml-1" />
+                            </Button>
                           </div>
                         </motion.div>
                       </section>
