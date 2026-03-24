@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Lightbulb, ChevronRight } from "lucide-react";
+import { Lightbulb } from "lucide-react";
 import { DashboardToolCard } from "./DashboardToolCard";
 import { Tool } from "@/lib/types";
 
@@ -13,7 +13,6 @@ interface RecommendedSectionProps {
   isFavorite: (toolId: string) => boolean;
   onToggleFavorite: (toolId: string) => void;
   onToolClick: (tool: Tool) => void;
-  onSeeAll: () => void;
 }
 
 export function RecommendedSection({
@@ -21,23 +20,14 @@ export function RecommendedSection({
   isFavorite,
   onToggleFavorite,
   onToolClick,
-  onSeeAll,
 }: RecommendedSectionProps) {
   if (recommendations.length === 0) return null;
 
   return (
     <section className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Lightbulb className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-semibold text-foreground">Recommended for You</h2>
-        </div>
-        <button
-          onClick={onSeeAll}
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors"
-        >
-          See all <ChevronRight className="w-4 h-4" />
-        </button>
+      <div className="flex items-center gap-2">
+        <Lightbulb className="w-5 h-5 text-primary" />
+        <h2 className="text-lg font-semibold text-foreground">Recommended for You</h2>
       </div>
 
       <motion.div

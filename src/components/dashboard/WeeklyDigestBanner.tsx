@@ -1,23 +1,20 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Sparkles, ArrowRight } from "lucide-react";
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { X, Sparkles } from "lucide-react";
 import { Tool } from "@/lib/types";
 import { tools } from "@/lib/data";
-import { Button } from "@/components/ui/button";
 
 interface WeeklyDigestBannerProps {
   followedCategories: string[];
-  onBrowse: () => void;
   onToolClick: (tool: Tool) => void;
 }
 
 const DISMISS_KEY = "devus-weekly-digest-dismissed";
 
-export function WeeklyDigestBanner({ followedCategories, onBrowse, onToolClick }: WeeklyDigestBannerProps) {
+export function WeeklyDigestBanner({ followedCategories, onToolClick }: WeeklyDigestBannerProps) {
   const [dismissed, setDismissed] = useState(() => {
     const stored = localStorage.getItem(DISMISS_KEY);
     if (!stored) return false;
-    // Reset weekly
     const dismissedAt = new Date(stored);
     const now = new Date();
     const daysSince = (now.getTime() - dismissedAt.getTime()) / (1000 * 60 * 60 * 24);
@@ -47,7 +44,6 @@ export function WeeklyDigestBanner({ followedCategories, onBrowse, onToolClick }
       exit={{ opacity: 0, y: -20 }}
       className="relative glass rounded-2xl p-6 overflow-hidden"
     >
-      {/* Glow accent */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
       <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
 
@@ -66,15 +62,11 @@ export function WeeklyDigestBanner({ followedCategories, onBrowse, onToolClick }
             <span className="text-sm text-muted-foreground">•</span>
             <span className="text-sm text-muted-foreground">{newTools.length} new high-signal tools</span>
           </div>
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-sm text-muted-foreground">
             Curated for developers who follow {catNames}
           </p>
-          <Button onClick={onBrowse} size="sm" className="glow-sm">
-            Browse This Week's Picks <ArrowRight className="w-4 h-4 ml-1" />
-          </Button>
         </div>
 
-        {/* Mini tool cards */}
         <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
           {newTools.map((tool) => (
             <button
