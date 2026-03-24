@@ -1,74 +1,103 @@
 
 
-# Elevate Card Visuals — Abstract Immersive System
+# Revamp Landing Page to Reflect New Product Direction
 
-## Problem
-Current visuals are flat: a simple gradient with a faint repeating SVG pattern and a single watermark letter. They look templated and generic — every card feels the same.
+## What's Changing
 
-## New Approach: Layered Abstract Compositions
+The landing page currently describes a generic "discover dev tools" pitch. The product has evolved into a personalized dashboard with a Profile tab, Tool of the Day, AI assistant, abstract immersive visuals, and a streamlined 4-tab navigation (Home / Profile / Categories / Settings). The landing page needs to reflect this.
 
-Replace the current single-gradient-plus-pattern with a **multi-layer generative composition** per card. Each visual becomes a unique abstract artwork seeded by the tool name, with category providing the color DNA.
+## Section-by-Section Changes
 
-### Visual Layers (bottom to top)
-1. **Deep gradient base** — two-tone radial gradient positioned off-center (not the standard top-left-to-bottom-right)
-2. **Geometric field** — larger, fewer, more intentional shapes: overlapping circles, intersecting arcs, floating rectangles with rounded corners, or diagonal slashes — not tiny repeating tiles
-3. **Accent glow** — a soft radial light bloom at a seeded position, simulating depth/focus
-4. **Noise grain texture** — subtle CSS noise overlay for analog warmth
-5. **Bottom fade** — blends into the card background
+### 1. Hero — `src/components/LandingHero.tsx`
+- Update headline: "Your personalized developer toolkit" (not just "discover tools")
+- Update subtitle to emphasize personalization, AI assistant, curated weekly drops
+- Update the 3 feature highlight cards:
+  - "Personalized Feed" — tools matched to your stack
+  - "AI-Powered Search" — Ask Devus anything
+  - "Weekly Drops" — fresh tools delivered weekly
+- Keep the HeroNexusAnimation on the right (it still fits)
 
-### Category Visual DNA (richer palettes)
-Each category gets a **3-color system** and a distinct geometric language:
-- **Frontend**: Cyan/Electric Blue/White — intersecting arcs and circles (component trees)
-- **Backend**: Deep Purple/Violet/Indigo — stacked rectangles and connecting lines (architecture)
-- **AI/ML**: Magenta/Pink/Warm White — concentric rings and scattered dots (neural patterns)
-- **Database**: Emerald/Teal/Mint — grid blocks with varying opacity (data tables)
-- **DevOps**: Amber/Orange/Gold — flowing curves and arrows (pipelines)
-- **Testing**: Coral/Red-Orange/Peach — checkmark-derived angular shapes
-- **Mobile**: Sky Blue/Cobalt/Light Blue — rounded rectangles (device frames)
-- **Security**: Crimson/Dark Red/Rose — hexagonal tessellation (shields)
-- **Productivity**: Lime/Yellow-Green/Chartreuse — lightning-bolt diagonals
+### 2. Why Devus Section — `src/components/WhyDevusSection.tsx`
+- Keep the 3 stat cards (tool overload, consolidation, augment) — still relevant
+- **Rebuild the MobileAppPreview** to accurately mirror the current dashboard:
+  - Show the actual tab bar: Home / Profile / Categories / Settings icons
+  - Show a "Tool of the Day" card with an abstract gradient visual (using the immersive system colors)
+  - Show a "Recommended" section with 2 mini tool cards featuring gradient thumbnails
+  - Show the "Ask Devus" input bar
+  - Remove the old generic search + category pills + plain tool cards
+- Update the feature list text to match current features:
+  - "Personalized Feed" (replaces Smart Discovery)
+  - "Tool of the Day" (replaces Save & Organize)
+  - "Ask Devus AI" (replaces Deep Insights)
+  - "Category Following" (replaces Smart Filters)
+  - "Profile & Favorites" (replaces Instant Access)
 
-### What Makes Each Card Unique
-The tool name hash controls:
-- Gradient center position (x, y offset)
-- Number of geometric shapes (3–7)
-- Shape positions, sizes, rotations, and opacity
-- Accent glow position and radius
-- Overall composition rotation
+### 3. Features Section — `src/components/FeaturesSection.tsx`
+- Update the 4 feature rows to reflect actual product capabilities:
+  1. **Personalized Recommendations** — tools matched to your followed categories (replaces Weekly Tool Drops as the lead feature)
+  2. **Ask Devus AI** — inline AI assistant for tool comparisons and discovery (replaces Direct Links)
+  3. **Immersive Tool Cards** — unique generative artwork for every tool (replaces GitHub Access)
+  4. **Smart Filtering** — stays, but update copy to mention category following
+- Update the visual animations for each row to better represent the new features
 
-This means two "frontend" tools will share the cyan palette but have completely different compositions.
+### 4. Tool Stack Showcase — `src/components/ToolStackShowcase.tsx`
+- Minor copy updates only: mention "personalized" experience
+- The interactive category explorer is still relevant
+
+### 5. Demo Preview — `src/components/DemoPreview.tsx`
+- Update header copy: "Preview Your Dashboard" instead of "Try It Out"
+- The ToolCard grid already uses the immersive visuals, so this stays mostly the same
+
+### 6. Benefits/Pricing — `src/components/BenefitsSection.tsx`
+- Update feature list to include: Tool of the Day, Ask Devus AI, Immersive Visuals, Profile page
+- Remove or update any features that no longer exist (e.g., "Community voting" if removed)
+
+### 7. Footer — `src/pages/Index.tsx`
+- No changes needed
 
 ## Files to Modify
 
-### `src/lib/tool-visuals.ts` — Complete rewrite
-- Replace simple patterns with a `generateComposition(tool)` function that returns an array of SVG elements (circles, rects, arcs, lines) with computed positions/sizes/opacities
-- Each shape is larger and more intentional (20–60% of canvas, not tiny 2px dots)
-- Add noise texture CSS generation
-- Richer 3-color palettes per category
+| File | Scope |
+|------|-------|
+| `src/components/LandingHero.tsx` | Update headline, subtitle, feature cards |
+| `src/components/WhyDevusSection.tsx` | Rebuild `MobileAppPreview` to mirror actual dashboard; update feature list |
+| `src/components/FeaturesSection.tsx` | Update 4 feature rows with new titles, descriptions, benefits, and visuals |
+| `src/components/DemoPreview.tsx` | Update header copy |
+| `src/components/BenefitsSection.tsx` | Update tier feature lists |
 
-### `src/components/dashboard/ToolCardVisual.tsx` — Richer rendering
-- Render the composition as layered absolutely-positioned divs with SVG shapes
-- Add radial accent glow (`radial-gradient` at seeded position)
-- Add CSS noise grain overlay (using a tiny inline SVG `feTurbulence` filter)
-- Keep screenshot path unchanged (real screenshots still win when available)
-- Smooth animated shimmer on hover for interactivity
+## MobileAppPreview Rebuild Detail
 
-### `src/components/dashboard/DashboardToolCard.tsx` — Minor
-- Increase banner height slightly for more visual breathing room: `md` → `h-28 sm:h-32`
+The phone mockup is the most important visual change. New layout inside the phone frame:
 
-### `src/components/ToolCard.tsx` — Minor
-- Same height increase for the `ToolCard` banner
+```text
+┌─────────────────────┐
+│  Devus        [avatar]│  ← header with logo + user
+├─────────────────────┤
+│ ⭐ Tool of the Day   │
+│ ┌─────────────────┐ │
+│ │▓▓▓gradient▓▓▓▓▓│ │  ← abstract visual banner
+│ │ Tool Name       │ │
+│ │ "Matched to you"│ │
+│ └─────────────────┘ │
+│                     │
+│ 💡 Recommended      │
+│ ┌────┐ ┌────┐      │
+│ │grad│ │grad│      │  ← mini cards with gradient thumbs
+│ │name│ │name│      │
+│ └────┘ └────┘      │
+│                     │
+│ 💬 Ask Devus...     │  ← input bar
+├─────────────────────┤
+│ 🏠  👤  📁  ⚙️     │  ← 4-tab bottom nav
+└─────────────────────┘
+```
 
-## Technical Details
+The gradient visuals inside the phone use the same category color palettes from `tool-visuals.ts` (cyan for frontend, purple for backend, etc.) rendered as simple CSS gradients to suggest the immersive system.
 
-The composition SVG is generated as a single inline `<svg>` with:
-- 3–7 shapes per card (mix of `<circle>`, `<rect rx>`, `<path>` arcs)
-- Shapes use the category's 3-color palette at varying opacities (0.05–0.25)
-- Shapes overlap deliberately for depth
-- A `<radialGradient>` for the accent glow baked into the SVG
+## Technical Notes
 
-No external assets needed — everything is procedurally generated from the tool name + category. The result looks like a unique piece of generative art on each card.
-
-## Mobile
-No layout changes needed — the visual component is already responsive. The richer compositions work at all sizes since they use relative positioning within the container.
+- No new files or components needed
+- No database changes
+- All changes are copy + layout updates to existing components
+- The MobileAppPreview uses hardcoded mini-gradients (not the full SVG generator) to keep the phone mockup lightweight
 
