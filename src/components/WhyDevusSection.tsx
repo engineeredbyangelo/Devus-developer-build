@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Lightbulb, Layers, TrendingUp, GitBranch, Smartphone, Search, Bookmark, Zap, BarChart3, Filter } from "lucide-react";
+import { Lightbulb, Layers, TrendingUp, GitBranch, Smartphone, Bot, Star, Heart, Settings, User, Home } from "lucide-react";
 
 interface WhyCard {
   id: string;
@@ -45,11 +45,11 @@ interface MobileFeature {
 }
 
 const mobileFeatures: MobileFeature[] = [
-  { id: "discover", icon: Search, title: "Smart Discovery", description: "Curated weekly drops deliver the latest tools to your dashboard" },
-  { id: "save", icon: Bookmark, title: "Save & Organize", description: "Bookmark favorites and build your personal toolkit" },
-  { id: "compare", icon: BarChart3, title: "Deep Insights", description: "Compare learning curves, community activity & tech fit" },
-  { id: "filter", icon: Filter, title: "Smart Filters", description: "Filter by category, tags, and compatibility" },
-  { id: "instant", icon: Zap, title: "Instant Access", description: "Direct links to docs, GitHub repos, and live demos" },
+  { id: "feed", icon: Layers, title: "Personalized Feed", description: "Tools matched to your followed categories and tech stack" },
+  { id: "totd", icon: Star, title: "Tool of the Day", description: "A daily hand-picked tool recommendation just for you" },
+  { id: "ask", icon: Bot, title: "Ask Devus AI", description: "Compare tools, find alternatives, check compatibility instantly" },
+  { id: "categories", icon: Layers, title: "Category Following", description: "Follow categories and get recommendations tailored to your interests" },
+  { id: "profile", icon: Heart, title: "Profile & Favorites", description: "Build your personal toolkit and track your favorite tools" },
 ];
 
 function GlassCard({ card, index }: { card: WhyCard; index: number }) {
@@ -118,84 +118,112 @@ function MobileAppPreview() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-6 bg-background rounded-b-2xl z-20 border-b border-x border-border/40" />
 
         {/* Screen content */}
-        <div className="relative h-full pt-8 pb-4 px-3 flex flex-col">
+        <div className="relative h-full pt-8 pb-0 px-3 flex flex-col">
           {/* Header bar */}
           <div className="flex items-center justify-between px-2 mb-3">
             <div className="flex items-center gap-1.5">
               <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
-                <Zap className="w-3 h-3 text-primary" />
+                <Star className="w-3 h-3 text-primary" />
               </div>
               <span className="text-[10px] font-bold text-foreground">
                 Dev<span className="text-primary">us</span>
               </span>
             </div>
-            <div className="flex gap-1">
-              <div className="w-6 h-6 rounded-full bg-secondary/60 flex items-center justify-center">
-                <Search className="w-3 h-3 text-muted-foreground" />
-              </div>
+            <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+              <User className="w-3 h-3 text-primary" />
             </div>
           </div>
 
-          {/* Search bar */}
-          <div className="mx-1 mb-3 h-7 rounded-lg bg-secondary/50 border border-border/30 flex items-center px-2 gap-1.5">
-            <Search className="w-3 h-3 text-muted-foreground" />
-            <span className="text-[9px] text-muted-foreground">Search 65+ dev tools...</span>
-          </div>
-
-          {/* Category pills */}
-          <div className="flex gap-1.5 mb-3 px-1 overflow-hidden">
-            {["All", "AI/ML", "Frontend", "Backend"].map((cat, i) => (
+          {/* Tool of the Day */}
+          <div className="mx-1 mb-3">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <Star className="w-3 h-3 text-primary" />
+              <span className="text-[9px] font-semibold text-foreground">Tool of the Day</span>
+            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+              className="rounded-xl border border-border/40 bg-card/60 overflow-hidden"
+            >
+              {/* Abstract gradient visual banner */}
               <div
-                key={cat}
-                className={`shrink-0 px-2.5 py-1 rounded-full text-[8px] font-medium border ${
-                  i === 0
-                    ? "bg-primary/20 border-primary/40 text-primary"
-                    : "bg-secondary/40 border-border/30 text-muted-foreground"
-                }`}
+                className="h-16 w-full relative overflow-hidden"
+                style={{
+                  background: "linear-gradient(135deg, hsl(190 90% 50% / 0.3), hsl(210 80% 60% / 0.2), hsl(250 70% 55% / 0.15))",
+                }}
               >
-                {cat}
+                {/* Decorative shapes */}
+                <div className="absolute top-2 right-4 w-10 h-10 rounded-full border border-white/10" />
+                <div className="absolute bottom-1 left-6 w-6 h-6 rounded-lg bg-white/5 rotate-12" />
+                <div className="absolute top-3 left-1/3 w-14 h-[2px] bg-white/10 rotate-[-20deg]" />
               </div>
-            ))}
+              <div className="p-2">
+                <div className="text-[10px] font-semibold text-foreground">Vite 6.0</div>
+                <div className="text-[8px] text-muted-foreground">Matched to your stack</div>
+              </div>
+            </motion.div>
           </div>
 
-          {/* Tool cards */}
-          <div className="flex-1 space-y-2 px-1 overflow-hidden">
-            {[
-              { name: "Claude Opus 4.6", cat: "AI/ML", color: "hsl(var(--primary))" },
-              { name: "Codex 5.3", cat: "AI/ML", color: "hsl(320 100% 60%)" },
-              { name: "Cursor", cat: "IDE", color: "hsl(60 100% 50%)" },
-            ].map((tool, i) => (
-              <motion.div
-                key={tool.name}
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.4 + i * 0.15 }}
-                className="rounded-xl border border-border/40 bg-card/60 p-2.5 flex items-start gap-2"
-              >
-                <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0"
-                  style={{ background: `${tool.color}20`, color: tool.color }}
+          {/* Recommended Section */}
+          <div className="mx-1 mb-3 flex-1">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <Layers className="w-3 h-3 text-primary" />
+              <span className="text-[9px] font-semibold text-foreground">Recommended</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { name: "Prisma ORM", gradient: "linear-gradient(135deg, hsl(270 70% 50% / 0.3), hsl(290 60% 45% / 0.2))", cat: "Backend" },
+                { name: "Playwright", gradient: "linear-gradient(135deg, hsl(10 80% 55% / 0.3), hsl(25 70% 50% / 0.2))", cat: "Testing" },
+              ].map((tool, i) => (
+                <motion.div
+                  key={tool.name}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.5 + i * 0.1 }}
+                  className="rounded-lg border border-border/40 bg-card/60 overflow-hidden"
                 >
-                  {tool.name.charAt(0)}
-                </div>
-                <div className="min-w-0">
-                  <div className="text-[10px] font-semibold text-foreground truncate">{tool.name}</div>
-                  <div className="text-[8px] text-muted-foreground">{tool.cat}</div>
-                  <div className="flex gap-1 mt-1">
-                    <span className="px-1.5 py-0.5 rounded text-[7px] bg-primary/10 text-primary">New</span>
-                    <span className="px-1.5 py-0.5 rounded text-[7px] bg-secondary text-muted-foreground">API</span>
+                  <div
+                    className="h-10 w-full relative overflow-hidden"
+                    style={{ background: tool.gradient }}
+                  >
+                    <div className="absolute top-1 right-2 w-5 h-5 rounded-full border border-white/10" />
+                    <div className="absolute bottom-1 left-2 w-3 h-3 rounded bg-white/5 rotate-6" />
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                  <div className="p-1.5">
+                    <div className="text-[9px] font-semibold text-foreground truncate">{tool.name}</div>
+                    <div className="text-[7px] text-muted-foreground">{tool.cat}</div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
 
-          {/* Bottom nav */}
-          <div className="flex items-center justify-around pt-2 mt-1 border-t border-border/30">
-            {[Search, Bookmark, Layers, Smartphone].map((Icon, i) => (
-              <div key={i} className={`p-1.5 rounded-lg ${i === 0 ? "bg-primary/10" : ""}`}>
-                <Icon className={`w-3.5 h-3.5 ${i === 0 ? "text-primary" : "text-muted-foreground"}`} />
+          {/* Ask Devus input bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.7 }}
+            className="mx-1 mb-2 h-8 rounded-lg bg-secondary/50 border border-border/30 flex items-center px-2.5 gap-1.5"
+          >
+            <Bot className="w-3 h-3 text-primary" />
+            <span className="text-[9px] text-muted-foreground">Ask Devus anything...</span>
+          </motion.div>
+
+          {/* Bottom nav — 4 tabs */}
+          <div className="flex items-center justify-around py-2 mt-auto border-t border-border/30">
+            {[
+              { icon: Home, label: "Home", active: true },
+              { icon: User, label: "Profile", active: false },
+              { icon: Layers, label: "Categories", active: false },
+              { icon: Settings, label: "Settings", active: false },
+            ].map((tab) => (
+              <div key={tab.label} className={`flex flex-col items-center gap-0.5 p-1 rounded-lg ${tab.active ? "bg-primary/10" : ""}`}>
+                <tab.icon className={`w-3.5 h-3.5 ${tab.active ? "text-primary" : "text-muted-foreground"}`} />
+                <span className={`text-[7px] ${tab.active ? "text-primary font-medium" : "text-muted-foreground"}`}>{tab.label}</span>
               </div>
             ))}
           </div>
@@ -280,7 +308,7 @@ export function WhyDevusSection() {
               className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4"
             >
               Your toolkit,{" "}
-              <span className="text-primary glow-text">anywhere</span>
+              <span className="text-primary glow-text">personalized</span>
             </motion.h3>
 
             <motion.p
@@ -290,7 +318,7 @@ export function WhyDevusSection() {
               transition={{ delay: 0.15 }}
               className="text-muted-foreground text-base md:text-lg mb-8 max-w-lg"
             >
-              Discover, compare, and bookmark developer tools on-the-go with a responsive mobile experience.
+              A personalized dashboard that learns your preferences, recommends tools matched to your stack, and keeps you ahead with weekly drops.
             </motion.p>
 
             <div className="space-y-4">

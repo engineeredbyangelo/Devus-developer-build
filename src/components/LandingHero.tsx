@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles, Zap, Shield, Users } from "lucide-react";
+import { ArrowRight, Sparkles, Bot, Star, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ActivityTicker } from "./ActivityTicker";
 import { HeroNexusAnimation } from "./HeroNexusAnimation";
@@ -36,9 +36,9 @@ export function LandingHero({ onGetStarted }: LandingHeroProps) {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="mt-6 md:mt-8 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight"
             >
-              Discover the best
+              Your personalized
               <br />
-              <span className="text-primary glow-text">developer tools</span>
+              <span className="text-primary glow-text">developer toolkit</span>
             </motion.h1>
 
             {/* Subheadline */}
@@ -48,8 +48,8 @@ export function LandingHero({ onGetStarted }: LandingHeroProps) {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="mt-4 md:mt-6 text-base sm:text-lg md:text-xl text-muted-foreground max-w-xl"
             >
-              A curated collection of frameworks, libraries, and tools to supercharge 
-              your development workflow. Stop doom-scrolling, start building.
+              Tools matched to your stack, an AI assistant to guide your choices, 
+              and fresh curated drops every week. Your workflow, supercharged.
             </motion.p>
 
             {/* CTA buttons */}
@@ -88,9 +88,9 @@ export function LandingHero({ onGetStarted }: LandingHeroProps) {
               className="mt-8 md:mt-12 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4"
             >
               {[
-                { icon: Zap, label: "65+ Curated Tools", desc: "Hand-picked for quality" },
-                { icon: Shield, label: "Honest Reviews", desc: "Pros, cons, alternatives" },
-                { icon: Users, label: "Community Driven", desc: "Vote & submit tools" },
+                { icon: Layers, label: "Personalized Feed", desc: "Tools matched to your stack" },
+                { icon: Bot, label: "AI-Powered Search", desc: "Ask Devus anything" },
+                { icon: Star, label: "Weekly Drops", desc: "Fresh tools every week" },
               ].map((feature, i) => (
                 <motion.div
                   key={feature.label}
@@ -120,7 +120,6 @@ export function LandingHero({ onGetStarted }: LandingHeroProps) {
           </motion.div>
         </div>
       </div>
-
     </section>
   );
 }

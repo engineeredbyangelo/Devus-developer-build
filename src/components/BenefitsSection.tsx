@@ -1,7 +1,5 @@
 import { motion } from "framer-motion";
 import { 
-  Search, 
-  PlusCircle, 
   Zap,
   ArrowRight,
   CheckCircle,
@@ -20,10 +18,11 @@ interface TierFeature {
 
 const features: TierFeature[] = [
   { name: "Full tool directory access", free: true, pro: true },
-  { name: "Category & tag filtering", free: true, pro: true },
-  { name: "Direct links & GitHub access", free: true, pro: true },
-  { name: "Personal favorites collection", free: true, pro: true },
-  { name: "Weekly new tool updates", free: true, pro: true },
+  { name: "Category following & filtering", free: true, pro: true },
+  { name: "Personalized recommendations", free: true, pro: true },
+  { name: "Profile & favorites collection", free: true, pro: true },
+  { name: "Tool of the Day", free: true, pro: true },
+  { name: "Ask Devus AI assistant", free: false, pro: true },
   { name: "Fresh Finds (AI discovery)", free: false, pro: true },
   { name: "Weekly new tool alerts", free: false, pro: true },
   { name: "Early access to new tools", free: false, pro: true },
@@ -37,11 +36,9 @@ interface BenefitsSectionProps {
 export function BenefitsSection({ onSignUp }: BenefitsSectionProps) {
   return (
     <section id="pricing" className="py-20 relative overflow-hidden border-t border-border/30">
-      {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-t from-primary/5 via-transparent to-transparent pointer-events-none" />
       
       <div className="container relative">
-        {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -56,11 +53,10 @@ export function BenefitsSection({ onSignUp }: BenefitsSectionProps) {
             Start Free, Upgrade When Ready
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Get started with full access to our tool directory. Upgrade to Pro for weekly alerts, early access, and tool submissions.
+            Get started with your personalized toolkit for free. Upgrade to Pro for AI-powered discovery and priority features.
           </p>
         </motion.div>
 
-        {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-12">
           {/* Free Tier */}
           <motion.div
@@ -115,7 +111,6 @@ export function BenefitsSection({ onSignUp }: BenefitsSectionProps) {
             transition={{ delay: 0.2 }}
           >
             <Card className="h-full glass glass-hover border-primary/30 relative overflow-hidden">
-              {/* Popular badge */}
               <div className="absolute top-4 right-4">
                 <div className="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-medium flex items-center gap-1">
                   <Crown className="w-3 h-3" />
@@ -156,7 +151,6 @@ export function BenefitsSection({ onSignUp }: BenefitsSectionProps) {
           </motion.div>
         </div>
 
-        {/* Bottom note */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
