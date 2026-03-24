@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Filter, Sparkles } from "lucide-react";
+import { Eye, Sparkles } from "lucide-react";
 import { Category, Tool } from "@/lib/types";
 import { tools, searchTools } from "@/lib/data";
 import { SearchBar } from "./SearchBar";
@@ -19,7 +19,6 @@ export function DemoPreview({ onSignUp }: DemoPreviewProps) {
   const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Limit to 6 tools for demo
   const demoTools = useMemo(() => {
     let result = searchQuery ? searchTools(searchQuery) : tools;
     
@@ -42,11 +41,9 @@ export function DemoPreview({ onSignUp }: DemoPreviewProps) {
 
   return (
     <section id="explore" className="py-16 md:py-20 relative overflow-hidden">
-      {/* Section glow */}
       <div className="absolute inset-0 bg-gradient-radial from-secondary/30 via-transparent to-transparent pointer-events-none" />
       
       <div className="container relative px-4 md:px-6">
-        {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -54,19 +51,18 @@ export function DemoPreview({ onSignUp }: DemoPreviewProps) {
           className="text-center mb-8 md:mb-10"
         >
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary text-muted-foreground text-sm font-medium mb-4">
-            <Filter className="w-4 h-4" />
-            Try It Out
+            <Eye className="w-4 h-4" />
+            Preview Your Dashboard
           </div>
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight mb-4">
-            Experience the Demo
+            Experience the Dashboard
           </h2>
           <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
-            Get a taste of how easy it is to discover tools. Search, filter, and explore — 
-            this is just a preview of what's available.
+            Get a preview of your personalized toolkit. Search, filter, and explore — 
+            this is just a taste of what's waiting inside.
           </p>
         </motion.div>
 
-        {/* Demo Controls */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -94,7 +90,6 @@ export function DemoPreview({ onSignUp }: DemoPreviewProps) {
           />
         </motion.div>
 
-        {/* Demo Grid - Limited to 6 tools */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -112,7 +107,6 @@ export function DemoPreview({ onSignUp }: DemoPreviewProps) {
           ))}
         </motion.div>
 
-        {/* Upgrade CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -123,10 +117,10 @@ export function DemoPreview({ onSignUp }: DemoPreviewProps) {
           <div className="glass rounded-2xl p-6 md:p-8 max-w-2xl mx-auto">
             <Sparkles className="w-8 md:w-10 h-8 md:h-10 text-primary mx-auto mb-4" />
             <h3 className="text-lg md:text-xl font-semibold mb-2">
-              Want to see all 65+ tools?
+              Want the full personalized experience?
             </h3>
             <p className="text-sm md:text-base text-muted-foreground mb-6">
-              Sign up for free to unlock the full collection, save favorites, and get personalized recommendations.
+              Sign up for free to unlock your personalized feed, AI assistant, Tool of the Day, and more.
             </p>
             <Button size="lg" className="glow-sm" onClick={onSignUp}>
               Get Full Access — Free
@@ -135,7 +129,6 @@ export function DemoPreview({ onSignUp }: DemoPreviewProps) {
         </motion.div>
       </div>
 
-      {/* Tool Detail Modal */}
       <DemoToolModal
         tool={selectedTool}
         isOpen={modalOpen}
