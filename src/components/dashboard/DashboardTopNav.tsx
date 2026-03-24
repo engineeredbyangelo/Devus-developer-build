@@ -2,18 +2,16 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Home,
-  Compass,
-  Briefcase,
+  User,
   Folder,
+  Settings,
   Search,
   LogOut,
-  Menu,
-  X,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
-export type DashboardTab = "home" | "explore" | "toolkit" | "categories";
+export type DashboardTab = "home" | "profile" | "categories" | "settings";
 
 interface DashboardTopNavProps {
   activeTab: DashboardTab;
@@ -28,9 +26,9 @@ interface DashboardTopNavProps {
 
 const navItems = [
   { id: "home" as DashboardTab, label: "Home", icon: Home },
-  { id: "explore" as DashboardTab, label: "Explore", icon: Compass },
-  { id: "toolkit" as DashboardTab, label: "My Toolkit", icon: Briefcase },
+  { id: "profile" as DashboardTab, label: "Profile", icon: User },
   { id: "categories" as DashboardTab, label: "Categories", icon: Folder },
+  { id: "settings" as DashboardTab, label: "Settings", icon: Settings },
 ];
 
 export function DashboardTopNav({
@@ -56,7 +54,7 @@ export function DashboardTopNav({
         {/* Logo */}
         <div className="flex items-center gap-2 mr-8">
           <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
-            <Compass className="w-5 h-5 text-primary" />
+            <Home className="w-5 h-5 text-primary" />
           </div>
           <span className="text-lg font-bold text-foreground tracking-tight">Devus</span>
         </div>
@@ -121,12 +119,6 @@ export function DashboardTopNav({
               )}
             </div>
           </div>
-          <button
-            onClick={onSignOut}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
         </div>
       </motion.header>
 
@@ -136,7 +128,7 @@ export function DashboardTopNav({
         <header className="fixed top-0 left-0 right-0 z-[56] flex items-center h-14 px-4 bg-card/95 backdrop-blur-xl border-b border-border">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-md bg-primary/15 flex items-center justify-center">
-              <Compass className="w-4 h-4 text-primary" />
+              <Home className="w-4 h-4 text-primary" />
             </div>
             <span className="text-base font-bold text-foreground">Devus</span>
           </div>
@@ -190,15 +182,6 @@ export function DashboardTopNav({
                 </button>
               );
             })}
-            <button
-              onClick={onSignOut}
-              className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-muted-foreground"
-            >
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center">
-                <LogOut className="w-4.5 h-4.5" />
-              </div>
-              <span className="text-[10px] font-medium">Sign Out</span>
-            </button>
           </div>
         </nav>
       </div>
