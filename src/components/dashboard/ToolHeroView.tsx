@@ -102,8 +102,12 @@ export function ToolHeroView({
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className="glass rounded-3xl p-6 sm:p-10"
+            className="glass rounded-3xl overflow-hidden"
           >
+            {/* Hero visual banner */}
+            <ToolCardVisual tool={tool} size="lg" />
+
+            <div className="p-6 sm:p-10">
             <div className="flex flex-col sm:flex-row items-start gap-5 sm:gap-6">
               {/* Logo */}
               <div className="w-20 h-20 sm:w-[120px] sm:h-[120px] rounded-2xl bg-secondary flex items-center justify-center shrink-0 overflow-hidden">
