@@ -45,7 +45,7 @@ export function TrendingSection({
       </div>
 
       <motion.div
-        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4"
+        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4"
         initial="hidden"
         animate="visible"
         variants={{

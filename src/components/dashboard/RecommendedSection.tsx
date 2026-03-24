@@ -41,7 +41,7 @@ export function RecommendedSection({
       </div>
 
       <motion.div
-        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"
+        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4"
         initial="hidden"
         animate="visible"
         variants={{
@@ -56,14 +56,7 @@ export function RecommendedSection({
               hidden: { opacity: 0, y: 12 },
               visible: { opacity: 1, y: 0 },
             }}
-            className="relative"
           >
-            {/* "Why this?" tag */}
-            <div className="absolute top-2 right-12 z-10">
-              <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
-                {reason}
-              </span>
-            </div>
             <DashboardToolCard
               tool={tool}
               isFavorite={isFavorite(tool.id)}
@@ -72,6 +65,7 @@ export function RecommendedSection({
                 onToggleFavorite(tool.id);
               }}
               onClick={() => onToolClick(tool)}
+              reasonTag={reason}
             />
           </motion.div>
         ))}
