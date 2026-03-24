@@ -282,6 +282,30 @@ Respond with ONLY a valid JSON object (no markdown, no code blocks):
 
     console.log(`Returning ${enrichedTools.length} enriched weekly tools`);
 
+    // Cache results server-side using service role key (bypasses RLS)
+    try {
+      const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      if (serviceRoleKey) {
+        const adminClient = createClient(
+          Deno.env.get('SUPABASE_URL')!,
+          serviceRoleKey
+        );
+        const weekStart = new Date();
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1); // Monday
+        const weekStartStr = weekStart.toISOString().split('T')[0];
+        
+        await adminClient
+          .from('weekly_tools_cache')
+          .upsert(
+            { week_start_date: weekStartStr, tools_data: enrichedTools },
+            { onConflict: 'week_start_date' }
+          );
+        console.log('Cached weekly tools server-side');
+      }
+    } catch (cacheErr) {
+      console.error('Failed to cache weekly tools:', cacheErr);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
