@@ -100,6 +100,7 @@ export const tools: Tool[] = [
     tags: ["open-source", "free", "cli"],
     url: "https://tailwindcss.com",
     githubUrl: "https://github.com/tailwindlabs/tailwindcss",
+    screenshotUrl: "https://tailwindcss.com/_next/static/media/social-card-large.a6e71726.jpg",
     stars: 78000,
     upvotes: 1876,
     pros: ["Rapid development", "Highly customizable", "Great DX"],
