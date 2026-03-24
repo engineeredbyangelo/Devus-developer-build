@@ -13,6 +13,7 @@ import { Tool } from "@/lib/types";
 import { categories } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { ToolInfoCards } from "./ToolInfoCards";
+import { ToolCardVisual } from "./ToolCardVisual";
 import { cn } from "@/lib/utils";
 
 interface ToolHeroViewProps {
