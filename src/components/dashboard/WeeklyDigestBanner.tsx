@@ -68,17 +68,17 @@ export function WeeklyDigestBanner({ followedCategories, onToolClick }: WeeklyDi
           </p>
         </div>
 
-        <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none max-w-full">
           {newTools.map((tool) => (
             <button
               key={tool.id}
               onClick={() => onToolClick(tool)}
-              className="glass glass-hover rounded-xl overflow-hidden min-w-[140px] text-left shrink-0"
+              className="glass glass-hover rounded-xl overflow-hidden w-[160px] min-w-[140px] max-w-[180px] text-left shrink-0"
             >
-              <ToolCardVisual tool={tool} size="md" className="h-16" />
-              <div className="p-3 pt-2">
+              <ToolCardVisual tool={tool} size="sm" className="!h-10 !w-full !rounded-none !rounded-t-xl" />
+              <div className="p-2.5">
                 <h4 className="text-xs font-semibold text-foreground truncate">{tool.name}</h4>
-                <p className="text-[10px] text-muted-foreground line-clamp-2 mt-0.5">{tool.description}</p>
+                <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">{tool.description}</p>
               </div>
             </button>
           ))}
