@@ -36,6 +36,7 @@ export const tools: Tool[] = [
     tags: ["open-source", "free"],
     url: "https://react.dev",
     githubUrl: "https://github.com/facebook/react",
+    screenshotUrl: "https://react.dev/images/og-home.png",
     stars: 220000,
     upvotes: 1542,
     pros: ["Huge ecosystem", "Great documentation", "Strong community support"],
