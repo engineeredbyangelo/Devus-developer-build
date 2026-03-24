@@ -1,38 +1,76 @@
+# Simplify Dashboard: Remove Explore, Transform My Toolkit into Profile
 
+## What Changes
 
-# Fix Card Overlap and Mobile Card Sizing
+1. **Remove the Explore tab entirely** — the Home feed already surfaces tools effectively
+2. **Transform "My Toolkit" into a personalized profile page** with:
+  - User profile header (avatar, name, PRO badge, their chosen stack categories)
+  - "Tool of the Day" recommendation card (one highlighted tool based on their stack)
+  - Favorites grid below
+  - Inline "Ask Devus" chat input (moves from right sidebar into this tab on all devices)
+3. **Navigation reduces to 3 tabs**: Home | My Toolkit(Change to Profile) | Categories | Settings (for users to log out or adjust their info/billings, profile pic..etc)
+4. **Right sidebar**: remains on Home tab (desktop), Ask Devus also available inline on My Toolkit tab
+5. **Fully mobile responsive**: profile header stacks vertically, tool of the day is full-width, favorites in single column
 
-## Problems
+## Files to Modify
 
-1. **"Why this?" tag overlaps favorite button** in `RecommendedSection.tsx` — absolute positioned at `top-2 right-12` collides with the heart button at `top-4 right-4`
-2. **Cards too large on mobile** — `DashboardToolCard` uses `p-6`, large logo (`w-14 h-14`), and 2-line description, overwhelming small screens
-3. **Grid gaps tight** across sections
+### `src/components/dashboard/DashboardTopNav.tsx`
 
-## Changes
+- Change `DashboardTab` type to `"home" | "toolkit" | "categories"` (remove `"explore"`)
+- Remove `Compass`/Explore from `navItems` array
+- Update mobile bottom nav accordingly (3 items + sign out = cleaner fit)
 
-### 1. `DashboardToolCard.tsx` — Compact mobile layout
-- Reduce padding: `p-6` → `p-4 sm:p-6`
-- Use horizontal layout on mobile: logo on left, text on right (flexbox row on mobile, column on sm+)
-- Shrink logo: `w-10 h-10` on mobile, `w-14 h-14` on sm+
-- Clamp description: `line-clamp-1` on mobile, `line-clamp-2` on sm+
-- Reduce tag margin: `mt-4` → `mt-3 sm:mt-4`
+### `src/pages/Dashboard.tsx`
 
-### 2. `RecommendedSection.tsx` — Fix "Why this?" overlap
-- Move the "Why this?" tag from absolute positioning into the card's content flow — render it as an inline badge above the card name inside `DashboardToolCard` (pass as a prop) or below it inside `RecommendedSection` after the card
-- Simplest approach: move the tag inside the `motion.div` wrapper but below the card, as a small inline badge strip, removing the `absolute` positioning entirely
+- Delete the entire Explore tab section (lines 278-360)
+- Replace the Toolkit tab (lines 362-390) with a new profile-style layout:
+  - Profile header: avatar, name, PRO badge, followed category pills
+  - "Tool of the Day" card: pick the top recommendation from `useRecommendations` with a "Why this?" reason
+  - Favorites grid below (existing `favoriteTools`)
+  - Inline "Ask Devus" input at the bottom (reuse the same `handleAskDevus` logic)
+- Update all `setActiveTab("explore")` references (in WeeklyDigestBanner onBrowse, RecommendedSection onSeeAll, TrendingSection onSeeAll, empty toolkit state) to navigate to Home or remove the "See all" links
+- Default tab stays `"home"`
 
-### 3. `TrendingSection.tsx` — Responsive grid gap
-- Change `gap-4` to `gap-3 sm:gap-4`
+### `src/components/dashboard/WeeklyDigestBanner.tsx`
 
-### 4. `Dashboard.tsx` — Home feed spacing
-- Change `space-y-8` to `space-y-6 sm:space-y-8` on the home feed container
-- Fresh Finds inline cards: reduce padding `p-4` → `p-3 sm:p-4`
+- Change the "Browse This Week's Picks" button behavior — instead of switching to explore, scroll to recommendations or just dismiss
 
-### Files modified
-| File | Change |
-|------|--------|
-| `src/components/dashboard/DashboardToolCard.tsx` | Responsive padding, horizontal mobile layout, smaller logo, shorter description |
-| `src/components/dashboard/RecommendedSection.tsx` | Move "Why this?" tag out of absolute positioning into card flow |
-| `src/components/dashboard/TrendingSection.tsx` | Responsive grid gap |
-| `src/pages/Dashboard.tsx` | Responsive section spacing |
+### `src/components/dashboard/RecommendedSection.tsx`
 
+- Remove or repurpose the "See all" link (no explore tab to link to)
+
+### `src/components/dashboard/TrendingSection.tsx`
+
+- Remove or repurpose the "See all" link
+
+## New: My Toolkit Profile Layout (inside Dashboard.tsx)
+
+```text
+┌─────────────────────────────────┐
+│ Avatar  Name       PRO badge   │
+│ [React] [AI/ML] [Backend] ...  │  ← followed categories as pills
+├─────────────────────────────────┤
+│ ⭐ Tool of the Day             │
+│ ┌─────────────────────────────┐ │
+│ │ Large featured card with    │ │
+│ │ name, description, reason,  │ │
+│ │ "View Details" button       │ │
+│ └─────────────────────────────┘ │
+├─────────────────────────────────┤
+│ 💬 Ask Devus                   │
+│ [input field] [send]           │
+├─────────────────────────────────┤
+│ ❤️ My Favorites (grid)         │
+│ ┌────┐ ┌────┐ ┌────┐          │
+│ │card│ │card│ │card│          │
+│ └────┘ └────┘ └────┘          │
+└─────────────────────────────────┘
+```
+
+Mobile: everything stacks single-column, Tool of the Day is full-width, favorites are 1-col grid.
+
+## Technical Notes
+
+- "Tool of the Day" uses `recommendations[0]` from `useRecommendations` — deterministic per day by seeding with date
+- No new components needed — the profile layout is built inline in Dashboard.tsx's toolkit tab section
+- No database changes required
