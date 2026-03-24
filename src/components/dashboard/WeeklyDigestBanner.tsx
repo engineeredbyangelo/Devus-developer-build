@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { X, Sparkles } from "lucide-react";
 import { Tool } from "@/lib/types";
 import { tools } from "@/lib/data";
+import { ToolCardVisual } from "./ToolCardVisual";
 
 interface WeeklyDigestBannerProps {
   followedCategories: string[];
@@ -49,7 +50,7 @@ export function WeeklyDigestBanner({ followedCategories, onToolClick }: WeeklyDi
 
       <button
         onClick={handleDismiss}
-        className="absolute top-4 right-4 w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all"
+        className="absolute top-4 right-4 w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all z-10"
       >
         <X className="w-4 h-4" />
       </button>
@@ -72,13 +73,13 @@ export function WeeklyDigestBanner({ followedCategories, onToolClick }: WeeklyDi
             <button
               key={tool.id}
               onClick={() => onToolClick(tool)}
-              className="glass glass-hover rounded-xl p-3 min-w-[140px] text-left shrink-0"
+              className="glass glass-hover rounded-xl overflow-hidden min-w-[140px] text-left shrink-0"
             >
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mb-2 text-sm font-bold text-primary">
-                {tool.name.charAt(0)}
+              <ToolCardVisual tool={tool} size="md" className="h-16" />
+              <div className="p-3 pt-2">
+                <h4 className="text-xs font-semibold text-foreground truncate">{tool.name}</h4>
+                <p className="text-[10px] text-muted-foreground line-clamp-2 mt-0.5">{tool.description}</p>
               </div>
-              <h4 className="text-xs font-semibold text-foreground truncate">{tool.name}</h4>
-              <p className="text-[10px] text-muted-foreground line-clamp-2 mt-0.5">{tool.description}</p>
             </button>
           ))}
         </div>

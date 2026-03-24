@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
-import { Briefcase, ExternalLink } from "lucide-react";
+import { Briefcase } from "lucide-react";
 import { Tool } from "@/lib/types";
 import { categories } from "@/lib/data";
-import { cn } from "@/lib/utils";
+import { ToolCardVisual } from "./ToolCardVisual";
 
 interface ToolkitStripProps {
   favoriteTools: Tool[];
@@ -30,9 +30,7 @@ export function ToolkitStrip({ favoriteTools, onToolClick }: ToolkitStripProps) 
               className="glass glass-hover rounded-xl p-3 min-w-[160px] text-left shrink-0 flex items-center gap-3"
               whileTap={{ scale: 0.97 }}
             >
-              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 text-sm font-bold text-primary">
-                {tool.name.charAt(0)}
-              </div>
+              <ToolCardVisual tool={tool} size="sm" className="w-9 h-9" />
               <div className="min-w-0 flex-1">
                 <h4 className="text-sm font-medium text-foreground truncate">{tool.name}</h4>
                 <span className="text-[10px] text-muted-foreground">{cat?.name}</span>

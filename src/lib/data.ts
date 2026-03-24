@@ -374,6 +374,7 @@ export const tools: Tool[] = [
     tags: ["open-source", "freemium", "cloud", "self-hosted", "api"],
     url: "https://supabase.com",
     githubUrl: "https://github.com/supabase/supabase",
+    screenshotUrl: "https://supabase.com/images/og/supabase-og.png",
     stars: 64000,
     upvotes: 1987,
     pros: ["Postgres powered", "Great free tier", "Realtime subscriptions"],
