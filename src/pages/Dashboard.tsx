@@ -10,6 +10,8 @@ import {
   RefreshCw,
   ExternalLink,
   Zap,
+  Send,
+  Star,
 } from "lucide-react";
 import { DashboardTopNav, DashboardTab } from "@/components/dashboard/DashboardTopNav";
 import { DashboardToolCard } from "@/components/dashboard/DashboardToolCard";
@@ -33,6 +35,8 @@ import { categories, tools } from "@/lib/data";
 import { Category, Tag, Tool } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -46,6 +50,7 @@ const Dashboard = () => {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
+  const [askQuery, setAskQuery] = useState("");
 
   const {
     discoveredTools,
@@ -94,15 +99,6 @@ const Dashboard = () => {
     return matchesSearch && matchesCategory && matchesTags;
   });
 
-  const handleCategoryChange = (category: Category | null) => {
-    setSelectedCategory(category);
-    clearResults();
-  };
-
-  const handleDiscover = () => {
-    discoverTools(selectedCategory, selectedTags, searchQuery || undefined);
-  };
-
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
@@ -110,6 +106,12 @@ const Dashboard = () => {
 
   const handleAskDevus = (query: string) => {
     discoverTools(null, [], query);
+  };
+
+  const handleInlineAsk = () => {
+    if (!askQuery.trim()) return;
+    handleAskDevus(askQuery.trim());
+    setAskQuery("");
   };
 
   const handleOnboardingComplete = (cats: string[]) => {
@@ -134,14 +136,12 @@ const Dashboard = () => {
       setSelectedTool(filteredTools[currentToolIndex + 1]);
   };
 
-  const filterChips: { label: string; value: Category | null }[] = [
-    { label: "All", value: null },
-    ...categories.map((c) => ({ label: c.name, value: c.id })),
-  ];
-
   const displayedFreshTools = isPro ? freshTools : freshTools.slice(0, 5);
 
   const isNewUser = followedCategories.length === 0 && favoriteTools.length === 0;
+
+  // Tool of the Day — pick top recommendation, deterministic per day
+  const toolOfTheDay = recommendations.length > 0 ? recommendations[0] : null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -192,7 +192,6 @@ const Dashboard = () => {
                       <>
                         <WeeklyDigestBanner
                           followedCategories={followedCategories}
-                          onBrowse={() => setActiveTab("explore")}
                           onToolClick={setSelectedTool}
                         />
 
@@ -201,7 +200,6 @@ const Dashboard = () => {
                           isFavorite={isFavorite}
                           onToggleFavorite={toggleFavorite}
                           onToolClick={setSelectedTool}
-                          onSeeAll={() => setActiveTab("explore")}
                         />
 
                         <TrendingSection
@@ -210,7 +208,6 @@ const Dashboard = () => {
                           isFavorite={isFavorite}
                           onToggleFavorite={toggleFavorite}
                           onToolClick={setSelectedTool}
-                          onSeeAll={() => setActiveTab("explore")}
                         />
 
                         {favoriteTools.length > 0 && (
@@ -275,118 +272,172 @@ const Dashboard = () => {
                   </motion.div>
                 )}
 
-                {/* EXPLORE TAB */}
-                {activeTab === "explore" && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    key="explore"
-                    className="space-y-6"
-                  >
-                    {/* Filter chips */}
-                    <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap scrollbar-none">
-                      {filterChips.map((chip) => (
-                        <button
-                          key={chip.label}
-                          onClick={() => handleCategoryChange(chip.value)}
-                          className={cn(
-                            "px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap shrink-0",
-                            selectedCategory === chip.value
-                              ? "bg-primary text-primary-foreground glow-sm"
-                              : "glass text-muted-foreground hover:text-foreground"
-                          )}
-                        >
-                          {chip.label}
-                        </button>
-                      ))}
+                {/* PROFILE TAB */}
+                {activeTab === "profile" && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} key="profile" className="space-y-6 sm:space-y-8">
+                    {/* Profile Header */}
+                    <div className="glass rounded-2xl p-5 sm:p-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                        <Avatar className="w-16 h-16 ring-2 ring-primary/20">
+                          <AvatarImage src={profile?.avatar_url || ""} />
+                          <AvatarFallback className="bg-primary/15 text-primary text-xl font-bold">
+                            {userName.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h2 className="text-xl font-bold text-foreground">{userName}</h2>
+                            {isPro && (
+                              <Badge className="bg-primary/15 text-primary border-primary/30 text-xs">PRO</Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {user.email}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Followed category pills */}
+                      {followedCategories.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-4">
+                          {followedCategories.map((catId) => {
+                            const cat = categories.find((c) => c.id === catId);
+                            return cat ? (
+                              <span
+                                key={catId}
+                                className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground"
+                              >
+                                {cat.name}
+                              </span>
+                            ) : null;
+                          })}
+                        </div>
+                      )}
                     </div>
 
-                    <p className="text-sm text-muted-foreground">
-                      {filteredTools.length} tool{filteredTools.length !== 1 ? "s" : ""} found
-                      {!isPro && filteredTools.length > 35 && (
-                        <span className="text-primary ml-1">(showing 35 of {filteredTools.length})</span>
-                      )}
-                    </p>
-
-                    <motion.div
-                      className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4"
-                      initial="hidden"
-                      animate="visible"
-                      variants={{
-                        hidden: { opacity: 0 },
-                        visible: { opacity: 1, transition: { staggerChildren: 0.04 } },
-                      }}
-                    >
-                      {(isPro ? filteredTools : filteredTools.slice(0, 35)).map((tool) => (
+                    {/* Tool of the Day */}
+                    {toolOfTheDay && (
+                      <section className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Star className="w-5 h-5 text-primary" />
+                          <h2 className="text-lg font-semibold text-foreground">Tool of the Day</h2>
+                        </div>
                         <motion.div
-                          key={tool.id}
-                          variants={{
-                            hidden: { opacity: 0, y: 16 },
-                            visible: { opacity: 1, y: 0 },
-                          }}
+                          className="glass rounded-2xl p-5 sm:p-6 cursor-pointer hover:border-primary/30 transition-all"
+                          whileHover={{ y: -2 }}
+                          onClick={() => setSelectedTool(toolOfTheDay.tool)}
                         >
-                          <DashboardToolCard
-                            tool={tool}
-                            isFavorite={isFavorite(tool.id)}
-                            onToggleFavorite={(e) => {
-                              e.stopPropagation();
-                              toggleFavorite(tool.id);
-                            }}
-                            onClick={() => setSelectedTool(tool)}
-                          />
+                          <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 text-lg font-bold text-primary">
+                              {toolOfTheDay.tool.logoUrl ? (
+                                <img src={toolOfTheDay.tool.logoUrl} alt={toolOfTheDay.tool.name} className="w-10 h-10 rounded-lg object-contain" />
+                              ) : (
+                                toolOfTheDay.tool.name.charAt(0)
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap mb-1">
+                                <h3 className="text-lg font-semibold text-foreground">{toolOfTheDay.tool.name}</h3>
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                                  {toolOfTheDay.reason}
+                                </span>
+                              </div>
+                              <p className="text-sm text-muted-foreground line-clamp-2 sm:line-clamp-3">
+                                {toolOfTheDay.tool.description}
+                              </p>
+                              <Button
+                                size="sm"
+                                className="mt-3"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedTool(toolOfTheDay.tool);
+                                }}
+                              >
+                                View Details
+                                <ChevronRight className="w-4 h-4 ml-1" />
+                              </Button>
+                            </div>
+                          </div>
                         </motion.div>
-                      ))}
-                    </motion.div>
-
-                    {!isPro && filteredTools.length > 35 && (
-                      <UpgradeBanner message={`You're viewing 35 of ${filteredTools.length} tools. Upgrade to Pro to unlock the full directory.`} />
+                      </section>
                     )}
 
-                    {filteredTools.length === 0 && (
-                      <div className="glass rounded-2xl p-12 text-center">
-                        <p className="text-muted-foreground">No tools found matching your criteria.</p>
+                    {/* Ask Devus inline */}
+                    <section className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Search className="w-5 h-5 text-primary" />
+                        <h2 className="text-lg font-semibold text-foreground">Ask Devus</h2>
                       </div>
-                    )}
-
-                    <AIDiscoveredTools
-                      tools={discoveredTools}
-                      isSearching={isSearching}
-                      searchQuery={aiSearchQuery}
-                      hasActiveFilters={hasActiveFilters}
-                      onDiscover={handleDiscover}
-                      onClear={clearResults}
-                    />
-                  </motion.div>
-                )}
-
-                {/* TOOLKIT TAB (formerly Favorites) */}
-                {activeTab === "toolkit" && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} key="toolkit" className="space-y-6">
-                    <h2 className="text-lg font-semibold text-foreground">My Toolkit</h2>
-                    {favoriteTools.length === 0 ? (
-                      <div className="glass rounded-2xl p-12 text-center">
-                        <Heart className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
-                        <p className="text-muted-foreground mb-2">No tools in your toolkit yet. Start exploring!</p>
-                        <Button onClick={() => setActiveTab("explore")} className="mt-2">
-                          Explore Tools
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
-                        {favoriteTools.map((tool) => (
-                          <DashboardToolCard
-                            key={tool.id}
-                            tool={tool}
-                            isFavorite={true}
-                            onToggleFavorite={(e) => {
-                              e.stopPropagation();
-                              toggleFavorite(tool.id);
-                            }}
-                            onClick={() => setSelectedTool(tool)}
+                      <div className="glass rounded-2xl p-4">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="Ask about tools, comparisons, recommendations..."
+                            value={askQuery}
+                            onChange={(e) => setAskQuery(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleInlineAsk()}
+                            disabled={isSearching}
+                            className="flex-1 h-10 px-4 rounded-lg bg-secondary/50 border border-border text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/30 disabled:opacity-50"
                           />
-                        ))}
+                          <Button
+                            onClick={handleInlineAsk}
+                            disabled={isSearching || !askQuery.trim()}
+                            size="icon"
+                            className="shrink-0"
+                          >
+                            {isSearching ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Send className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </div>
                       </div>
-                    )}
+
+                      {/* Show AI results inline */}
+                      <AIDiscoveredTools
+                        tools={discoveredTools}
+                        isSearching={isSearching}
+                        searchQuery={aiSearchQuery}
+                        hasActiveFilters={hasActiveFilters}
+                        onDiscover={() => {}}
+                        onClear={clearResults}
+                      />
+                    </section>
+
+                    {/* Favorites */}
+                    <section className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Heart className="w-5 h-5 text-primary" />
+                        <h2 className="text-lg font-semibold text-foreground">My Favorites</h2>
+                        {favoriteTools.length > 0 && (
+                          <span className="text-xs text-muted-foreground">({favoriteTools.length})</span>
+                        )}
+                      </div>
+                      {favoriteTools.length === 0 ? (
+                        <div className="glass rounded-2xl p-8 sm:p-12 text-center">
+                          <Heart className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
+                          <p className="text-sm text-muted-foreground">
+                            No favorites yet — explore the Home feed and heart the tools you love.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+                          {favoriteTools.map((tool) => (
+                            <DashboardToolCard
+                              key={tool.id}
+                              tool={tool}
+                              isFavorite={true}
+                              onToggleFavorite={(e) => {
+                                e.stopPropagation();
+                                toggleFavorite(tool.id);
+                              }}
+                              onClick={() => setSelectedTool(tool)}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </section>
                   </motion.div>
                 )}
 
@@ -455,6 +506,68 @@ const Dashboard = () => {
                         </div>
                       </div>
                     )}
+                  </motion.div>
+                )}
+
+                {/* SETTINGS TAB */}
+                {activeTab === "settings" && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} key="settings" className="space-y-6">
+                    <h2 className="text-lg font-semibold text-foreground">Settings</h2>
+
+                    <div className="glass rounded-2xl p-5 sm:p-6 space-y-6">
+                      {/* Account section */}
+                      <div>
+                        <h3 className="text-sm font-semibold text-foreground mb-3">Account</h3>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                          <Avatar className="w-14 h-14 ring-2 ring-primary/20">
+                            <AvatarImage src={profile?.avatar_url || ""} />
+                            <AvatarFallback className="bg-primary/15 text-primary text-lg font-bold">
+                              {userName.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-foreground">{userName}</p>
+                            <p className="text-xs text-muted-foreground">{user.email}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Subscription */}
+                      <div className="border-t border-border pt-4">
+                        <h3 className="text-sm font-semibold text-foreground mb-2">Subscription</h3>
+                        <div className="flex items-center gap-2">
+                          <Badge className={cn(
+                            "text-xs",
+                            isPro
+                              ? "bg-primary/15 text-primary border-primary/30"
+                              : "bg-secondary text-secondary-foreground"
+                          )}>
+                            {isPro ? "Pro" : "Free"}
+                          </Badge>
+                          {!isPro && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => navigate("/pricing")}
+                              className="text-xs"
+                            >
+                              Upgrade
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Sign out */}
+                      <div className="border-t border-border pt-4">
+                        <Button
+                          variant="outline"
+                          onClick={handleSignOut}
+                          className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                        >
+                          Sign Out
+                        </Button>
+                      </div>
+                    </div>
                   </motion.div>
                 )}
               </>
