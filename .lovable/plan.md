@@ -1,103 +1,60 @@
 
 
-# Revamp Landing Page to Reflect New Product Direction
+# 3D Hero Nexus with Three.js (React Three Fiber)
 
-## What's Changing
+## Summary
 
-The landing page currently describes a generic "discover dev tools" pitch. The product has evolved into a personalized dashboard with a Profile tab, Tool of the Day, AI assistant, abstract immersive visuals, and a streamlined 4-tab navigation (Home / Profile / Categories / Settings). The landing page needs to reflect this.
+Replace the current 2D Framer Motion orbital animation in `HeroNexusAnimation.tsx` with an interactive 3D scene using `@react-three/fiber` and `@react-three/drei`. The nexus becomes a slowly rotating 3D sphere of tool orbs with depth, lighting, and a glowing central core — creating an immersive, modern hero visual.
 
-## Section-by-Section Changes
+## Visual Concept
 
-### 1. Hero — `src/components/LandingHero.tsx`
-- Update headline: "Your personalized developer toolkit" (not just "discover tools")
-- Update subtitle to emphasize personalization, AI assistant, curated weekly drops
-- Update the 3 feature highlight cards:
-  - "Personalized Feed" — tools matched to your stack
-  - "AI-Powered Search" — Ask Devus anything
-  - "Weekly Drops" — fresh tools delivered weekly
-- Keep the HeroNexusAnimation on the right (it still fits)
+```text
+        ·  ·  React  ·
+      ·    ╱    ╲     ·
+   Vue ──── [D] ──── Svelte
+      ·    ╲    ╱     ·
+        ·  Node  Bun  ·
+           ·  ·  ·
+```
 
-### 2. Why Devus Section — `src/components/WhyDevusSection.tsx`
-- Keep the 3 stat cards (tool overload, consolidation, augment) — still relevant
-- **Rebuild the MobileAppPreview** to accurately mirror the current dashboard:
-  - Show the actual tab bar: Home / Profile / Categories / Settings icons
-  - Show a "Tool of the Day" card with an abstract gradient visual (using the immersive system colors)
-  - Show a "Recommended" section with 2 mini tool cards featuring gradient thumbnails
-  - Show the "Ask Devus" input bar
-  - Remove the old generic search + category pills + plain tool cards
-- Update the feature list text to match current features:
-  - "Personalized Feed" (replaces Smart Discovery)
-  - "Tool of the Day" (replaces Save & Organize)
-  - "Ask Devus AI" (replaces Deep Insights)
-  - "Category Following" (replaces Smart Filters)
-  - "Profile & Favorites" (replaces Instant Access)
+- 15 tool orbs distributed on the surface of a sphere (Fibonacci spacing for even distribution)
+- 3 concentric orbital ring groups at different radii, tilted at different angles
+- Central glowing "D" core with volumetric bloom
+- Subtle mouse-follow camera movement (parallax)
+- Slow auto-rotation of the entire scene
+- Tool labels appear on hover via HTML overlay (`drei`'s `Html` component)
+- Mobile: smaller canvas, fewer particles, no mouse interaction
 
-### 3. Features Section — `src/components/FeaturesSection.tsx`
-- Update the 4 feature rows to reflect actual product capabilities:
-  1. **Personalized Recommendations** — tools matched to your followed categories (replaces Weekly Tool Drops as the lead feature)
-  2. **Ask Devus AI** — inline AI assistant for tool comparisons and discovery (replaces Direct Links)
-  3. **Immersive Tool Cards** — unique generative artwork for every tool (replaces GitHub Access)
-  4. **Smart Filtering** — stays, but update copy to mention category following
-- Update the visual animations for each row to better represent the new features
+## Packages to Install
 
-### 4. Tool Stack Showcase — `src/components/ToolStackShowcase.tsx`
-- Minor copy updates only: mention "personalized" experience
-- The interactive category explorer is still relevant
-
-### 5. Demo Preview — `src/components/DemoPreview.tsx`
-- Update header copy: "Preview Your Dashboard" instead of "Try It Out"
-- The ToolCard grid already uses the immersive visuals, so this stays mostly the same
-
-### 6. Benefits/Pricing — `src/components/BenefitsSection.tsx`
-- Update feature list to include: Tool of the Day, Ask Devus AI, Immersive Visuals, Profile page
-- Remove or update any features that no longer exist (e.g., "Community voting" if removed)
-
-### 7. Footer — `src/pages/Index.tsx`
-- No changes needed
+- `@react-three/fiber@^8.18` — React renderer for Three.js
+- `@react-three/drei@^9.122.0` — Helpers (Float, Html, Stars, MeshDistortMaterial)
+- `three@^0.170` — Three.js core
 
 ## Files to Modify
 
-| File | Scope |
-|------|-------|
-| `src/components/LandingHero.tsx` | Update headline, subtitle, feature cards |
-| `src/components/WhyDevusSection.tsx` | Rebuild `MobileAppPreview` to mirror actual dashboard; update feature list |
-| `src/components/FeaturesSection.tsx` | Update 4 feature rows with new titles, descriptions, benefits, and visuals |
-| `src/components/DemoPreview.tsx` | Update header copy |
-| `src/components/BenefitsSection.tsx` | Update tier feature lists |
+### `src/components/HeroNexusAnimation.tsx` — Full rewrite
 
-## MobileAppPreview Rebuild Detail
+Replace the Framer Motion implementation with a `<Canvas>` scene containing:
 
-The phone mockup is the most important visual change. New layout inside the phone frame:
+1. **Scene setup**: `<Canvas>` with transparent background, camera at `z=8`, soft ambient + point lights in the primary blue/cyan palette
+2. **Tool orbs**: Each tool rendered as a `<mesh>` (sphere geometry) with a glassy/emissive material in primary color tones. Positioned on 3 orbital rings at radii matching current config (inner/mid/outer). Each ring group auto-rotates at different speeds/directions (matching existing behavior)
+3. **Central core**: A larger sphere with `MeshDistortMaterial` (from drei) for an organic pulsing effect, emitting primary color glow
+4. **Orbital rings**: Thin `<mesh>` torus geometries at each ring radius, semi-transparent
+5. **Labels**: `drei`'s `<Html>` component for tool name tooltips on hover — replaces the current Radix tooltips
+6. **Mouse parallax**: Subtle camera offset based on pointer position using `useFrame` — gives depth perception on desktop
+7. **Ambient particles**: `drei`'s `<Stars>` or custom particle field for background depth
+8. **Mobile handling**: Detect `isMobile` — reduce particle count, disable mouse parallax, smaller canvas
 
-```text
-┌─────────────────────┐
-│  Devus        [avatar]│  ← header with logo + user
-├─────────────────────┤
-│ ⭐ Tool of the Day   │
-│ ┌─────────────────┐ │
-│ │▓▓▓gradient▓▓▓▓▓│ │  ← abstract visual banner
-│ │ Tool Name       │ │
-│ │ "Matched to you"│ │
-│ └─────────────────┘ │
-│                     │
-│ 💡 Recommended      │
-│ ┌────┐ ┌────┐      │
-│ │grad│ │grad│      │  ← mini cards with gradient thumbs
-│ │name│ │name│      │
-│ └────┘ └────┘      │
-│                     │
-│ 💬 Ask Devus...     │  ← input bar
-├─────────────────────┤
-│ 🏠  👤  📁  ⚙️     │  ← 4-tab bottom nav
-└─────────────────────┘
-```
+### `src/components/LandingHero.tsx` — Minor
 
-The gradient visuals inside the phone use the same category color palettes from `tool-visuals.ts` (cyan for frontend, purple for backend, etc.) rendered as simple CSS gradients to suggest the immersive system.
+- No changes needed; it already renders `<HeroNexusAnimation />` in the right column
 
-## Technical Notes
+## Technical Details
 
-- No new files or components needed
-- No database changes
-- All changes are copy + layout updates to existing components
-- The MobileAppPreview uses hardcoded mini-gradients (not the full SVG generator) to keep the phone mockup lightweight
+- Canvas uses `style={{ background: 'transparent' }}` so the existing page gradient shows through
+- `frameloop="demand"` or throttled `useFrame` on mobile for performance
+- All colors derived from CSS `--primary` / `--accent` values converted to Three.js color objects
+- The component stays self-contained — no new files needed beyond the rewrite
+- Fallback: if WebGL fails, show a simple static SVG version
 
