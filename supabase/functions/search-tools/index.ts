@@ -231,13 +231,10 @@ Deno.serve(async (req) => {
       if (discoveredTools.length >= 8) break;
     }
 
-    console.log(`Found ${discoveredTools.length} tools after filtering`);
-
     return new Response(
       JSON.stringify({ 
         success: true, 
         tools: discoveredTools,
-        query: finalQuery,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
