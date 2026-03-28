@@ -130,7 +130,23 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { category, tags, searchQuery } = await req.json() as SearchRequest;
+    // Validate and sanitize input
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid request body' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const raw = body as Record<string, unknown>;
+    const category = typeof raw.category === 'string' ? raw.category.slice(0, 50) : undefined;
+    const searchQuery = typeof raw.searchQuery === 'string' ? raw.searchQuery.slice(0, 200) : undefined;
+    const tags = Array.isArray(raw.tags)
+      ? (raw.tags as unknown[]).filter((t): t is string => typeof t === 'string').slice(0, 10).map(t => t.slice(0, 50))
+      : undefined;
 
     const apiKey = Deno.env.get('FIRECRAWL_API_KEY');
     if (!apiKey) {
