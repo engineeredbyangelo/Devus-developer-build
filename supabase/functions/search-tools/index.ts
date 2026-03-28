@@ -130,7 +130,23 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { category, tags, searchQuery } = await req.json() as SearchRequest;
+    // Validate and sanitize input
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid request body' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const raw = body as Record<string, unknown>;
+    const category = typeof raw.category === 'string' ? raw.category.slice(0, 50) : undefined;
+    const searchQuery = typeof raw.searchQuery === 'string' ? raw.searchQuery.slice(0, 200) : undefined;
+    const tags = Array.isArray(raw.tags)
+      ? (raw.tags as unknown[]).filter((t): t is string => typeof t === 'string').slice(0, 10).map(t => t.slice(0, 50))
+      : undefined;
 
     const apiKey = Deno.env.get('FIRECRAWL_API_KEY');
     if (!apiKey) {
@@ -157,7 +173,7 @@ Deno.serve(async (req) => {
     const filterString = filterParts.join(' ');
     const toolTerms = 'developer tool OR programming tool OR coding tool OR CLI OR SDK OR framework OR library';
     const finalQuery = `(${siteQuery}) ${filterString} (${toolTerms}) -"best tools" -"top tools" -"list of"`;
-    console.log('Searching for:', finalQuery);
+    // Debug log removed for security
 
     const response = await fetch('https://api.firecrawl.dev/v1/search', {
       method: 'POST',
@@ -215,13 +231,10 @@ Deno.serve(async (req) => {
       if (discoveredTools.length >= 8) break;
     }
 
-    console.log(`Found ${discoveredTools.length} tools after filtering`);
-
     return new Response(
       JSON.stringify({ 
         success: true, 
         tools: discoveredTools,
-        query: finalQuery,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
