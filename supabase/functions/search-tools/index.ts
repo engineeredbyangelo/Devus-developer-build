@@ -173,7 +173,7 @@ Deno.serve(async (req) => {
     const filterString = filterParts.join(' ');
     const toolTerms = 'developer tool OR programming tool OR coding tool OR CLI OR SDK OR framework OR library';
     const finalQuery = `(${siteQuery}) ${filterString} (${toolTerms}) -"best tools" -"top tools" -"list of"`;
-    console.log('Searching for:', finalQuery);
+    // Debug log removed for security
 
     const response = await fetch('https://api.firecrawl.dev/v1/search', {
       method: 'POST',
