@@ -73,6 +73,13 @@ const Dashboard = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
+  // Scroll to top when a tool card is opened (especially important on mobile)
+  useEffect(() => {
+    if (selectedTool) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [selectedTool]);
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/", { state: { openAuth: true } });
