@@ -1,103 +1,58 @@
 
 
-# Revamp Landing Page to Reflect New Product Direction
+# Enable Devus AI with Real Chat Capability
 
-## What's Changing
+## Problem
+The AIAssistantWidget is a static shell — quick action buttons fire `onAction` which isn't even wired up, and the text input has no submit handler. Nothing happens when users interact with it.
 
-The landing page currently describes a generic "discover dev tools" pitch. The product has evolved into a personalized dashboard with a Profile tab, Tool of the Day, AI assistant, abstract immersive visuals, and a streamlined 4-tab navigation (Home / Profile / Categories / Settings). The landing page needs to reflect this.
+## Solution
+Create a streaming AI chat experience powered by Lovable AI (via the gateway). Users can chat freely or tap quick actions to send pre-built prompts. Responses stream token-by-token with markdown rendering.
 
-## Section-by-Section Changes
-
-### 1. Hero — `src/components/LandingHero.tsx`
-- Update headline: "Your personalized developer toolkit" (not just "discover tools")
-- Update subtitle to emphasize personalization, AI assistant, curated weekly drops
-- Update the 3 feature highlight cards:
-  - "Personalized Feed" — tools matched to your stack
-  - "AI-Powered Search" — Ask Devus anything
-  - "Weekly Drops" — fresh tools delivered weekly
-- Keep the HeroNexusAnimation on the right (it still fits)
-
-### 2. Why Devus Section — `src/components/WhyDevusSection.tsx`
-- Keep the 3 stat cards (tool overload, consolidation, augment) — still relevant
-- **Rebuild the MobileAppPreview** to accurately mirror the current dashboard:
-  - Show the actual tab bar: Home / Profile / Categories / Settings icons
-  - Show a "Tool of the Day" card with an abstract gradient visual (using the immersive system colors)
-  - Show a "Recommended" section with 2 mini tool cards featuring gradient thumbnails
-  - Show the "Ask Devus" input bar
-  - Remove the old generic search + category pills + plain tool cards
-- Update the feature list text to match current features:
-  - "Personalized Feed" (replaces Smart Discovery)
-  - "Tool of the Day" (replaces Save & Organize)
-  - "Ask Devus AI" (replaces Deep Insights)
-  - "Category Following" (replaces Smart Filters)
-  - "Profile & Favorites" (replaces Instant Access)
-
-### 3. Features Section — `src/components/FeaturesSection.tsx`
-- Update the 4 feature rows to reflect actual product capabilities:
-  1. **Personalized Recommendations** — tools matched to your followed categories (replaces Weekly Tool Drops as the lead feature)
-  2. **Ask Devus AI** — inline AI assistant for tool comparisons and discovery (replaces Direct Links)
-  3. **Immersive Tool Cards** — unique generative artwork for every tool (replaces GitHub Access)
-  4. **Smart Filtering** — stays, but update copy to mention category following
-- Update the visual animations for each row to better represent the new features
-
-### 4. Tool Stack Showcase — `src/components/ToolStackShowcase.tsx`
-- Minor copy updates only: mention "personalized" experience
-- The interactive category explorer is still relevant
-
-### 5. Demo Preview — `src/components/DemoPreview.tsx`
-- Update header copy: "Preview Your Dashboard" instead of "Try It Out"
-- The ToolCard grid already uses the immersive visuals, so this stays mostly the same
-
-### 6. Benefits/Pricing — `src/components/BenefitsSection.tsx`
-- Update feature list to include: Tool of the Day, Ask Devus AI, Immersive Visuals, Profile page
-- Remove or update any features that no longer exist (e.g., "Community voting" if removed)
-
-### 7. Footer — `src/pages/Index.tsx`
-- No changes needed
-
-## Files to Modify
-
-| File | Scope |
-|------|-------|
-| `src/components/LandingHero.tsx` | Update headline, subtitle, feature cards |
-| `src/components/WhyDevusSection.tsx` | Rebuild `MobileAppPreview` to mirror actual dashboard; update feature list |
-| `src/components/FeaturesSection.tsx` | Update 4 feature rows with new titles, descriptions, benefits, and visuals |
-| `src/components/DemoPreview.tsx` | Update header copy |
-| `src/components/BenefitsSection.tsx` | Update tier feature lists |
-
-## MobileAppPreview Rebuild Detail
-
-The phone mockup is the most important visual change. New layout inside the phone frame:
+## Architecture
 
 ```text
-┌─────────────────────┐
-│  Devus        [avatar]│  ← header with logo + user
-├─────────────────────┤
-│ ⭐ Tool of the Day   │
-│ ┌─────────────────┐ │
-│ │▓▓▓gradient▓▓▓▓▓│ │  ← abstract visual banner
-│ │ Tool Name       │ │
-│ │ "Matched to you"│ │
-│ └─────────────────┘ │
-│                     │
-│ 💡 Recommended      │
-│ ┌────┐ ┌────┐      │
-│ │grad│ │grad│      │  ← mini cards with gradient thumbs
-│ │name│ │name│      │
-│ └────┘ └────┘      │
-│                     │
-│ 💬 Ask Devus...     │  ← input bar
-├─────────────────────┤
-│ 🏠  👤  📁  ⚙️     │  ← 4-tab bottom nav
-└─────────────────────┘
+User → AIAssistantWidget → fetch(devus-chat edge fn) → Lovable AI Gateway
+                ↑                                              ↓
+         streaming tokens ←──── SSE response ←────────── AI model
 ```
 
-The gradient visuals inside the phone use the same category color palettes from `tool-visuals.ts` (cyan for frontend, purple for backend, etc.) rendered as simple CSS gradients to suggest the immersive system.
+## Changes
+
+### 1. New Edge Function: `supabase/functions/devus-chat/index.ts`
+- Accepts `{ messages: [{role, content}] }` from the client
+- Prepends a system prompt: "You are Devus, a developer tools expert. Help developers discover, compare, and evaluate developer tools. Be concise and practical."
+- Calls Lovable AI Gateway (`https://ai.gateway.lovable.dev/v1/chat/completions`) with `stream: true` using `google/gemini-3-flash-preview`
+- Returns the SSE stream directly to the client
+- Handles 429/402 errors with user-friendly messages
+- JWT auth via Supabase claims (same pattern as existing edge functions)
+
+### 2. Rewrite: `src/components/dashboard/AIAssistantWidget.tsx`
+- Add state: `messages[]`, `isLoading`, `isStreaming`
+- **Chat area**: scrollable message list between header and input, rendering assistant messages with `react-markdown`
+- **Quick actions**: shown only when no messages yet (initial state). Clicking one sends a pre-built prompt:
+  - "Compare Tools" → "Help me compare two developer tools. What tools would you like to compare?"
+  - "Find Alternatives" → "I'm looking for alternatives to a tool. Which tool do you want alternatives for?"
+  - "Check Compatibility" → "I want to check if tools in my stack are compatible. What's your current stack?"
+  - "Learning Resources" → "I'm looking for learning resources for a developer tool. Which tool or technology?"
+- **Streaming**: parse SSE line-by-line, update assistant message content token-by-token
+- **Input**: Enter key and send button both trigger message send; disabled while streaming
+- **Auto-scroll**: chat area scrolls to bottom on new tokens
+- Widget panel height increased to `max-h-[70vh]` for readable conversation
+
+### 3. Minor: `src/pages/Dashboard.tsx`
+- No changes needed — the widget is self-contained with its own AI hook
+
+## Files
+
+| File | Action |
+|------|--------|
+| `supabase/functions/devus-chat/index.ts` | Create — streaming chat edge function |
+| `src/components/dashboard/AIAssistantWidget.tsx` | Rewrite — full chat UI with streaming |
 
 ## Technical Notes
-
-- No new files or components needed
-- No database changes
-- All changes are copy + layout updates to existing components
-- The MobileAppPreview uses hardcoded mini-gradients (not the full SVG generator) to keep the phone mockup lightweight
+- `LOVABLE_API_KEY` is already available as a secret — no setup needed
+- Uses `react-markdown` (already in dependencies via other components) for rendering responses
+- Conversation history sent with each request for context continuity
+- Quick actions disappear after first message, replaced by the chat thread
+- Mobile: widget already uses `w-[calc(100vw-2rem)]` — chat area will use `max-h-[50vh]` on mobile
 
