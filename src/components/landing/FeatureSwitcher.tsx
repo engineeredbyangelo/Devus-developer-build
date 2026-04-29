@@ -288,7 +288,7 @@ export function FeatureSwitcher() {
             </div>
           </div>
           {/* Visual area */}
-          <div className="relative h-[320px] md:h-[400px] overflow-hidden">
+          <div className="relative h-[260px] sm:h-[320px] md:h-[400px] overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.div
                 key={current.id}
