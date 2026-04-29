@@ -1,58 +1,105 @@
+# Reinvent Landing Hero — Animated Wireframe Product Showcase
 
+## Goal
+Replace the orbital tool nexus visual with a premium, animated **wireframe of the Devus platform** (web + mobile) showing skeletal UI building itself. The hero must immediately communicate *what* Devus is (a personalized developer toolkit dashboard) and *why* it matters (AI assistant, weekly drops, immersive tool cards). Branding (cyan glow, deep slate, Inter, glassmorphism) stays intact.
 
-# Enable Devus AI with Real Chat Capability
+## Current State
+- `src/components/LandingHero.tsx` uses a 2-column grid: copy left, `<HeroNexusAnimation />` right (concentric rings of tool icon orbs).
+- Headline: "Your personalized developer toolkit." Three feature chips below CTAs.
+- The orbital animation is abstract — users can't tell what the product *does* from looking at it.
 
-## Problem
-The AIAssistantWidget is a static shell — quick action buttons fire `onAction` which isn't even wired up, and the text input has no submit handler. Nothing happens when users interact with it.
-
-## Solution
-Create a streaming AI chat experience powered by Lovable AI (via the gateway). Users can chat freely or tap quick actions to send pre-built prompts. Responses stream token-by-token with markdown rendering.
-
-## Architecture
+## New Hero Concept
 
 ```text
-User → AIAssistantWidget → fetch(devus-chat edge fn) → Lovable AI Gateway
-                ↑                                              ↓
-         streaming tokens ←──── SSE response ←────────── AI model
+┌──────────────────────────────────────────────────────────────┐
+│  [activity ticker]                                           │
+│                                                              │
+│  Your personalized       ┌────────────────────┐  ┌──────┐   │
+│  developer toolkit       │ ▢ ▢ ▢   search   │  │ ▢▢▢  │   │
+│                          │ ─────────────────  │  │ ──── │   │
+│  Tools matched to your   │ ┌──┐ ┌──┐ ┌──┐    │  │ ┌──┐ │   │
+│  stack...                │ │▓▓│ │▓▓│ │▓▓│    │  │ │▓▓│ │   │
+│                          │ └──┘ └──┘ └──┘    │  │ └──┘ │   │
+│  [Get Started] [Explore] │ ─ ─ ─ ─ ─ ─ ─ ─   │  │ ──── │   │
+│                          │ Ask Devus...   ⌁  │  │ ▢▢▢▢ │   │
+│  [3 feature chips]       └────────────────────┘  └──────┘   │
+│                              desktop frame      phone frame  │
+└──────────────────────────────────────────────────────────────┘
 ```
 
-## Changes
+### The Wireframe Visual (right column)
+A composed scene: a **desktop browser frame** (larger, back) with a **phone frame** (smaller, overlapping front-right). Both render a stylized, low-fidelity wireframe of the actual Devus dashboard so the product is instantly recognizable.
 
-### 1. New Edge Function: `supabase/functions/devus-chat/index.ts`
-- Accepts `{ messages: [{role, content}] }` from the client
-- Prepends a system prompt: "You are Devus, a developer tools expert. Help developers discover, compare, and evaluate developer tools. Be concise and practical."
-- Calls Lovable AI Gateway (`https://ai.gateway.lovable.dev/v1/chat/completions`) with `stream: true` using `google/gemini-3-flash-preview`
-- Returns the SSE stream directly to the client
-- Handles 429/402 errors with user-friendly messages
-- JWT auth via Supabase claims (same pattern as existing edge functions)
+**Desktop frame contents** (skeletal):
+- Browser chrome: 3 traffic-light dots + faux URL pill (`devus.one`)
+- Top nav row: logo block + 3 nav pills + avatar circle
+- Search bar skeleton with shimmering "Ask Devus..." caret
+- Recommended Tools row: 3 tool cards (rounded rects with gradient tops + 2 text bars each)
+- Trending row: 4 smaller cards
+- Right sidebar sliver: AI assistant chat bubble skeleton
 
-### 2. Rewrite: `src/components/dashboard/AIAssistantWidget.tsx`
-- Add state: `messages[]`, `isLoading`, `isStreaming`
-- **Chat area**: scrollable message list between header and input, rendering assistant messages with `react-markdown`
-- **Quick actions**: shown only when no messages yet (initial state). Clicking one sends a pre-built prompt:
-  - "Compare Tools" → "Help me compare two developer tools. What tools would you like to compare?"
-  - "Find Alternatives" → "I'm looking for alternatives to a tool. Which tool do you want alternatives for?"
-  - "Check Compatibility" → "I want to check if tools in my stack are compatible. What's your current stack?"
-  - "Learning Resources" → "I'm looking for learning resources for a developer tool. Which tool or technology?"
-- **Streaming**: parse SSE line-by-line, update assistant message content token-by-token
-- **Input**: Enter key and send button both trigger message send; disabled while streaming
-- **Auto-scroll**: chat area scrolls to bottom on new tokens
-- Widget panel height increased to `max-h-[70vh]` for readable conversation
+**Phone frame contents** (skeletal):
+- Notch/dynamic island
+- Compact header with hamburger + logo
+- "Tool of the Day" hero card (gradient block)
+- 2 stacked tool list rows
+- Bottom tab bar with 4 icon dots
 
-### 3. Minor: `src/pages/Dashboard.tsx`
-- No changes needed — the widget is self-contained with its own AI hook
+### Skeletal UI Animation Sequence (Framer Motion, ~4s loop)
+1. **t=0.0s** — Both frames fade/scale in from 0.95 → 1.
+2. **t=0.4s** — Browser chrome + phone notch settle.
+3. **t=0.6s** — Nav/header bars slide in from top with stagger.
+4. **t=0.9s** — Search bar draws in (width 0 → full) on desktop; tab bar slides up on phone.
+5. **t=1.2s** — Tool card skeletons cascade in (stagger 0.08s) using a shimmer (`bg-gradient-to-r from-muted via-muted/40 to-muted` animated `bg-position`).
+6. **t=2.0s** — A cyan **search query** types into the search bar ("react animation library").
+7. **t=2.6s** — Cards re-shimmer/highlight as if filtered; one card on each frame gets a cyan glow ring (the AI recommendation).
+8. **t=3.2s** — A small "Ask Devus" chat bubble pops on the desktop sidebar with a typing-dots indicator.
+9. **t=4.0s** — Hold for 1s, then loop (subtle re-shimmer rather than full restart to feel alive without being noisy).
 
-## Files
+A continuous **slow parallax tilt** (±2° on Y axis using `motion` and pointer position on desktop only) gives the scene depth. Respect `prefers-reduced-motion`: skip parallax + typing, keep static composed wireframe.
 
-| File | Action |
+### Premium Visual Treatment
+- Frames: glassmorphism (`bg-card/40 backdrop-blur-xl border border-border/60`) with cyan glow shadow (`shadow-[0_0_60px_-15px_hsl(var(--primary)/0.4)]`).
+- Skeleton blocks: `bg-muted/60` with animated cyan shimmer overlay using existing primary token.
+- Behind the scene: soft cyan radial glow + faint dotted grid (`bg-[radial-gradient(circle,hsl(var(--primary)/0.15)_1px,transparent_1px)] bg-[size:24px_24px]`) to read as "developer canvas".
+- Phone frame: realistic bezel using nested rounded divs, dynamic island as a black pill.
+
+### Refined Copy (sharpens "what + why")
+- Eyebrow chip (above headline): `✦ The developer toolkit, personalized` (replaces ticker on first paint; ticker stays below CTAs).
+- Headline: **Discover the right dev tools — without the noise.** with `dev tools` in cyan glow.
+- Subhead: **Devus learns your stack and surfaces the tools, libraries, and AI helpers that actually fit your workflow. Curated weekly. Searched conversationally.**
+- Keep CTAs: `Get Started →` (primary glow) + `Explore Tools ✦` (outline).
+- Replace 3 feature chips with 3 **outcome-led** chips:
+  - 🎯 *Matched to your stack* — recommendations from your tools
+  - 🤖 *Ask Devus AI* — natural-language tool search
+  - 📦 *Weekly drops* — fresh, curated finds every Monday
+
+## Mobile Responsiveness
+- `< md`: stack vertically. Wireframe scene scales to ~340px wide, phone frame overlap reduces to a tighter offset. Headline drops to `text-3xl`.
+- `md → lg`: 2-column grid kicks in but wireframe scene stays compact (max 480px).
+- `lg+`: full split layout, wireframe scene fills right column up to ~580px, parallax enabled.
+- Animation timings unchanged across breakpoints; only sizes scale.
+- Reduced-motion: static wireframe + still cyan glow.
+
+## File Plan
+
+| File | Change |
 |------|--------|
-| `supabase/functions/devus-chat/index.ts` | Create — streaming chat edge function |
-| `src/components/dashboard/AIAssistantWidget.tsx` | Rewrite — full chat UI with streaming |
+| `src/components/HeroWireframeShowcase.tsx` | **New** — composed desktop + phone wireframe scene with all animations |
+| `src/components/hero/WireframeDesktop.tsx` | **New** — desktop browser frame skeleton |
+| `src/components/hero/WireframePhone.tsx` | **New** — phone frame skeleton |
+| `src/components/hero/WireframeShimmer.tsx` | **New** — reusable shimmering skeleton block |
+| `src/components/LandingHero.tsx` | Edit — swap `<HeroNexusAnimation />` → `<HeroWireframeShowcase />`; update headline/subhead/chip copy; tighten grid spacing |
+| `src/components/HeroNexusAnimation.tsx` | Keep (unused); can be deleted later if confirmed not used elsewhere |
 
 ## Technical Notes
-- `LOVABLE_API_KEY` is already available as a secret — no setup needed
-- Uses `react-markdown` (already in dependencies via other components) for rendering responses
-- Conversation history sent with each request for context continuity
-- Quick actions disappear after first message, replaced by the chat thread
-- Mobile: widget already uses `w-[calc(100vw-2rem)]` — chat area will use `max-h-[50vh]` on mobile
+- All animation via existing **Framer Motion** (already in deps). Use `motion`, `useReducedMotion`, `AnimatePresence`, and a single `useEffect` loop for the typing sequence.
+- Pure presentational/frontend — no backend, no data fetching, no schema changes.
+- Strictly semantic tokens: `bg-card`, `border-border`, `text-primary`, `bg-muted`, `text-muted-foreground` — no raw hex.
+- Shimmer keyframe added to `tailwind.config.ts` if needed (`shimmer: 0% { bg-position: -200% 0 } → 100% { bg-position: 200% 0 }`), or done inline via `motion` `animate` on `backgroundPosition`.
+- No new dependencies.
 
+## Out of Scope
+- Other landing sections (`WhyDevusSection`, `FeaturesSection`, etc.) untouched.
+- No copy changes outside the hero block.
+- Deletion of `HeroNexusAnimation.tsx` deferred (safe to remove after verification).
