@@ -45,15 +45,16 @@ export function BenefitsSection({ onSignUp }: BenefitsSectionProps) {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-            <Sparkles className="w-4 h-4" />
-            Choose Your Plan
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-medium mb-5">
+            <Sparkles className="w-3.5 h-3.5" />
+            Choose your plan
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
-            Start Free, Upgrade When Ready
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
+            Start free.{" "}
+            <span className="text-primary glow-text">Upgrade when ready.</span>
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Get started with your personalized toolkit for free. Upgrade to Pro for AI-powered discovery and priority features.
+          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
+            Explore the product on the free tier. Unlock AI-powered discovery and priority features when you&apos;re ready.
           </p>
         </motion.div>
 
@@ -65,7 +66,12 @@ export function BenefitsSection({ onSignUp }: BenefitsSectionProps) {
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
           >
-            <Card className="h-full glass glass-hover border-border/50">
+            <Card className="h-full relative overflow-hidden border border-border/50 bg-card/40 backdrop-blur-xl transition-all duration-300 hover:border-border hover:bg-card/60">
+              <div className="absolute top-4 left-4">
+                <div className="px-2.5 py-0.5 rounded-full bg-secondary/80 border border-border/50 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                  Start free
+                </div>
+              </div>
               <CardHeader className="text-center pb-4">
                 <div className="w-12 h-12 rounded-xl bg-secondary/80 flex items-center justify-center mx-auto mb-4">
                   <Zap className="w-6 h-6 text-muted-foreground" />
@@ -92,12 +98,12 @@ export function BenefitsSection({ onSignUp }: BenefitsSectionProps) {
                     </li>
                   ))}
                 </ul>
-                <Button 
-                  variant="outline" 
-                  className="w-full mt-6" 
+                <Button
+                  variant="outline"
+                  className="w-full mt-6 border-border/60 hover:border-primary/40 hover:bg-primary/5"
                   onClick={onSignUp}
                 >
-                  Get Started Free
+                  Sign up free — explore the product
                 </Button>
               </CardContent>
             </Card>
@@ -110,11 +116,12 @@ export function BenefitsSection({ onSignUp }: BenefitsSectionProps) {
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
           >
-            <Card className="h-full glass glass-hover border-primary/30 relative overflow-hidden">
-              <div className="absolute top-4 right-4">
-                <div className="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-medium flex items-center gap-1">
+            <Card className="h-full relative overflow-hidden border border-primary/40 bg-card/50 backdrop-blur-xl shadow-[0_0_50px_hsl(var(--primary)/0.18)]">
+              <div className="absolute -inset-px rounded-lg bg-gradient-to-br from-primary/30 via-primary/0 to-primary/10 pointer-events-none opacity-60" />
+              <div className="absolute top-4 right-4 z-10">
+                <div className="px-3 py-1 rounded-full bg-primary/20 border border-primary/40 text-primary text-xs font-medium flex items-center gap-1 backdrop-blur-md">
                   <Crown className="w-3 h-3" />
-                  Popular
+                  Most popular
                 </div>
               </div>
               
@@ -159,7 +166,7 @@ export function BenefitsSection({ onSignUp }: BenefitsSectionProps) {
           className="text-center"
         >
           <p className="text-sm text-muted-foreground">
-            No credit card required to start • Cancel anytime
+            No card required · Free forever tier · Cancel anytime
           </p>
         </motion.div>
       </div>
