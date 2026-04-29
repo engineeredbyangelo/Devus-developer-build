@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles, Bot, Star, Layers } from "lucide-react";
+import { ArrowRight, Sparkles, Bot, Package, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ActivityTicker } from "./ActivityTicker";
-import { HeroNexusAnimation } from "./HeroNexusAnimation";
+import { HeroWireframeShowcase } from "./HeroWireframeShowcase";
 
 interface LandingHeroProps {
   onGetStarted: () => void;
@@ -20,13 +20,15 @@ export function LandingHero({ onGetStarted }: LandingHeroProps) {
         <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center">
           {/* Left Column - Content */}
           <div className="flex flex-col">
-            {/* Activity ticker */}
+            {/* Eyebrow */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
+              className="inline-flex items-center gap-2 self-start px-3 py-1 rounded-full bg-primary/10 border border-primary/30 text-xs text-primary"
             >
-              <ActivityTicker />
+              <Sparkles className="w-3 h-3" />
+              The developer toolkit, personalized
             </motion.div>
 
             {/* Main headline */}
@@ -34,11 +36,12 @@ export function LandingHero({ onGetStarted }: LandingHeroProps) {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="mt-6 md:mt-8 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight"
+              className="mt-5 md:mt-6 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight"
             >
-              Your personalized
+              Discover the right
               <br />
-              <span className="text-primary glow-text">developer toolkit</span>
+              <span className="text-primary glow-text">dev tools</span>
+              <span className="text-foreground"> — without the noise.</span>
             </motion.h1>
 
             {/* Subheadline */}
@@ -48,8 +51,8 @@ export function LandingHero({ onGetStarted }: LandingHeroProps) {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="mt-4 md:mt-6 text-base sm:text-lg md:text-xl text-muted-foreground max-w-xl"
             >
-              Tools matched to your stack, an AI assistant to guide your choices, 
-              and fresh curated drops every week. Your workflow, supercharged.
+              Devus learns your stack and surfaces the tools, libraries, and AI helpers
+              that actually fit your workflow. Curated weekly. Searched conversationally.
             </motion.p>
 
             {/* CTA buttons */}
@@ -80,6 +83,16 @@ export function LandingHero({ onGetStarted }: LandingHeroProps) {
               </Button>
             </motion.div>
 
+            {/* Activity ticker */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.35 }}
+              className="mt-6"
+            >
+              <ActivityTicker />
+            </motion.div>
+
             {/* Feature highlights */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -88,9 +101,9 @@ export function LandingHero({ onGetStarted }: LandingHeroProps) {
               className="mt-8 md:mt-12 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4"
             >
               {[
-                { icon: Layers, label: "Personalized Feed", desc: "Tools matched to your stack" },
-                { icon: Bot, label: "AI-Powered Search", desc: "Ask Devus anything" },
-                { icon: Star, label: "Weekly Drops", desc: "Fresh tools every week" },
+                { icon: Target, label: "Matched to your stack", desc: "Recommendations from your tools" },
+                { icon: Bot, label: "Ask Devus AI", desc: "Natural-language tool search" },
+                { icon: Package, label: "Weekly drops", desc: "Fresh, curated finds every Monday" },
               ].map((feature, i) => (
                 <motion.div
                   key={feature.label}
@@ -109,14 +122,14 @@ export function LandingHero({ onGetStarted }: LandingHeroProps) {
             </motion.div>
           </div>
 
-          {/* Right Column - Nexus Animation */}
+          {/* Right Column - Wireframe Showcase */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.3 }}
             className="flex items-center justify-center order-first lg:order-last"
           >
-            <HeroNexusAnimation />
+            <HeroWireframeShowcase />
           </motion.div>
         </div>
       </div>
