@@ -35,15 +35,16 @@ export function ToolStackShowcase({ onSignUp }: ToolStackShowcaseProps) {
           transition={{ duration: 0.5 }}
           className="text-center mb-10 md:mb-14"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-            <Layers className="w-4 h-4" />
-            Explore the Stack
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-medium mb-5">
+            <Layers className="w-3.5 h-3.5" />
+            Explore the stack
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">
-            65+ Tools Across {categories.length} Categories
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
+            65+ tools across{" "}
+            <span className="text-primary glow-text">{categories.length} categories</span>
           </h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">
-            From AI models to deployment platforms — handpicked for quality
+          <p className="text-muted-foreground text-base md:text-lg max-w-xl mx-auto">
+            From AI models to deployment platforms — handpicked, never paid placement.
           </p>
         </motion.div>
 
@@ -64,10 +65,10 @@ export function ToolStackShowcase({ onSignUp }: ToolStackShowcaseProps) {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setSelectedCategory(cat.id)}
                 className={cn(
-                  "shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border",
+                  "shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border backdrop-blur-md",
                   isActive
-                    ? "bg-primary/20 border-primary text-primary"
-                    : "bg-transparent border-border text-muted-foreground hover:border-muted-foreground"
+                    ? "bg-primary/15 border-primary/50 text-primary shadow-[0_0_20px_hsl(var(--primary)/0.25)]"
+                    : "bg-card/40 border-border/50 text-muted-foreground hover:border-primary/30 hover:text-foreground"
                 )}
               >
                 {cat.name}
@@ -93,7 +94,7 @@ export function ToolStackShowcase({ onSignUp }: ToolStackShowcaseProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.06, duration: 0.35 }}
                 whileHover={{ y: -4 }}
-                className="glass glass-hover rounded-xl p-5 flex items-start gap-4 cursor-pointer"
+                className="group relative rounded-xl p-5 flex items-start gap-4 cursor-pointer border border-border/50 bg-card/40 backdrop-blur-md transition-all duration-300 hover:border-primary/40 hover:bg-card/60 hover:shadow-[0_0_30px_hsl(var(--primary)/0.12)]"
                 onClick={() => setSelectedTool(tool)}
               >
                 {/* Logo placeholder */}
@@ -144,10 +145,11 @@ export function ToolStackShowcase({ onSignUp }: ToolStackShowcaseProps) {
           transition={{ duration: 0.4, delay: 0.2 }}
           className="text-center"
         >
-          <Button size="lg" onClick={onSignUp} className="h-12 px-8 gap-2 glow-sm">
-            Sign up to explore the full collection
+          <Button size="lg" onClick={onSignUp} className="h-12 px-8 gap-2 glow">
+            Sign up free to unlock all 65+ tools
             <ArrowRight className="w-4 h-4" />
           </Button>
+          <p className="mt-3 text-xs text-muted-foreground">No card required · Free forever tier</p>
         </motion.div>
       </div>
 
