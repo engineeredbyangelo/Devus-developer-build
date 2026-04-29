@@ -26,7 +26,7 @@ const chaosPositions = [
 
 export function ChaosToOrderVisual() {
   return (
-    <div className="relative w-full aspect-square max-w-[480px] mx-auto">
+    <div className="relative w-full aspect-square max-w-[420px] sm:max-w-[480px] mx-auto">
       {/* Background glow */}
       <div className="absolute inset-0 bg-gradient-radial from-primary/15 via-primary/5 to-transparent rounded-full blur-2xl" />
 
