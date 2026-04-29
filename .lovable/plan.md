@@ -1,105 +1,83 @@
-# Reinvent Landing Hero — Animated Wireframe Product Showcase
+# Reinvent Landing Page — Premium Flow
 
-## Goal
-Replace the orbital tool nexus visual with a premium, animated **wireframe of the Devus platform** (web + mobile) showing skeletal UI building itself. The hero must immediately communicate *what* Devus is (a personalized developer toolkit dashboard) and *why* it matters (AI assistant, weekly drops, immersive tool cards). Branding (cyan glow, deep slate, Inter, glassmorphism) stays intact.
+Goal: tighten the user journey, elevate visual aesthetic to match the new hero (glassmorphism, cyan glow, subtle motion), remove the demo section, and auto-route users to the dashboard after login.
 
-## Current State
-- `src/components/LandingHero.tsx` uses a 2-column grid: copy left, `<HeroNexusAnimation />` right (concentric rings of tool icon orbs).
-- Headline: "Your personalized developer toolkit." Three feature chips below CTAs.
-- The orbital animation is abstract — users can't tell what the product *does* from looking at it.
+## New Section Order
 
-## New Hero Concept
-
-```text
-┌──────────────────────────────────────────────────────────────┐
-│  [activity ticker]                                           │
-│                                                              │
-│  Your personalized       ┌────────────────────┐  ┌──────┐   │
-│  developer toolkit       │ ▢ ▢ ▢   search   │  │ ▢▢▢  │   │
-│                          │ ─────────────────  │  │ ──── │   │
-│  Tools matched to your   │ ┌──┐ ┌──┐ ┌──┐    │  │ ┌──┐ │   │
-│  stack...                │ │▓▓│ │▓▓│ │▓▓│    │  │ │▓▓│ │   │
-│                          │ └──┘ └──┘ └──┘    │  │ └──┘ │   │
-│  [Get Started] [Explore] │ ─ ─ ─ ─ ─ ─ ─ ─   │  │ ──── │   │
-│                          │ Ask Devus...   ⌁  │  │ ▢▢▢▢ │   │
-│  [3 feature chips]       └────────────────────┘  └──────┘   │
-│                              desktop frame      phone frame  │
-└──────────────────────────────────────────────────────────────┘
+```
+Hero (existing — keep as-is)
+   ↓
+The Problem & Promise   ← merges WhyDevus stats + outcome promise
+   ↓
+How Devus Works         ← reinvented FeaturesSection (interactive showcase)
+   ↓
+Explore the Stack       ← keep ToolStackShowcase, restyled to match hero
+   ↓
+Pricing / Get Started   ← restyled BenefitsSection
+   ↓
+Footer
 ```
 
-### The Wireframe Visual (right column)
-A composed scene: a **desktop browser frame** (larger, back) with a **phone frame** (smaller, overlapping front-right). Both render a stylized, low-fidelity wireframe of the actual Devus dashboard so the product is instantly recognizable.
+Removed: `DemoPreview` section (per request — too much, redundant with ToolStackShowcase).
 
-**Desktop frame contents** (skeletal):
-- Browser chrome: 3 traffic-light dots + faux URL pill (`devus.one`)
-- Top nav row: logo block + 3 nav pills + avatar circle
-- Search bar skeleton with shimmering "Ask Devus..." caret
-- Recommended Tools row: 3 tool cards (rounded rects with gradient tops + 2 text bars each)
-- Trending row: 4 smaller cards
-- Right sidebar sliver: AI assistant chat bubble skeleton
+## Section Designs
 
-**Phone frame contents** (skeletal):
-- Notch/dynamic island
-- Compact header with hamburger + logo
-- "Tool of the Day" hero card (gradient block)
-- 2 stacked tool list rows
-- Bottom tab bar with 4 icon dots
+### 1. The Problem & Promise (replaces WhyDevusSection)
+A single, focused two-column section instead of stats grid + mobile mockup. Combines the "why" with an immediate visual answer.
 
-### Skeletal UI Animation Sequence (Framer Motion, ~4s loop)
-1. **t=0.0s** — Both frames fade/scale in from 0.95 → 1.
-2. **t=0.4s** — Browser chrome + phone notch settle.
-3. **t=0.6s** — Nav/header bars slide in from top with stagger.
-4. **t=0.9s** — Search bar draws in (width 0 → full) on desktop; tab bar slides up on phone.
-5. **t=1.2s** — Tool card skeletons cascade in (stagger 0.08s) using a shimmer (`bg-gradient-to-r from-muted via-muted/40 to-muted` animated `bg-position`).
-6. **t=2.0s** — A cyan **search query** types into the search bar ("react animation library").
-7. **t=2.6s** — Cards re-shimmer/highlight as if filtered; one card on each frame gets a cyan glow ring (the AI recommendation).
-8. **t=3.2s** — A small "Ask Devus" chat bubble pops on the desktop sidebar with a typing-dots indicator.
-9. **t=4.0s** — Hold for 1s, then loop (subtle re-shimmer rather than full restart to feel alive without being noisy).
+- **Left**: Tight narrative — "14 tools. 62% want to consolidate. We help you do it." Three compact stat chips (14 / 62% / 69%) with glow accents instead of three full cards.
+- **Right**: A premium animated "before vs after" — chaotic floating tool icons collapsing into an organized stack/feed (Framer Motion). Glass panel, cyan glow, matches hero aesthetic.
+- Removes the bulky mobile phone mockup (already shown in hero).
 
-A continuous **slow parallax tilt** (±2° on Y axis using `motion` and pointer position on desktop only) gives the scene depth. Respect `prefers-reduced-motion`: skip parallax + typing, keep static composed wireframe.
+### 2. How Devus Works (reinvented FeaturesSection)
+Replace the 4 alternating zig-zag rows with an **interactive feature switcher** — a single premium showcase panel.
 
-### Premium Visual Treatment
-- Frames: glassmorphism (`bg-card/40 backdrop-blur-xl border border-border/60`) with cyan glow shadow (`shadow-[0_0_60px_-15px_hsl(var(--primary)/0.4)]`).
-- Skeleton blocks: `bg-muted/60` with animated cyan shimmer overlay using existing primary token.
-- Behind the scene: soft cyan radial glow + faint dotted grid (`bg-[radial-gradient(circle,hsl(var(--primary)/0.15)_1px,transparent_1px)] bg-[size:24px_24px]`) to read as "developer canvas".
-- Phone frame: realistic bezel using nested rounded divs, dynamic island as a black pill.
+- **Left column**: 4 vertical pill-tabs (Personalized Feed / Ask Devus AI / Immersive Cards / Smart Filtering). Active tab has cyan glow + slide indicator.
+- **Right column**: Single large glass panel that crossfades between 4 mini animated previews when a tab is selected (auto-cycles every 4s, pauses on hover).
+- Each preview reuses upgraded versions of the existing visual components (RecommendationsVisual, AIVisual, etc.) wrapped in a browser-chrome frame consistent with the hero wireframe.
+- Outcome: same 4 features, ~70% less vertical space, far more premium and engaging.
 
-### Refined Copy (sharpens "what + why")
-- Eyebrow chip (above headline): `✦ The developer toolkit, personalized` (replaces ticker on first paint; ticker stays below CTAs).
-- Headline: **Discover the right dev tools — without the noise.** with `dev tools` in cyan glow.
-- Subhead: **Devus learns your stack and surfaces the tools, libraries, and AI helpers that actually fit your workflow. Curated weekly. Searched conversationally.**
-- Keep CTAs: `Get Started →` (primary glow) + `Explore Tools ✦` (outline).
-- Replace 3 feature chips with 3 **outcome-led** chips:
-  - 🎯 *Matched to your stack* — recommendations from your tools
-  - 🤖 *Ask Devus AI* — natural-language tool search
-  - 📦 *Weekly drops* — fresh, curated finds every Monday
+### 3. Explore the Stack (ToolStackShowcase — light restyle)
+Keep functionality. Apply hero-consistent polish:
+- Category pills get glassmorphism + cyan active glow.
+- Tool cards get subtle border-gradient on hover (like hero feature cards).
+- CTA copy: "Sign up free to unlock all 65+ tools" (reinforces free signup).
 
-## Mobile Responsiveness
-- `< md`: stack vertically. Wireframe scene scales to ~340px wide, phone frame overlap reduces to a tighter offset. Headline drops to `text-3xl`.
-- `md → lg`: 2-column grid kicks in but wireframe scene stays compact (max 480px).
-- `lg+`: full split layout, wireframe scene fills right column up to ~580px, parallax enabled.
-- Animation timings unchanged across breakpoints; only sizes scale.
-- Reduced-motion: static wireframe + still cyan glow.
+### 4. Pricing (BenefitsSection restyle)
+- Eyebrow + heading already good. Restyle the two cards:
+  - Free card: glass panel, "Start free" badge top-left.
+  - Pro card: gradient border with cyan glow (matches hero CTA glow), "Most popular" floating chip.
+- Update Free CTA copy: "Sign up free — explore the product".
+- Add a small reassurance row: "No card required · Free forever tier · Cancel anytime".
 
-## File Plan
+## Auto-route to Dashboard After Login
 
-| File | Change |
-|------|--------|
-| `src/components/HeroWireframeShowcase.tsx` | **New** — composed desktop + phone wireframe scene with all animations |
-| `src/components/hero/WireframeDesktop.tsx` | **New** — desktop browser frame skeleton |
-| `src/components/hero/WireframePhone.tsx` | **New** — phone frame skeleton |
-| `src/components/hero/WireframeShimmer.tsx` | **New** — reusable shimmering skeleton block |
-| `src/components/LandingHero.tsx` | Edit — swap `<HeroNexusAnimation />` → `<HeroWireframeShowcase />`; update headline/subhead/chip copy; tighten grid spacing |
-| `src/components/HeroNexusAnimation.tsx` | Keep (unused); can be deleted later if confirmed not used elsewhere |
+Currently `/dashboard` redirect only happens via `WelcomeAnimation` after a fresh signin. Users who sign in via OAuth redirect, or already-logged-in users landing on `/`, are not auto-routed.
+
+Add to `src/pages/Index.tsx`:
+- `useEffect` watching `useAuth()`'s `user` and `isLoading`. When `!isLoading && user && !showWelcome`, `navigate('/dashboard', { replace: true })`.
+- This covers: OAuth callback, returning logged-in users hitting `/`, and email-confirm redirects. Welcome animation continues to handle the fresh-signin celebratory path.
+
+## Files
+
+**Modified**
+- `src/pages/Index.tsx` — remove `DemoPreview`, add auto-redirect effect.
+- `src/components/WhyDevusSection.tsx` — rewrite as "Problem & Promise" two-column.
+- `src/components/FeaturesSection.tsx` — rewrite as interactive tab switcher.
+- `src/components/ToolStackShowcase.tsx` — restyle pills + cards (no logic change).
+- `src/components/BenefitsSection.tsx` — restyle cards, update CTA copy.
+
+**New**
+- `src/components/landing/ChaosToOrderVisual.tsx` — animated visual for Problem & Promise.
+- `src/components/landing/FeatureSwitcher.tsx` — interactive feature tab component.
+
+**Unchanged but referenced**
+- `src/components/HeroWireframeShowcase.tsx`, `src/components/LandingHero.tsx` — hero stays as approved.
 
 ## Technical Notes
-- All animation via existing **Framer Motion** (already in deps). Use `motion`, `useReducedMotion`, `AnimatePresence`, and a single `useEffect` loop for the typing sequence.
-- Pure presentational/frontend — no backend, no data fetching, no schema changes.
-- Strictly semantic tokens: `bg-card`, `border-border`, `text-primary`, `bg-muted`, `text-muted-foreground` — no raw hex.
-- Shimmer keyframe added to `tailwind.config.ts` if needed (`shimmer: 0% { bg-position: -200% 0 } → 100% { bg-position: 200% 0 }`), or done inline via `motion` `animate` on `backgroundPosition`.
-- No new dependencies.
 
-## Out of Scope
-- Other landing sections (`WhyDevusSection`, `FeaturesSection`, etc.) untouched.
-- No copy changes outside the hero block.
-- Deletion of `HeroNexusAnimation.tsx` deferred (safe to remove after verification).
+- Continue using `framer-motion` (already in deps) — no new libraries.
+- Reuse existing semantic tokens (`primary`, `glow`, `glass`, `glass-hover`) from `index.css` — no new color additions needed.
+- All animations respect `prefers-reduced-motion` (Framer Motion handles this when motion components are configured; verify on key loops).
+- Mobile: feature switcher collapses to stacked accordion below `md`. Problem & Promise stacks vertically with visual on top.
+- Auto-redirect uses `replace: true` so back button doesn't return to `/`.
