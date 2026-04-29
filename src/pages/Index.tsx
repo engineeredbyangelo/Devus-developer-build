@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Sparkles } from "lucide-react";
 import { Header } from "@/components/Header";
 import { LandingHero } from "@/components/LandingHero";
 import { WhyDevusSection } from "@/components/WhyDevusSection";
 import { FeaturesSection } from "@/components/FeaturesSection";
 import { ToolStackShowcase } from "@/components/ToolStackShowcase";
-import { DemoPreview } from "@/components/DemoPreview";
 import { BenefitsSection } from "@/components/BenefitsSection";
 import { AuthModal } from "@/components/AuthModal";
 import { WelcomeAnimation } from "@/components/WelcomeAnimation";
@@ -13,7 +13,16 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const { showWelcome, welcomeUserName, completeWelcome, triggerWelcome } = useAuth();
+  const { showWelcome, welcomeUserName, completeWelcome, triggerWelcome, user, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  // Auto-route already-authenticated users to the dashboard.
+  // The welcome animation handles the fresh sign-in path itself.
+  useEffect(() => {
+    if (!isLoading && user && !showWelcome) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [isLoading, user, showWelcome, navigate]);
 
   const openSignUp = () => setAuthModalOpen(true);
 
@@ -40,9 +49,6 @@ const Index = () => {
 
       {/* Tool Stack Showcase - Interactive category explorer */}
       <ToolStackShowcase onSignUp={openSignUp} />
-
-      {/* Demo Preview - Limited sample for testing */}
-      <DemoPreview onSignUp={openSignUp} />
 
       {/* Benefits Section - Full product features */}
       <BenefitsSection onSignUp={openSignUp} />
